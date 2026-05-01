@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ポケモンユナイト 対戦トラッカー</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--border:#2e3250;
+    --text:#e8eaf6;--text2:#9399b2;--text3:#5c6080;
+    --win:#4caf50;--win-bg:#1b2e1c;--loss:#ef5350;--loss-bg:#2e1b1b;
+    --accent:#7c83f5;--accent-bg:#1e2040;
+    --orange:#ffa726;--orange-bg:#2e2010;
+    --green2:#26a69a;--green2-bg:#0a2020;
+    --info:#29b6f6;--info-bg:#0a1e2e;
+    --radius:10px;--radius-sm:6px;
+
+    /* タイプカラー（更新版） */
+    --atk:#e53935;--atk-bg:#2e1010;          /* アタック：赤 */
+    --bal:#ab47bc;--bal-bg:#2a1030;           /* バランス：紫 */
+    --spd:#26c6da;--spd-bg:#0a2226;           /* スピード：水色 */
+    --def:#66bb6a;--def-bg:#0f2410;           /* ディフェンス：緑 */
+    --sup:#fdd835;--sup-bg:#2a2400;           /* サポート：黄色 */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+  /* AUTH */
+  #authSection{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+  .auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:100%;max-width:400px;}
+  .auth-box h1{font-size:18px;font-weight:700;margin-bottom:4px;}
+  .auth-box p{font-size:13px;color:var(--text2);margin-bottom:1.5rem;}
+  .auth-tabs{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;}
+  .auth-tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border-radius:5px;color:var(--text2);}
+  .auth-tab.active{background:var(--accent-bg);color:var(--accent);}
+  .field{margin-bottom:1rem;}
+  .field label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;}
+  .field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:14px;outline:none;}
+  .field input:focus{border-color:var(--accent);}
+  .field .hint{font-size:11px;color:var(--text3);margin-top:4px;}
+  /* パスワード表示トグル */
+  .pw-wrap{position:relative;}
+  .pw-wrap input{padding-right:44px;}
+  .pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px;line-height:1;}
+  .pw-toggle:hover{color:var(--text2);}
+  .announce-box{border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;line-height:1.7;margin-bottom:1rem;}
+  .announce-box.warn{background:var(--loss-bg);border:1px solid #5a2020;color:#ffb3b3;}
+  .announce-box.info{background:var(--info-bg);border:1px solid #1a4060;color:#a8d8f0;}
+  .email-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);}
+  .email-toggle input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--accent);}
+  .email-toggle-label{font-size:13px;color:var(--text2);}
+  .email-section{display:none;}
+  .email-section.visible{display:block;}
+  .btn-primary{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn-primary:hover{opacity:0.9;}
+  .auth-msg{font-size:12px;margin-top:12px;text-align:center;min-height:16px;}
+  .auth-msg.error{color:var(--loss);} .auth-msg.success{color:var(--win);}
+
+  /* パスワードを忘れた */
+  .forgot-link{display:block;text-align:right;font-size:12px;color:var(--accent);cursor:pointer;margin-top:-6px;margin-bottom:12px;text-decoration:underline;}
+  .forgot-link:hover{opacity:0.8;}
+  .forgot-panel{display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;}
+  .forgot-panel.visible{display:block;}
+  .forgot-panel p{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;}
+  .forgot-panel input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:13px;outline:none;margin-bottom:8px;}
+  .forgot-panel input:focus{border-color:var(--accent);}
+  .btn-reset{width:100%;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-reset:hover{background:var(--accent);color:#fff;}
+  .forgot-msg{font-size:12px;margin-top:8px;min-height:14px;}
+  .forgot-msg.error{color:var(--loss);} .forgot-msg.success{color:var(--win);}
+
+  /* APP */
+  #appSection{display:none;max-width:600px;margin:0 auto;padding:1rem;}
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+  .nav h1{font-size:16px;font-weight:700;}
+  .nav-right{display:flex;align-items:center;gap:8px;}
+  .username-display{font-size:13px;color:var(--text2);}
+  .btn-logout{background:none;border:1px solid var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:5px 10px;font-size:12px;cursor:pointer;}
+  .btn-logout:hover{color:var(--loss);border-color:var(--loss);}
+  .page-tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;}
+  .page-tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border-radius:5px;color:var(--text2);}
+  .page-tab.active{background:var(--accent-bg);color:var(--accent);}
+
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;}
+  .card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
+  .series-row{display:flex;gap:8px;}
+  .series-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;}
+  .series-row input:focus{border-color:var(--accent);}
+  .btn-add{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn-add:hover{background:var(--accent);color:#fff;}
+  select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;margin-top:8px;cursor:pointer;}
+
+  /* シリーズ操作ボタン */
+  .series-actions{display:flex;gap:6px;margin-top:8px;}
+  .btn-series-edit{flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;font-size:12px;cursor:pointer;}
+  .btn-series-edit:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-series-del{flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;font-size:12px;cursor:pointer;}
+  .btn-series-del:hover{border-color:var(--loss);color:var(--loss);}
+
+  /* モーダル共通 */
+  .modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:500;align-items:center;justify-content:center;padding:1rem;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:360px;}
+  .modal h3{font-size:15px;font-weight:700;margin-bottom:1rem;}
+  .modal-field{margin-bottom:1rem;}
+  .modal-field label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;}
+  .modal-field input,.modal-field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;}
+  .modal-field input:focus,.modal-field select:focus{border-color:var(--accent);}
+  .modal-btns{display:flex;gap:8px;margin-top:4px;}
+  .btn-modal-ok{flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-modal-ok:hover{opacity:0.9;}
+  .btn-modal-cancel{flex:1;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px;font-size:13px;cursor:pointer;}
+  .btn-modal-cancel:hover{border-color:var(--loss);color:var(--loss);}
+
+  /* PWAインストールバナー */
+  #pwaBar{display:none;background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:1rem;align-items:center;gap:10px;}
+  #pwaBar.show{display:flex;}
+  #pwaBar span{flex:1;font-size:12px;color:var(--accent);}
+  .btn-pwa{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn-pwa-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+  .stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;}
+  .stat-label{font-size:11px;color:var(--text3);margin-bottom:4px;}
+  .stat-val{font-size:20px;font-weight:700;color:var(--text);}
+  .stat-val.win{color:var(--win);} .stat-val.loss{color:var(--loss);}
+  .wr-bar{height:4px;border-radius:2px;background:var(--bg);margin-top:5px;overflow:hidden;}
+  .wr-fill{height:100%;background:var(--win);border-radius:2px;transition:width 0.4s;}
+  .divider{height:1px;background:var(--border);margin:12px 0;}
+  .mode-stats{display:flex;flex-direction:column;gap:8px;}
+  .mode-row{background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:12px;}
+  .mode-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;width:100px;text-align:center;flex-shrink:0;}
+  .mode-badge.solo{background:var(--accent-bg);color:var(--accent);}
+  .mode-badge.duo{background:var(--orange-bg);color:var(--orange);}
+  .mode-badge.full{background:var(--green2-bg);color:var(--green2);}
+  .mode-nums{display:flex;align-items:center;gap:0;flex:none;}
+  .mode-num{text-align:center;width:44px;}
+  .mode-num-label{font-size:10px;color:var(--text3);margin-bottom:2px;}
+  .mode-num-val{font-size:16px;font-weight:700;}
+  .mode-num-val.win{color:var(--win);} .mode-num-val.loss{color:var(--loss);}
+  .mode-wr-wrap{flex:1;min-width:70px;}
+  .mode-wr-label{font-size:10px;color:var(--text3);margin-bottom:3px;}
+  .mode-wr-val{font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px;}
+
+  .poke-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;}
+  .poke-box{background:var(--bg3);border-radius:var(--radius-sm);padding:6px 10px;display:flex;align-items:center;gap:8px;}
+  .poke-icon{width:36px;height:36px;object-fit:contain;flex-shrink:0;}
+  .poke-info{flex:1;min-width:0;}
+  .poke-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .poke-record{font-size:10px;color:var(--text2);}
+  .poke-wr{font-weight:600;color:var(--text);}
+  .poke-mode-sections{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+  .poke-mode-block{background:var(--bg3);border-radius:var(--radius-sm);overflow:hidden;}
+  .poke-mode-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none;}
+  .poke-mode-header:hover{background:#ffffff0a;}
+  .poke-mode-title{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .poke-mode-arrow{font-size:11px;color:var(--text3);transition:transform 0.2s;}
+  .poke-mode-arrow.open{transform:rotate(180deg);}
+  .poke-mode-body{display:none;padding:4px 8px 8px;}
+  .poke-mode-body.open{display:block;}
+  .poke-mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px;margin-top:4px;}
+  .poke-mode-item{background:var(--bg2);border-radius:var(--radius-sm);padding:5px 8px;display:flex;align-items:center;gap:6px;}
+  .poke-mode-icon{width:28px;height:28px;object-fit:contain;flex-shrink:0;}
+  .poke-mode-info{flex:1;min-width:0;}
+  .poke-mode-name{font-size:10px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .poke-mode-rec{font-size:10px;color:var(--text2);}
+  .poke-mode-wr{font-weight:600;color:var(--text);}
+  .poke-mode-empty{font-size:12px;color:var(--text3);padding:8px 4px;}
+
+  /* メニュードロワー */
+  .btn-menu{background:none;border:1px solid var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:5px 10px;font-size:16px;cursor:pointer;line-height:1;}
+  .btn-menu:hover{border-color:var(--accent);color:var(--accent);}
+  .drawer-overlay{display:none;position:fixed;inset:0;background:#00000066;z-index:400;}
+  .drawer-overlay.open{display:block;}
+  .drawer{position:fixed;top:0;right:-280px;width:260px;height:100%;background:var(--bg2);border-left:1px solid var(--border);z-index:401;transition:right 0.25s;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:4px;overflow-y:auto;}
+  .drawer.open{right:0;}
+  .drawer-title{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;margin-top:16px;padding:0 4px;}
+  .drawer-title:first-child{margin-top:0;}
+  .drawer-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .drawer-item:hover{background:var(--bg3);color:var(--text);}
+  .drawer-item.active{background:var(--accent-bg);color:var(--accent);}
+  .drawer-close{margin-top:auto;padding:9px;text-align:center;font-size:12px;color:var(--text3);cursor:pointer;border:1px solid var(--border);border-radius:var(--radius-sm);}
+  .drawer-close:hover{color:var(--loss);border-color:var(--loss);}
+
+  /* 分析ページ */
+  #analysisPage{display:none;}
+  .analysis-tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;}
+  .analysis-tab{flex:1;padding:7px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border-radius:5px;color:var(--text2);}
+  .analysis-tab.active{background:var(--accent-bg);color:var(--accent);}
+  .chart-wrap{position:relative;width:100%;height:220px;}
+  .series-compare-row{display:grid;grid-template-columns:1fr 52px 52px 64px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:5px;font-size:12px;}
+  .series-compare-row.header{background:transparent;font-size:11px;color:var(--text3);padding:4px 10px;margin-bottom:2px;}
+  .series-name-cell{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .series-val{text-align:center;color:var(--text2);}
+  .series-wr-cell{text-align:center;font-weight:700;}
+  .total-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+  .total-stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+  .total-stat-val{font-size:22px;font-weight:700;color:var(--text);}
+  .total-stat-val.win{color:var(--win);}
+  .total-stat-val.loss{color:var(--loss);}
+  .total-stat-label{font-size:11px;color:var(--text3);margin-top:3px;}
+  .input-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .input-group{flex:1;min-width:140px;}
+  .input-group label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;}
+  .input-group select{margin-top:0;}
+  .poke-selector-wrap{position:relative;}
+  .poke-display-btn{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 12px;color:var(--text);font-size:14px;outline:none;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:38px;}
+  .poke-display-btn:hover{border-color:var(--accent);}
+  .poke-display-icon{width:30px;height:30px;object-fit:contain;}
+  .poke-display-placeholder{color:var(--text3);font-size:13px;}
+  .poke-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);z-index:200;max-height:400px;overflow-y:auto;box-shadow:0 8px 32px #00000088;}
+  .poke-dropdown.open{display:block;}
+  .poke-search{padding:8px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:2;}
+  .poke-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:13px;outline:none;}
+  .poke-search input:focus{border-color:var(--accent);}
+  .type-tabs{display:flex;gap:4px;padding:8px 8px 6px;flex-wrap:wrap;position:sticky;top:41px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:2;}
+  .type-tab{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;border:none;}
+
+  /* タイプタブ色（更新） */
+  .type-tab.all{background:var(--bg3);color:var(--text2);}
+  .type-tab.all.active{background:var(--accent-bg);color:var(--accent);}
+  .type-tab.atk{background:var(--atk-bg);color:var(--atk);}
+  .type-tab.atk.active{background:var(--atk);color:#fff;}
+  .type-tab.bal{background:var(--bal-bg);color:var(--bal);}
+  .type-tab.bal.active{background:var(--bal);color:#fff;}
+  .type-tab.spd{background:var(--spd-bg);color:var(--spd);}
+  .type-tab.spd.active{background:var(--spd);color:#1a1a1a;}
+  .type-tab.def{background:var(--def-bg);color:var(--def);}
+  .type-tab.def.active{background:var(--def);color:#fff;}
+  .type-tab.sup{background:var(--sup-bg);color:var(--sup);}
+  .type-tab.sup.active{background:var(--sup);color:#1a1a1a;}
+
+  .type-section{padding:4px 0;}
+  .type-section-label{font-size:10px;font-weight:700;padding:6px 10px 3px;letter-spacing:0.05em;}
+  .type-section-label.atk{color:var(--atk);}
+  .type-section-label.bal{color:var(--bal);}
+  .type-section-label.spd{color:var(--spd);}
+  .type-section-label.def{color:var(--def);}
+  .type-section-label.sup{color:var(--sup);}
+
+  .poke-chips{display:flex;flex-wrap:wrap;gap:5px;padding:4px 10px 10px;}
+  .poke-chip{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px 10px 3px 3px;font-size:12px;color:var(--text);cursor:pointer;transition:all 0.15s;}
+  .poke-chip:hover{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+  .poke-chip.selected{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .chip-icon{width:28px;height:28px;object-fit:contain;}
+  .no-results{padding:16px;text-align:center;color:var(--text3);font-size:13px;}
+  .clear-poke{margin-top:5px;font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;}
+  .clear-poke:hover{color:var(--loss);}
+
+  /* 詳細設定セクション */
+  .detail-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2);margin-bottom:0;padding:6px 0;user-select:none;}
+  .detail-toggle:hover{color:var(--text);}
+  .detail-arrow{font-size:11px;transition:transform 0.2s;}
+  .detail-arrow.open{transform:rotate(90deg);}
+  .detail-section{display:none;border-top:1px solid var(--border);margin-top:8px;padding-top:10px;}
+  .detail-section.open{display:block;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .detail-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+  .detail-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
+  .detail-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;color:var(--text);font-size:12px;outline:none;cursor:pointer;margin-top:0;}
+  .detail-select:focus{border-color:var(--accent);}
+  .detail-fixed{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;color:var(--text3);font-size:12px;font-style:italic;}
+  .detail-section-label{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;margin-top:4px;text-transform:uppercase;letter-spacing:0.04em;}
+
+  /* ポケモン別詳細 */
+  .detail-poke-select{margin-bottom:12px;}
+  .detail-mode-tabs{display:flex;gap:4px;margin-bottom:12px;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;}
+  .detail-mode-tab{flex:1;padding:5px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;border-radius:4px;color:var(--text2);}
+  .detail-mode-tab.active{background:var(--accent-bg);color:var(--accent);}
+  .stat-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .stat-table th{text-align:left;padding:5px 8px;font-size:10px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);}
+  .stat-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
+  .stat-table tr:last-child td{border-bottom:none;}
+  .stat-table td:first-child{color:var(--text);font-weight:500;}
+  .stat-table .wr-good{color:var(--win);font-weight:700;}
+  .stat-table .wr-bad{color:var(--loss);font-weight:700;}
+  .stat-table .wr-neu{color:var(--text);font-weight:700;}
+  .detail-subsection{margin-bottom:12px;}
+  .detail-subsection-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;padding:4px 8px;background:var(--bg3);border-radius:var(--radius-sm);}
+
+  /* 既存のbtn-row */
+  .btn-row{display:flex;gap:8px;width:100%;}
+  .btn-win{flex:1;background:var(--win-bg);color:var(--win);border:1px solid var(--win);border-radius:var(--radius-sm);padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:50%;}
+  .btn-win:hover{background:var(--win);color:#fff;}
+  .btn-loss{flex:1;background:var(--loss-bg);color:var(--loss);border:1px solid var(--loss);border-radius:var(--radius-sm);padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:50%;}
+  .btn-loss:hover{background:var(--loss);color:#fff;}
+
+  .history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .btn-clear{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;}
+  .btn-clear:hover{color:var(--loss);}
+  .history-item{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .history-item:last-child{border-bottom:none;}
+  .num{color:var(--text3);font-size:11px;min-width:22px;}
+  .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;}
+  .badge-win{background:var(--win-bg);color:var(--win);}
+  .badge-loss{background:var(--loss-bg);color:var(--loss);}
+  .badge-solo{background:var(--accent-bg);color:var(--accent);}
+  .badge-duo{background:var(--orange-bg);color:var(--orange);}
+  .badge-full{background:var(--green2-bg);color:var(--green2);}
+  .h-poke{flex:1;font-weight:500;display:flex;align-items:center;gap:5px;font-size:13px;}
+  .h-icon{width:24px;height:24px;object-fit:contain;}
+  .h-date{font-size:11px;color:var(--text3);}
+  .btn-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;}
+  .btn-del:hover{color:var(--loss);}
+  .empty{text-align:center;color:var(--text3);font-size:13px;padding:2rem 0;}
+
+  .profile-field{margin-bottom:1rem;}
+  .profile-field label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px;}
+  .profile-field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:14px;outline:none;}
+  .profile-field input:focus{border-color:var(--accent);}
+  .profile-field .hint{font-size:11px;color:var(--text3);margin-top:4px;}
+  .btn-save{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-save:hover{opacity:0.9;}
+  .profile-msg{font-size:12px;margin-top:10px;min-height:16px;}
+  .profile-msg.success{color:var(--win);} .profile-msg.error{color:var(--loss);}
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);z-index:999;}
+</style>
+<link rel="manifest" href="manifest.json" />
+</head>
+<body>
+<div id="loading">読み込み中...</div>
+
+<div id="authSection" style="display:none;">
+  <div class="auth-box">
+    <h1>⚡ ユナイト 対戦トラッカー</h1>
+    <p>対戦記録をシリーズごとに管理</p>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">ログイン</div>
+      <div class="auth-tab" onclick="switchTab('signup')">新規登録</div>
+    </div>
+
+    <!-- 新規登録アナウンス -->
+    <div class="announce-box warn" id="warnBox" style="display:none;">
+      ⚠️ <strong>パスワードを忘れると復旧できません。</strong><br>
+      メールアドレスを登録しておくと、パスワードを忘れた際にリセットメールを受け取れます。
+    </div>
+
+    <!-- ID・パスワード -->
+    <div class="field">
+      <label>プレイヤーID</label>
+      <input type="text" id="playerId" placeholder="半角英数字・記号（例: trainer123）" />
+      <div class="hint" id="idHint" style="display:none;">※ 登録後は変更できません</div>
+    </div>
+    <div class="field">
+      <label>パスワード</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="6文字以上" />
+        <button type="button" class="pw-toggle" onclick="togglePw('password',this)" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <!-- パスワードを忘れた方はこちら（ログイン時のみ） -->
+    <div id="forgotArea">
+      <span class="forgot-link" onclick="toggleForgot()">パスワードを忘れた方はこちら</span>
+      <div class="forgot-panel" id="forgotPanel">
+        <p>
+          登録済みのメールアドレスにパスワードリセットのリンクを送ります。<br>
+          ※ メールアドレスを登録していない場合はリセットできません。
+        </p>
+        <input type="email" id="resetEmail" placeholder="登録したメールアドレス" />
+        <button class="btn-reset" onclick="sendReset()">リセットメールを送る</button>
+        <div class="forgot-msg" id="forgotMsg"></div>
+      </div>
+    </div>
+
+    <!-- メールアドレス任意登録（新規登録時のみ） -->
+    <div id="emailSection" style="display:none;">
+      <label class="email-toggle" id="emailToggleLabel">
+        <input type="checkbox" id="emailToggle" onchange="toggleEmail()" />
+        <span class="email-toggle-label">📧 メールアドレスを登録する（任意）</span>
+      </label>
+      <div class="email-section" id="emailInputArea">
+        <div class="announce-box info" style="margin-bottom:8px;">
+          💡 メールアドレスを登録するとパスワードリセットが可能になります。<br>
+          登録後に<strong>確認メールが送信されます</strong>。届いたメール内の <strong>「Change Email」</strong> を押してアドレス確認をお願いします。<br>
+          <br>
+          📨 送信元：<strong>unitetracker.notify@gmail.com</strong><br>
+          迷惑メールフォルダに入る場合があるため、届かない場合はご確認ください。
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>メールアドレス</label>
+          <input type="email" id="emailInput" placeholder="your@email.com" />
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <button class="btn-primary" id="authBtn" onclick="authAction()">ログイン</button>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<div id="appSection">
+  <div class="nav">
+    <h1>⚡ ユナイト 対戦トラッカー</h1>
+    <div class="nav-right">
+      <span class="username-display" id="usernameDisplay"></span>
+      <button class="btn-logout" onclick="logout()">ログアウト</button>
+      <button class="btn-menu" onclick="openDrawer()">☰</button>
+    </div>
+  </div>
+  <div class="page-tabs">
+    <div class="page-tab active" onclick="showPage('tracker')">📊 トラッカー</div>
+    <div class="page-tab" onclick="showPage('analysis')">📈 分析</div>
+    <div class="page-tab" onclick="showPage('profile')">👤 プロフィール</div>
+  </div>
+
+  <div id="trackerPage">
+    <!-- PWAインストールバナー -->
+    <div id="pwaBar">
+      <span>📱 ホーム画面に追加するとアプリのように使えます</span>
+      <button class="btn-pwa" onclick="pwaInstall()">追加する</button>
+      <button class="btn-pwa-close" onclick="pwaDismiss()">✕</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">シリーズ管理</div>
+      <div class="series-row">
+        <input type="text" id="newSeriesInput" placeholder="新しいシリーズ名（例: シリーズ1）" />
+        <button class="btn-add" onclick="addSeries()">追加</button>
+      </div>
+      <select id="seriesSelect" onchange="onSeriesChange()"><option value="">— シリーズを選択 —</option></select>
+      <div class="series-actions" id="seriesActions" style="display:none;">
+        <button class="btn-series-edit" onclick="openRenameModal()">✏️ 名前を変更</button>
+        <button class="btn-series-del" onclick="deleteSeries()">🗑 シリーズを削除</button>
+      </div>
+    </div>
+
+    <div class="card" id="statsCard" style="display:none;">
+      <div class="card-title">統計 — <span id="statsTitle"></span></div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-label">試合数</div><div class="stat-val" id="sTotal">0</div></div>
+        <div class="stat-box"><div class="stat-label">勝利</div><div class="stat-val win" id="sWins">0</div></div>
+        <div class="stat-box"><div class="stat-label">敗北</div><div class="stat-val loss" id="sLosses">0</div></div>
+        <div class="stat-box"><div class="stat-label">勝率</div><div class="stat-val" id="sWR">—</div><div class="wr-bar"><div class="wr-fill" id="sWRBar" style="width:0%"></div></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="mode-stats">
+        <div class="mode-row">
+          <span class="mode-badge solo">🎮 ソロ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="soloW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="soloL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="soloWR">—</div><div class="wr-bar"><div class="wr-fill" id="soloBar" style="width:0%"></div></div></div>
+        </div>
+        <div class="mode-row">
+          <span class="mode-badge duo">👥 デュオ/トリオ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="duoW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="duoL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="duoWR">—</div><div class="wr-bar"><div class="wr-fill" id="duoBar" style="width:0%"></div></div></div>
+        </div>
+        <div class="mode-row">
+          <span class="mode-badge full">🏆 フルパ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="fullW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="fullL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="fullWR">—</div><div class="wr-bar"><div class="wr-fill" id="fullBar" style="width:0%"></div></div></div>
+        </div>
+      </div>
+      <div id="pokeSection" style="display:none;">
+        <div class="divider"></div>
+        <div class="card-title">ポケモン別成績（トータル）</div>
+        <div class="poke-grid" id="pokeGrid"></div>
+        <div class="poke-mode-sections">
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('solo')">
+              <span class="poke-mode-title"><span class="badge badge-solo" style="font-size:10px;padding:2px 8px;">ソロ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-solo">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-solo"><div class="poke-mode-grid" id="grid-solo"></div></div>
+          </div>
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('duo')">
+              <span class="poke-mode-title"><span class="badge badge-duo" style="font-size:10px;padding:2px 8px;">デュオ/トリオ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-duo">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-duo"><div class="poke-mode-grid" id="grid-duo"></div></div>
+          </div>
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('full')">
+              <span class="poke-mode-title"><span class="badge badge-full" style="font-size:10px;padding:2px 8px;">フルパ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-full">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-full"><div class="poke-mode-grid" id="grid-full"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="inputCard" style="display:none;">
+      <div class="card-title">対戦を記録する</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>使用ポケモン（任意）</label>
+          <div class="poke-selector-wrap">
+            <button class="poke-display-btn" id="pokeDisplayBtn" onclick="openDropdown()">
+              <span class="poke-display-placeholder">タップして選択 / 検索...</span>
+            </button>
+            <div class="poke-dropdown" id="pokeDropdown">
+              <div class="poke-search"><input type="text" id="pokeSearch" placeholder="ポケモン名で検索..." oninput="filterPoke(this.value)" /></div>
+              <div class="type-tabs">
+                <button class="type-tab all active" onclick="filterType(event,'all')">すべて</button>
+                <button class="type-tab atk" onclick="filterType(event,'atk')">アタック</button>
+                <button class="type-tab bal" onclick="filterType(event,'bal')">バランス</button>
+                <button class="type-tab spd" onclick="filterType(event,'spd')">スピード</button>
+                <button class="type-tab def" onclick="filterType(event,'def')">ディフェンス</button>
+                <button class="type-tab sup" onclick="filterType(event,'sup')">サポート</button>
+              </div>
+              <div id="pokeList"></div>
+            </div>
+          </div>
+          <button class="clear-poke" id="clearPokeBtn" style="display:none;" onclick="clearPoke()">✕ 選択を解除</button>
+        </div>
+        <div class="input-group">
+          <label>マッチ種別</label>
+          <select id="matchType">
+            <option value="solo">ソロ</option>
+            <option value="duo">デュオ / トリオ</option>
+            <option value="full">フルパ</option>
+          </select>
+        </div>
+      </div>
+      <!-- 詳細設定（任意） -->
+      <div class="detail-toggle" onclick="toggleDetail()">
+        <span class="detail-arrow" id="detailArrow">▶</span>
+        <span>詳細設定（任意）— 技セット / もちもの / バトルアイテム</span>
+      </div>
+      <div class="detail-section" id="detailSection">
+        <div class="detail-grid">
+          <div>
+            <div class="detail-label">わざ１</div>
+            <select class="detail-select" id="skill1"><option value="">— 選択 —</option></select>
+          </div>
+          <div>
+            <div class="detail-label">わざ２</div>
+            <select class="detail-select" id="skill2"><option value="">— 選択 —</option></select>
+          </div>
+        </div>
+        <div class="detail-section-label">もちもの（3つまで）</div>
+        <div class="detail-grid-3">
+          <div>
+            <div class="detail-label">もちもの①</div>
+            <div id="item1Fixed" style="display:none;"><div class="detail-fixed" id="item1FixedVal"></div></div>
+            <div id="item1Normal">
+              <select class="detail-select" id="item1"><option value="">— 選択 —</option></select>
+            </div>
+          </div>
+          <div>
+            <div class="detail-label">もちもの②</div>
+            <select class="detail-select" id="item2"><option value="">— 選択 —</option></select>
+          </div>
+          <div>
+            <div class="detail-label">もちもの③</div>
+            <select class="detail-select" id="item3"><option value="">— 選択 —</option></select>
+          </div>
+        </div>
+        <div>
+          <div class="detail-label">バトルアイテム</div>
+          <select class="detail-select" id="battleItem"><option value="">— 選択 —</option></select>
+        </div>
+        <div style="height:10px;"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-win" onclick="record('win')">✓ 勝利</button>
+        <button class="btn-loss" onclick="record('loss')">✗ 敗北</button>
+      </div>
+    </div>
+
+    <div class="card" id="historyCard" style="display:none;">
+      <div class="history-header">
+        <div class="card-title" style="margin-bottom:0;">対戦履歴</div>
+        <button class="btn-clear" onclick="clearAll()">全削除</button>
+      </div>
+      <div id="historyList"><div class="empty">シリーズを選択してください</div></div>
+    </div>
+  </div>
+
+  <!-- 分析ページ -->
+  <div id="analysisPage" style="display:none;">
+    <div class="analysis-tabs">
+      <div class="analysis-tab active" onclick="switchAnalysis('trend')">📈 勝率推移</div>
+      <div class="analysis-tab" onclick="switchAnalysis('compare')">📊 シリーズ比較</div>
+      <div class="analysis-tab" onclick="switchAnalysis('total')">🏆 通算成績</div>
+      <div class="analysis-tab" onclick="switchAnalysis('pokedetail')">🔍 ポケモン別詳細</div>
+    </div>
+    <!-- 勝率推移 -->
+    <div id="trendPanel">
+      <div class="card">
+        <div class="card-title">シリーズ別 勝率推移</div>
+        <div style="margin-bottom:10px;">
+          <select id="trendSeriesSelect" onchange="renderTrendChart()" style="margin-top:0;"></select>
+        </div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">直近10試合ごとの勝率推移</div>
+      </div>
+    </div>
+    <!-- シリーズ比較 -->
+    <div id="comparePanel" style="display:none;">
+      <div class="card">
+        <div class="card-title">シリーズ比較</div>
+        <div class="chart-wrap" style="height:180px;margin-bottom:12px;"><canvas id="compareChart"></canvas></div>
+        <div class="series-compare-row header">
+          <div>シリーズ</div><div class="series-val">試合</div><div class="series-val">勝利</div><div class="series-wr-cell">勝率</div>
+        </div>
+        <div id="compareList"></div>
+      </div>
+    </div>
+    <!-- 通算成績 -->
+    <div id="totalPanel" style="display:none;">
+      <div class="card">
+        <div class="card-title">全シリーズ 通算成績</div>
+        <div class="total-stat-grid">
+          <div class="total-stat-box"><div class="total-stat-val" id="ttTotal">0</div><div class="total-stat-label">総試合数</div></div>
+          <div class="total-stat-box"><div class="total-stat-val" id="ttWR">—</div><div class="total-stat-label">通算勝率</div></div>
+          <div class="total-stat-box"><div class="total-stat-val win" id="ttWins">0</div><div class="total-stat-label">総勝利</div></div>
+          <div class="total-stat-box"><div class="total-stat-val loss" id="ttLosses">0</div><div class="total-stat-label">総敗北</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title">モード別 通算</div>
+        <div id="ttModeStats"></div>
+        <div class="divider"></div>
+        <div class="card-title">通算 ポケモン別TOP5</div>
+        <div id="ttPokeStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ポケモン別詳細 -->
+  <div id="pokedetailPanel" style="display:none;">
+    <div class="card">
+      <div class="card-title">ポケモン別詳細</div>
+      <div class="detail-poke-select">
+        <select class="detail-select" id="detailPokeSelect" onchange="renderPokeDetail()" style="font-size:13px;padding:8px 12px;">
+          <option value="">— ポケモンを選択 —</option>
+        </select>
+      </div>
+      <div class="detail-mode-tabs">
+        <div class="detail-mode-tab active" onclick="switchDetailMode('all')">トータル</div>
+        <div class="detail-mode-tab" onclick="switchDetailMode('solo')">ソロ</div>
+        <div class="detail-mode-tab" onclick="switchDetailMode('duo')">デュオ/トリオ</div>
+        <div class="detail-mode-tab" onclick="switchDetailMode('full')">フルパ</div>
+      </div>
+      <div id="pokeDetailContent"><div class="empty">ポケモンを選択してください</div></div>
+    </div>
+  </div>
+
+  <div id="profilePage" style="display:none;">
+    <div class="card">
+      <div class="card-title">表示名の変更</div>
+      <div class="profile-field">
+        <label>表示名</label>
+        <input type="text" id="newUsername" placeholder="例: みちだれ" />
+        <div class="hint">アプリ上に表示される名前（ログインIDとは別）</div>
+      </div>
+      <button class="btn-save" onclick="updateUsername()">保存する</button>
+      <div class="profile-msg" id="usernameMsg"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">パスワードの変更</div>
+      <div class="profile-field"><label>新しいパスワード</label><div class="pw-wrap"><input type="password" id="newPassword" placeholder="6文字以上" /><button type="button" class="pw-toggle" onclick="togglePw('newPassword',this)" tabindex="-1">👁</button></div></div>
+      <div class="profile-field"><label>新しいパスワード（確認）</label><div class="pw-wrap"><input type="password" id="confirmPassword" placeholder="もう一度入力" /><button type="button" class="pw-toggle" onclick="togglePw('confirmPassword',this)" tabindex="-1">👁</button></div></div>
+      <button class="btn-save" onclick="updatePassword()">変更する</button>
+      <div class="profile-msg" id="passwordMsg"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">アカウント情報</div>
+      <div class="profile-field">
+        <label>プレイヤーID</label>
+        <input type="text" id="profileId" readonly style="color:var(--text2);cursor:not-allowed;" />
+        <div class="hint">プレイヤーIDは変更できません</div>
+      </div>
+      <div class="profile-field">
+        <label>登録メールアドレス</label>
+        <input type="text" id="profileEmail" readonly style="color:var(--text2);cursor:not-allowed;" />
+        <div class="hint" id="profileEmailHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 更新履歴ページ -->
+  <div id="changelogPage" style="display:none;">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="card-title" style="margin-bottom:0;">📋 更新履歴</div>
+        <button class="btn-logout" onclick="showPage('tracker')" style="font-size:11px;">← 戻る</button>
+      </div>
+      <div id="changelogList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ドロワーメニュー -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-title">ページ</div>
+  <button class="drawer-item" onclick="showPage('tracker');closeDrawer()">📊 トラッカー</button>
+  <button class="drawer-item" onclick="showPage('analysis');closeDrawer()">📈 分析</button>
+  <button class="drawer-item" onclick="showPage('profile');closeDrawer()">👤 プロフィール</button>
+  <div class="drawer-title">その他</div>
+  <button class="drawer-item" onclick="showPage('changelog');closeDrawer()">📋 更新履歴</button>
+  <button class="drawer-item" onclick="logout();closeDrawer()">🚪 ログアウト</button>
+  <div class="drawer-close" onclick="closeDrawer()">閉じる ✕</div>
+</div>
+
+<!-- シリーズ名変更モーダル -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <h3>✏️ シリーズ名を変更</h3>
+    <div class="modal-field">
+      <label>新しいシリーズ名</label>
+      <input type="text" id="renameInput" placeholder="新しい名前を入力" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal('renameModal')">キャンセル</button>
+      <button class="btn-modal-ok" onclick="renameSeries()">変更する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 対戦記録編集モーダル -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto;">
+    <h3>✏️ 対戦記録を編集</h3>
+    <input type="hidden" id="editBattleId" />
+    <div class="modal-field">
+      <label>結果</label>
+      <select id="editResult">
+        <option value="win">勝利</option>
+        <option value="loss">敗北</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>マッチ種別</label>
+      <select id="editMatchType">
+        <option value="solo">ソロ</option>
+        <option value="duo">デュオ / トリオ</option>
+        <option value="full">フルパ</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>使用ポケモン</label>
+      <input type="text" id="editPokemon" placeholder="ポケモン名（空欄で削除）" oninput="onEditPokeInput(this.value)" />
+    </div>
+    <div class="modal-field">
+      <label>日時</label>
+      <input type="datetime-local" id="editDatetime" style="color-scheme:dark;" />
+    </div>
+    <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">技セット / もちもの / バトルアイテム</div>
+    <div class="modal-field">
+      <label>わざ１</label>
+      <select id="editSkill1"><option value="">— 選択 —</option></select>
+    </div>
+    <div class="modal-field">
+      <label>わざ２</label>
+      <select id="editSkill2"><option value="">— 選択 —</option></select>
+    </div>
+    <div class="modal-field">
+      <label>もちもの①</label>
+      <div id="editItem1Fixed" style="display:none;"><div class="detail-fixed" id="editItem1FixedVal"></div></div>
+      <div id="editItem1Normal"><select id="editItem1"><option value="">— 選択 —</option></select></div>
+    </div>
+    <div class="modal-field">
+      <label>もちもの②</label>
+      <select id="editItem2"><option value="">— 選択 —</option></select>
+    </div>
+    <div class="modal-field">
+      <label>もちもの③</label>
+      <select id="editItem3"><option value="">— 選択 —</option></select>
+    </div>
+    <div class="modal-field">
+      <label>バトルアイテム</label>
+      <select id="editBattleItem"><option value="">— 選択 —</option></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal('editModal')">キャンセル</button>
+      <button class="btn-modal-ok" onclick="saveEdit()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ここに接続情報を貼り付けてください =====
+const SUPABASE_URL = 'https://htnnovfbgchdpvuhlsnw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Hyb5a4ToK-om_SrRGCHaxQ_Yf_6k_Jd';
+// ===============================================
+
+const MAIL_DOMAIN = 'unite-tracker.internal';
+function idToFakeEmail(id){ return `${id.toLowerCase().replace(/[^a-z0-9._-]/g,'')}@${MAIL_DOMAIN}`; }
+function isFakeEmail(email){ return email && email.endsWith('@'+MAIL_DOMAIN); }
+
+const SPRITE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+const ICON_ID = {
+  'ピカチュウ':25,'アローラキュウコン':10104,'アローラライチュウ':10100,
+  'フシギバナ':3,'インテレオン':818,'ウッウ':845,'エースバーン':815,
+  'エーフィ':196,'グレイシア':471,'グレンアルマ':936,'ゲッコウガ':658,
+  'サーナイト':282,'サンダー':145,'シャンデラ':609,'ジュナイパー':724,
+  'ジュラルドン':884,'ドラパルト':887,'ニンフィア':700,'マフォクシー':655,
+  'ミュウ':151,'ミュウツー(Y)':10044,'ミライドン':1008,'ラティオス':381,
+  'アマージョ':763,'ウーラオス':892,'エンペルト':395,'カイリキー':68,
+  'カイリュー':149,'ガブリアス':445,'ギャラドス':130,'メガギャラドス':10041,
+  'ギルガルド':681,'ザシアン':10188,'スイクン':245,'ソウブレイズ':937,
+  'タイレーツ':870,'ダダリン':781,'デカヌチャン':959,'ネギガナイト':865,
+  'ハッサム':212,'バシャーモ':257,'バンギラス':248,'パーモット':923,
+  'ファイヤー':146,'マッシブーン':794,'マリルリ':184,'ミミッキュ':778,
+  'ミュウツー(X)':10043,'メタグロス':376,'リザードン':6,'メガリザードンX':10034,
+  'メガリザードンY':10035,'ルカリオ':448,'メガルカリオ':10059,
+  'アブソル':359,'ガラルギャロップ':10163,'ゲンガー':94,'ゼラオラ':807,
+  'ゾロアーク':571,'ダークライ':491,'ドードリオ':85,'ニャース':52,
+  'ファイアロー':663,'マスカーニャ':908,'リーフィア':470,
+  'イワパレス':558,'オーロット':709,'カビゴン':143,'カメックス':9,
+  'シャワーズ':134,'ヌメルゴン':706,'フリーザー':144,'ブラッキー':197,
+  'ホウオウ':250,'マンムー':473,'ヤドラン':80,'ヨクバリス':820,'ラプラス':131,
+  'キュワワー':764,'コダック':54,'ハピナス':242,'バリヤード':122,
+  'ピクシー':36,'フーパ':720,'プクリン':40,'マホイップ':869,
+  'ヤミラミ':302,'ラティアス':380,'ワタシラガ':830,'バクフーン':157
+};
+function getIconUrl(n){ const id=ICON_ID[n]; return id?`${SPRITE}${id}.png`:null; }
+function iconImg(n,cls,sz=28){
+  const u=getIconUrl(n);
+  return u?`<img src="${u}" class="${cls}" width="${sz}" height="${sz}" alt="${n}" loading="lazy" />`:`<span style="width:${sz}px;height:${sz}px;display:inline-flex;align-items:center;justify-content:center;font-size:${sz*.55}px;">🎮</span>`;
+}
+
+const POKEMON_DATA = {
+  atk:{label:'アタック型',cls:'atk',pokemon:['アローラキュウコン','アローラライチュウ','インテレオン','ウッウ','エースバーン','エーフィ','グレイシア','グレンアルマ','ゲッコウガ','サーナイト','サンダー','シャンデラ','ジュナイパー','ジュラルドン','ドラパルト','ニンフィア','バクフーン','ピカチュウ','フシギバナ','マフォクシー','ミュウ','ミュウツー(Y)','ミライドン','ラティオス']},
+  bal:{label:'バランス型',cls:'bal',pokemon:['アマージョ','ウーラオス','エンペルト','カイリキー','カイリュー','ガブリアス','ギャラドス','メガギャラドス','ギルガルド','ザシアン','スイクン','ソウブレイズ','タイレーツ','ダダリン','デカヌチャン','ネギガナイト','ハッサム','バシャーモ','バンギラス','パーモット','ファイヤー','マッシブーン','マリルリ','ミミッキュ','ミュウツー(X)','メタグロス','リザードン','メガリザードンX','メガリザードンY','ルカリオ','メガルカリオ']},
+  spd:{label:'スピード型',cls:'spd',pokemon:['アブソル','ガラルギャロップ','ゲンガー','ゼラオラ','ゾロアーク','ダークライ','ドードリオ','ニャース','ファイアロー','マスカーニャ','リーフィア']},
+  def:{label:'ディフェンス型',cls:'def',pokemon:['イワパレス','オーロット','カビゴン','カメックス','シャワーズ','ヌメルゴン','フリーザー','ブラッキー','ホウオウ','マンムー','ヤドラン','ヨクバリス','ラプラス']},
+  sup:{label:'サポート型',cls:'sup',pokemon:['キュワワー','コダック','ハピナス','バリヤード','ピクシー','フーパ','プクリン','マホイップ','ヤミラミ','ラティアス','ワタシラガ']}
+};
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentTab='login', currentSeriesId=null, battles=[], selectedPoke='', activeTypeFilter='all';
+let detailMode='all';
+
+// ===== 技・もちもの・バトルアイテムデータ =====
+const SKILLS = {
+  'アブソル':      {s1:['つじぎり','おいうち'],              s2:['サイコカッター','ふいうち']},
+  'アマージョ':    {s1:['トリプルアクセル','ふみつけ'],       s2:['トロピカルキック','グラススライダー']},
+  'アローラキュウコン':{s1:['ゆきなだれ','マジカルシャイン'],  s2:['ふぶき','オーロラベール']},
+  'アローラライチュウ':{s1:['アシストパワー','エレキボール'],  s2:['10まんボルト','サイコキネシス']},
+  'イワパレス':    {s1:['がんせきふうじ','からをやぶる'],      s2:['ステルスロック','シザークロス']},
+  'インテレオン':  {s1:['とどめばり','アクロバット'],          s2:['ねらいうち','アクアブレイク']},
+  'ウッウ':        {s1:['なみのり','ダイビング'],              s2:['ぼうふう','エアスラッシュ']},
+  'ウーラオス':    {s1:['あんこくきょうだ','すいりゅうれんだ'],s2:['じごくづき','アクアブレイク']},
+  'エンペルト':    {s1:['ハイドロカノン','うずしお'],          s2:['メタルクロー','アクアジェット']},
+  'エースバーン':  {s1:['かえんボール','ブレイズキック'],      s2:['ニトロチャージ','フェイント']},
+  'エーフィ':      {s1:['サイコショック','アシストパワー'],    s2:['サイケこうせん','みらいよち']},
+  'オーロット':    {s1:['ウッドハンマー','のろい'],            s2:['ウッドホーン','いたみわけ']},
+  'カイリキー':    {s1:['インファイト','クロスチョップ'],      s2:['ばくれつパンチ','じごくぐるま']},
+  'カイリュー':    {s1:['りゅうのまい','しんそく'],            s2:['はかいこうせん','げきりん']},
+  'カビゴン':      {s1:['ヘビーボンバー','じたばた'],          s2:['とおせんぼう','あくび']},
+  'カメックス':    {s1:['ハイドロポンプ','しおふき'],          s2:['なみのり','こうそくスピン']},
+  'ガブリアス':    {s1:['あなをほる','ドラゴンダイブ'],        s2:['じしん','ドラゴンクロー']},
+  'ガラルギャロップ':{s1:['マジカルシャイン','ようせいのかぜ'],s2:['スマートホーン','こうそくいどう']},
+  'キュワワー':    {s1:['フラワーヒール','てんしのキッス'],    s2:['マジカルリーフ','くさむすび']},
+  'ギャラドス':    {s1:['りゅうのいぶき','アクアテール'],      s2:['たきのぼり','とびはねる']},
+  'メガギャラドス':{s1:['りゅうのいぶき'],                    s2:['たきのぼり']},
+  'ギルガルド':    {s1:['せいなるつるぎ','シャドークロー'],    s2:['ワイドガード','アイアンヘッド']},
+  'グレイシア':    {s1:['つららばり','こごえるかぜ'],          s2:['こおりのつぶて','フリーズドライ']},
+  'グレンアルマ':  {s1:['アーマーキャノン','サイコショック'],  s2:['ニトロチャージ','ほのおのうず']},
+  'ゲッコウガ':    {s1:['かげぶんしん','えんまく'],            s2:['みずしゅりけん','なみのり']},
+  'ゲンガー':      {s1:['シャドーボール','ヘドロばくだん'],    s2:['ゆめくい','たたりめ']},
+  'コダック':      {s1:['なみのり','バブルこうせん'],          s2:['かなしばり','サイコキネシス']},
+  'サンダー':      {s1:['10まんボルト'],                       s2:['でんじほう']},
+  'サーナイト':    {s1:['サイコショック','みらいよち'],        s2:['サイコキネシス','ムーンフォース']},
+  'ザシアン':      {s1:['メタルクロー','せいなるつるぎ'],      s2:['こうそくいどう','じゃれつく']},
+  'シャワーズ':    {s1:['ハイドロポンプ','だくりゅう'],        s2:['アクアリング','クイックターン']},
+  'シャンデラ':    {s1:['かえんほうしゃ','オーバーヒート'],    s2:['ポルターガイスト','ふういん']},
+  'ジュナイパー':  {s1:['はっぱカッター','かげぬい'],          s2:['リーフストーム','かげうち']},
+  'ジュラルドン':  {s1:['ラスターカノン','りゅうのはどう'],    s2:['ステルスロック','ドラゴンテール']},
+  'スイクン':      {s1:['うずしお','なみのり'],                s2:['れいとうビーム','こごえるかぜ']},
+  'ゼラオラ':      {s1:['ボルトチェンジ','スパーク'],          s2:['ほうでん','ワイルドボルト']},
+  'ソウブレイズ':  {s1:['むねんのつるぎ','サイコカッター'],    s2:['ゴーストダイブ','ニトロチャージ']},
+  'ゾロアーク':    {s1:['つじぎり','だましうち'],              s2:['シャドークロー','いあいぎり']},
+  'タイレーツ':    {s1:['メガホーン','アイアンヘッド'],        s2:['はいすいのじん','ふくろだたき']},
+  'ダダリン':      {s1:['パワーウィップ','うずしお'],          s2:['アンカーショット','ヘビーボンバー']},
+  'ダークライ':    {s1:['ダークホール','シャドークロー'],      s2:['わるだくみ','あくのはどう']},
+  'デカヌチャン':  {s1:['デカハンマー','うちおとす'],          s2:['アイスハンマー','どろぼう']},
+  'ドラパルト':    {s1:['りゅうのまい','ゴーストダイブ'],      s2:['りゅうのいぶき','シャドーボール']},
+  'ドードリオ':    {s1:['トライアタック','ドリルくちばし'],    s2:['こうそくいどう','とびげり']},
+  'ニャース':      {s1:['ネコにこばん','みだれひっかき'],      s2:['だましうち','ダメおし']},
+  'ニンフィア':    {s1:['マジカルフレイム','ハイパーボイス'],  s2:['ドレインキッス','めいそう']},
+  'ヌメルゴン':    {s1:['りゅうのはどう','だくりゅう'],        s2:['パワーウィップ','アシッドボム']},
+  'ネギガナイト':  {s1:['れんぞくぎり','リーフブレード'],      s2:['ぶんまわす','みきり']},
+  'ハッサム':      {s1:['バレットパンチ','ダブルウイング'],    s2:['つるぎのまい','ダブルアタック']},
+  'ハピナス':      {s1:['タマゴうみ','しんぴのまもり'],        s2:['タマゴばくだん','てだすけ']},
+  'バクフーン':    {s1:['かえんぐるま'],                       s2:['ふんか']},
+  'バシャーモ':    {s1:['ほのおのパンチ','オーバーヒート'],    s2:['きあいだま','ブレイズキック']},
+  'バリヤード':    {s1:['ねんりき','サイコキネシス'],          s2:['バリアー','パワースワップ']},
+  'バンギラス':    {s1:['あくのはどう','ストーンエッジ'],      s2:['げんしのちから','すなじごく']},
+  'パーモット':    {s1:['かみなりパンチ','サンダーダイブ'],    s2:['ボルトチェンジ','マッハパンチ']},
+  'ピカチュウ':    {s1:['エレキボール','かみなり'],            s2:['ボルテッカー','10まんボルト']},
+  'ピクシー':      {s1:['つきのひかり','ドレインキッス'],      s2:['じゅうりょく','このゆびとまれ']},
+  'ファイアロー':  {s1:['ニトロチャージ','つばめがえし'],      s2:['そらをとぶ','ブレイブバード']},
+  'ファイヤー':    {s1:['ゴッドバード'],                       s2:['ねっぷう']},
+  'フシギバナ':    {s1:['ヘドロばくだん','ギガドレイン'],      s2:['ソーラービーム','はなびらのまい']},
+  'フリーザー':    {s1:['ふぶき'],                             s2:['れいとうビーム']},
+  'フーパ':        {s1:['いじげんホール','トリック'],          s2:['ゴーストダイブ','シャドーボール']},
+  'ブラッキー':    {s1:['イカサマ','くろいまなざし'],          s2:['ねがいごと','バークアウト']},
+  'プクリン':      {s1:['ころがる','うたう'],                  s2:['おうふくビンタ','マジカルシャイン']},
+  'ホウオウ':      {s1:['せいなるほのお','ほのおのうず'],      s2:['かえんほうしゃ','ゴッドバード']},
+  'マスカーニャ':  {s1:['トリックフラワー','つじぎり'],        s2:['くさわけ','かげぶんしん']},
+  'マッシブーン':  {s1:['とびかかる','うちおとす'],            s2:['きゅうけつ','ばかぢから']},
+  'マフォクシー':  {s1:['マジカルフレイム','だいもんじ'],      s2:['ニトロチャージ','ほのおのうず']},
+  'マホイップ':    {s1:['デコレーション','じこさいせい'],      s2:['マジカルシャイン','あまいかおり']},
+  'マリルリ':      {s1:['うずしお','アクアテール'],            s2:['じゃれつく','みずのはどう']},
+  'マンムー':      {s1:['つららおとし','こおりのキバ'],        s2:['じしん','10まんばりき']},
+  'ミミッキュ':    {s1:['じゃれつく','シャドークロー'],        s2:['かげうち','トリックルーム']},
+  'ミュウ':        {s1:['エレキボール','ソーラービーム','なみのり'],s2:['コーチング','ひかりのかべ','こうそくいどう']},
+  'ミュウツー(X)': {s1:['みらいよち','サイコブレイク'],        s2:['じこさいせい','テレポート']},
+  'ミュウツー(Y)': {s1:['みらいよち','サイコブレイク'],        s2:['じこさいせい','テレポート']},
+  'ミライドン':    {s1:['チャージビーム','イナズマドライブ'],  s2:['パラボラチャージ','かみなり']},
+  'メタグロス':    {s1:['コメットパンチ','ジャイロボール'],    s2:['しねんのずつき','でんじふゆう']},
+  'ヤドラン':      {s1:['ねっとう','なみのり'],                s2:['ドわすれ','テレキネシス']},
+  'ヤミラミ':      {s1:['はたきおとす','かげうち'],            s2:['あやしいひかり','だましうち']},
+  'ヨクバリス':    {s1:['ほおばる','ほしがる'],                s2:['タネマシンガン','ゲップ']},
+  'ラティアス':    {s1:['ミストボール','ドラゴンエール'],      s2:['りゅうのはどう','りゅうのいぶき']},
+  'ラティオス':    {s1:['ラスターパージ','テレキネシス'],      s2:['りゅうのはどう','りゅうせいぐん']},
+  'ラプラス':      {s1:['みずのはどう','ほろびのうた'],        s2:['バブルこうせん','れいとうビーム']},
+  'リザードン':    {s1:['かえんほうしゃ','ほのおのパンチ'],    s2:['だいもんじ','フレアドライブ']},
+  'メガリザードンX':{s1:['ほのおのパンチ'],                    s2:['フレアドライブ']},
+  'メガリザードンY':{s1:['かえんほうしゃ'],                    s2:['だいもんじ']},
+  'リーフィア':    {s1:['はっぱカッター','ソーラーブレード'],  s2:['リーフブレード','つばめがえし']},
+  'ルカリオ':      {s1:['しんそく','グロウパンチ'],            s2:['ボーンラッシュ','インファイト']},
+  'メガルカリオ':  {s1:['グロウパンチ'],                       s2:['インファイト']},
+  'ワタシラガ':    {s1:['かふんだんご','グラスミキサー'],      s2:['コットンガード','わたほうし']},
+};
+
+const DEDICATED_ITEMS = {
+  'ザシアン':       'くちたけん',
+  'ミュウツー(X)':  'ミュウツナイトX',
+  'ミュウツー(Y)':  'ミュウツナイトY',
+  'メガルカリオ':   'ルカリオナイト',
+  'メガリザードンX':'リザードナイトX',
+  'メガリザードンY':'リザードナイトY',
+  'メガギャラドス': 'ギャラドスナイト',
+};
+
+const GENERAL_ITEMS = ['アクセルリスト','エオスビスケット','おまもりこばん','とつげきチョッキ','もうこうダンベル','おおきなねっこ','おたすけバリア','じゅうてんチャーム','こだわりスカーフ','こだわりメガネ','のろいのバングル','のろいのおこう','いやしのかんむり','ドライブレンズ','エナジーアンプ','がくしゅうそうち','かるいし','きあいのハチマキ','たべのこし','ちからのハチマキ','れんだスカーフ','するどいツメ','レスキューフード','きょうめいガード','ゴツゴツメット','ピントレンズ','ゴールサポーター','かいがらのすず','すりぬけスプーン','しんげきメガネ','ふんばりベルト','さきがけベル','じゃくてんほけん','ものしりメガネ'];
+
+const BATTLE_ITEMS_LIST = ['キズぐすり','プラスパワー','スピーダー','エネコのシッポ','だっしゅつボタン','どんそくスモーク','なんでもなおし','ゴールかそくそうち','ヌケニンにんぎょう','ゴールコントローラー'];
+
+// ---- 詳細設定UI ----
+function toggleDetail(){
+  const sec=document.getElementById('detailSection');
+  const arr=document.getElementById('detailArrow');
+  const open=sec.classList.toggle('open');
+  arr.classList.toggle('open',open);
+}
+
+function initDetailSelects(){
+  ['item1','item2','item3'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+  });
+  const bi=document.getElementById('battleItem');
+  if(bi)bi.innerHTML='<option value="">— 選択 —</option>'+BATTLE_ITEMS_LIST.map(i=>`<option value="${i}">${i}</option>`).join('');
+}
+
+function updateDetailForPoke(pokeName){
+  const skill=SKILLS[pokeName];
+  const s1=document.getElementById('skill1');
+  const s2=document.getElementById('skill2');
+  if(s1&&s2){
+    if(skill){
+      s1.innerHTML='<option value="">— 選択 —</option>'+skill.s1.map(s=>`<option value="${s}">${s}</option>`).join('');
+      s2.innerHTML='<option value="">— 選択 —</option>'+skill.s2.map(s=>`<option value="${s}">${s}</option>`).join('');
+    } else {
+      s1.innerHTML='<option value="">— 選択 —</option>';
+      s2.innerHTML='<option value="">— 選択 —</option>';
+    }
+  }
+  const dedicated=DEDICATED_ITEMS[pokeName];
+  const fixedWrap=document.getElementById('item1Fixed');
+  const normalWrap=document.getElementById('item1Normal');
+  const fixedVal=document.getElementById('item1FixedVal');
+  if(fixedWrap&&normalWrap&&fixedVal){
+    if(dedicated){
+      fixedWrap.style.display='';
+      normalWrap.style.display='none';
+      fixedVal.textContent=dedicated+' （固定）';
+    } else {
+      fixedWrap.style.display='none';
+      normalWrap.style.display='';
+    }
+  }
+}
+
+function resetDetail(){
+  ['skill1','skill2','item1','item2','item3','battleItem'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  const fw=document.getElementById('item1Fixed');
+  const nw=document.getElementById('item1Normal');
+  if(fw)fw.style.display='none';
+  if(nw)nw.style.display='';
+}
+
+// ---- パスワード表示切替 ----
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+// ---- パスワードリセット ----
+function toggleForgot(){
+  const panel=document.getElementById('forgotPanel');
+  panel.classList.toggle('visible');
+  if(panel.classList.contains('visible')) document.getElementById('resetEmail').focus();
+}
+async function sendReset(){
+  const email=document.getElementById('resetEmail').value.trim();
+  const msg=document.getElementById('forgotMsg');
+  if(!email){msg.textContent='メールアドレスを入力してください';msg.className='forgot-msg error';return;}
+  msg.textContent='送信中...';msg.className='forgot-msg';
+  const {error}=await db.auth.resetPasswordForEmail(email,{
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  if(error){msg.textContent='エラー: '+error.message;msg.className='forgot-msg error';}
+  else{msg.textContent='✓ リセットメールを送りました。メールをご確認ください。';msg.className='forgot-msg success';}
+}
+
+// ---- メールトグル ----
+function toggleEmail(){
+  const checked=document.getElementById('emailToggle').checked;
+  document.getElementById('emailInputArea').classList.toggle('visible',checked);
+}
+
+// ---- Auth ----
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('authBtn').textContent=tab==='login'?'ログイン':'新規登録';
+  document.getElementById('warnBox').style.display=tab==='signup'?'block':'none';
+  document.getElementById('emailSection').style.display=tab==='signup'?'block':'none';
+  document.getElementById('forgotArea').style.display=tab==='login'?'block':'none';
+  document.getElementById('idHint').style.display=tab==='signup'?'block':'none';
+  document.getElementById('emailToggle').checked=false;
+  document.getElementById('emailInputArea').classList.remove('visible');
+  document.getElementById('forgotPanel').classList.remove('visible');
+  setMsg('','');
+}
+function setMsg(msg,type){const el=document.getElementById('authMsg');el.textContent=msg;el.className='auth-msg'+(type?' '+type:'');}
+
+async function authAction(){
+  const pid=document.getElementById('playerId').value.trim();
+  const password=document.getElementById('password').value;
+  if(!pid||!password){setMsg('IDとパスワードを入力してください','error');return;}
+  if(currentTab==='signup'&&!/^[a-zA-Z0-9._-]+$/.test(pid)){setMsg('IDは半角英数字・ . _ - のみ使えます','error');return;}
+  setMsg('処理中...','');
+
+  if(currentTab==='signup'){
+    const useEmail=document.getElementById('emailToggle').checked;
+    const realEmail=useEmail?document.getElementById('emailInput').value.trim():'';
+    if(useEmail&&!realEmail){setMsg('メールアドレスを入力してください','error');return;}
+    const fakeEmail=idToFakeEmail(pid);
+    const {error}=await db.auth.signUp({email:fakeEmail,password,options:{data:{username:pid,player_id:pid,real_email:useEmail?realEmail:null}}});
+    if(error){
+      if(error.message.includes('already registered'))setMsg('このIDはすでに使われています','error');
+      else setMsg(error.message,'error');
+      return;
+    }
+    if(useEmail&&realEmail){
+      await db.auth.updateUser({email:realEmail});
+      setMsg('登録完了！確認メール（unitetracker.notify@gmail.com）をご確認ください。','success');
+      return;
+    }
+    const {error:le}=await db.auth.signInWithPassword({email:fakeEmail,password});
+    if(le){setMsg('登録完了。ログインしてください。','success');}
+  } else {
+    const fakeEmail=idToFakeEmail(pid);
+    const {error}=await db.auth.signInWithPassword({email:fakeEmail,password});
+    if(error){
+      const {error:e2}=await db.auth.signInWithPassword({email:pid,password});
+      if(e2){setMsg('IDまたはパスワードが違います','error');}
+    }
+  }
+}
+async function logout(){await db.auth.signOut();}
+
+db.auth.onAuthStateChange(async(event,session)=>{
+  document.getElementById('loading').style.display='none';
+  if(session){
+    document.getElementById('authSection').style.display='none';
+    document.getElementById('appSection').style.display='block';
+    const pid=session.user.user_metadata?.player_id||session.user.user_metadata?.username||'';
+    const displayName=session.user.user_metadata?.username||pid;
+    document.getElementById('usernameDisplay').textContent=displayName;
+    document.getElementById('profileId').value=pid;
+    document.getElementById('newUsername').value=displayName;
+    const email=session.user.email||'';
+    document.getElementById('profileEmail').value=isFakeEmail(email)?'未登録':email;
+    document.getElementById('profileEmailHint').textContent=isFakeEmail(email)?'メールアドレスが未登録のため、パスワードを忘れると復旧できません。':'パスワードリセットメールはこのアドレスに届きます。';
+    loadSeries();
+    initDetailSelects();
+  } else {
+    document.getElementById('authSection').style.display='flex';
+    document.getElementById('appSection').style.display='none';
+    currentSeriesId=null;battles=[];
+  }
+});
+
+function showPage(page){
+  ['trackerPage','analysisPage','profilePage','changelogPage'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(page+'Page').style.display='block';
+  document.querySelectorAll('.page-tab').forEach((t,i)=>t.classList.toggle('active',
+    (i===0&&page==='tracker')||(i===1&&page==='analysis')||(i===2&&page==='profile')));
+  if(page==='analysis') loadAnalysis();
+  if(page==='changelog') renderChangelog();
+}
+
+// ---- 更新履歴 ----
+// ★ 新しい更新を追加するときはこのリストの先頭に追加してください
+const CHANGELOG = [
+  {
+    version: 'v1.5',
+    date: '2025-04-30',
+    items: [
+      '技セット・もちもの・バトルアイテムの記録機能を追加',
+      '分析ページにポケモン別詳細タブを追加',
+      'ポケモン選択時に詳細設定が自動展開するよう改善',
+    ]
+  },
+  {
+    version: 'v1.4',
+    date: '2025-04-28',
+    items: [
+      'シリーズの削除・名前変更機能を追加',
+      '対戦記録の編集機能を追加（日時変更も可能）',
+      'PWA対応（スマホのホーム画面に追加可能）',
+      '分析ページを追加（勝率推移グラフ・シリーズ比較・通算成績）',
+      'メニューバーを右上に追加',
+    ]
+  },
+  {
+    version: 'v1.3',
+    date: '2025-04-27',
+    items: [
+      'マッチ種別に「フルパ」を追加',
+      'ポケモン別成績をモード別（ソロ/デュオ/トリオ/フルパ）で折りたたみ表示',
+      'ログイン方式をID・パスワード方式に変更（メールアドレス任意登録）',
+      'パスワードを忘れた方向けのリセット導線を追加',
+      'SMTP設定（SendGrid）によるメール送信機能を有効化',
+    ]
+  },
+  {
+    version: 'v1.2',
+    date: '2025-04-24',
+    items: [
+      'ポケモン選択をリスト式に変更（タイプ別フィルター・名前検索対応）',
+      'ポケモンアイコン画像を表示',
+      'タイプカラーを変更（バランス:紫・スピード:水色・ディフェンス:緑・サポート:黄色）',
+      'プロフィールページにパスワード表示トグルを追加',
+    ]
+  },
+  {
+    version: 'v1.1',
+    date: '2025-04-22',
+    items: [
+      'プロフィールページを追加（ユーザー名・パスワード変更）',
+      'シリーズ管理機能を追加',
+      'ソロ・デュオ/トリオ別の勝率統計を追加',
+    ]
+  },
+  {
+    version: 'v1.0',
+    date: '2025-04-19',
+    items: [
+      '初回リリース',
+      'ID・パスワードによる新規登録・ログイン',
+      '対戦結果（勝利/敗北）の記録',
+      'シリーズごとの勝敗・勝率表示',
+      'ポケモン別成績表示',
+    ]
+  },
+];
+
+function renderChangelog(){
+  const el=document.getElementById('changelogList');
+  if(!el)return;
+  el.innerHTML=CHANGELOG.map(log=>`
+    <div style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;">${log.version}</span>
+        <span style="font-size:12px;color:var(--text3);">${log.date}</span>
+      </div>
+      <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px;">
+        ${log.items.map(item=>`
+          <li style="display:flex;align-items:flex-start;gap:6px;font-size:13px;color:var(--text2);">
+            <span style="color:var(--accent);flex-shrink:0;margin-top:1px;">•</span>
+            <span>${item}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+// ---- ドロワー ----
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
+
+// ---- 分析 ----
+let trendChartInst=null, compareChartInst=null;
+let allSeriesData=[];
+let analysisLoaded=false;
+
+async function loadAnalysis(){
+  try {
+    const {data:seriesList,error:e1}=await db.from('series').select('*').order('created_at',{ascending:false});
+    const {data:allBattles,error:e2}=await db.from('battles').select('*');
+    if(e1||e2){ console.error(e1||e2); return; }
+    allSeriesData=(seriesList||[]).map(s=>({
+      ...s,
+      battles:(allBattles||[]).filter(b=>b.series_id===s.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
+    }));
+    // 勝率推移セレクト
+    const sel=document.getElementById('trendSeriesSelect');
+    sel.innerHTML=allSeriesData.length
+      ? allSeriesData.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')
+      : '<option value="">シリーズなし</option>';
+    analysisLoaded=true;
+    // 現在表示中のパネルだけ描画
+    setTimeout(()=>{ renderTrendChart(); renderTotalStats(); }, 50);
+  } catch(err){ console.error('loadAnalysis error:',err); }
+}
+
+function switchAnalysis(tab){
+  document.querySelectorAll('.analysis-tab').forEach((t,i)=>t.classList.toggle('active',
+    (i===0&&tab==='trend')||(i===1&&tab==='compare')||(i===2&&tab==='total')||(i===3&&tab==='pokedetail')));
+  document.getElementById('trendPanel').style.display=tab==='trend'?'block':'none';
+  document.getElementById('comparePanel').style.display=tab==='compare'?'block':'none';
+  document.getElementById('totalPanel').style.display=tab==='total'?'block':'none';
+  document.getElementById('pokedetailPanel').style.display=tab==='pokedetail'?'block':'none';
+  setTimeout(()=>{
+    if(tab==='trend') renderTrendChart();
+    if(tab==='compare') renderCompareChart();
+    if(tab==='total') renderTotalStats();
+    if(tab==='pokedetail') initPokeDetailSelect();
+  }, 50);
+}
+
+function renderTrendChart(){
+  const sel=document.getElementById('trendSeriesSelect');
+  if(!sel) return;
+  const seriesId=sel.value;
+  const s=allSeriesData.find(s=>s.id===seriesId);
+  const canvas=document.getElementById('trendChart');
+  if(!canvas) return;
+  if(trendChartInst){trendChartInst.destroy();trendChartInst=null;}
+  if(!s||!s.battles.length){
+    canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    return;
+  }
+  const bs=s.battles;
+  const labels=[],wrs=[];
+  // 1試合ずつの累積勝率をプロット（最大20点）
+  const total=bs.length;
+  const step=Math.max(1,Math.ceil(total/20));
+  for(let i=step;i<=total;i+=step){
+    const chunk=bs.slice(0,i);
+    const w=chunk.filter(b=>b.result==='win').length;
+    wrs.push(((w/chunk.length)*100).toFixed(1));
+    labels.push(i+'戦');
+  }
+  // 最終点を必ず含める
+  if(labels[labels.length-1]!==total+'戦'){
+    const w=bs.filter(b=>b.result==='win').length;
+    wrs.push(((w/total)*100).toFixed(1));
+    labels.push(total+'戦');
+  }
+  trendChartInst=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'勝率(%)',data:wrs,
+      borderColor:'#7c83f5',backgroundColor:'#7c83f522',
+      tension:0.3,pointBackgroundColor:'#7c83f5',pointRadius:4,fill:true
+    },{
+      label:'50%ライン',data:labels.map(()=>50),
+      borderColor:'#5c6080',borderDash:[4,4],pointRadius:0,fill:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='50%ライン'?null:ctx.parsed.y+'%'}}},
+      scales:{
+        y:{min:0,max:100,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
+        x:{ticks:{color:'#9399b2',maxTicksLimit:8},grid:{color:'#2e3250'}}
+      }
+    }
+  });
+}
+
+function renderCompareChart(){
+  if(!allSeriesData.length) return;
+  const labels=allSeriesData.map(s=>s.name);
+  const wrs=allSeriesData.map(s=>{
+    const w=s.battles.filter(b=>b.result==='win').length;
+    const t=s.battles.length;
+    return t>0?parseFloat(((w/t)*100).toFixed(1)):0;
+  });
+  const colors=wrs.map(v=>v>=50?'#4caf5088':'#ef535088');
+  const borderColors=wrs.map(v=>v>=50?'#4caf50':'#ef5350');
+  const canvas=document.getElementById('compareChart');
+  if(!canvas) return;
+  if(compareChartInst){compareChartInst.destroy();compareChartInst=null;}
+  compareChartInst=new Chart(canvas,{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'勝率(%)',data:wrs,
+      backgroundColor:colors,borderColor:borderColors,borderWidth:1
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{min:0,max:100,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
+        x:{ticks:{color:'#9399b2'},grid:{color:'#2e3250'}}
+      }
+    }
+  });
+  // テーブル
+  document.getElementById('compareList').innerHTML=allSeriesData.length
+    ? allSeriesData.map(s=>{
+        const w=s.battles.filter(b=>b.result==='win').length;
+        const t=s.battles.length;
+        const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+        const col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+        return `<div class="series-compare-row"><div class="series-name-cell">${s.name}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
+      }).join('')
+    : '<div class="empty" style="padding:1rem 0;">データなし</div>';
+}
+
+function renderTotalStats(){
+  const all=allSeriesData.flatMap(s=>s.battles);
+  const w=all.filter(b=>b.result==='win').length;
+  const t=all.length;
+  document.getElementById('ttTotal').textContent=t;
+  document.getElementById('ttWins').textContent=w;
+  document.getElementById('ttLosses').textContent=t-w;
+  document.getElementById('ttWR').textContent=t>0?((w/t)*100).toFixed(1)+'%':'—';
+  const modes=[{key:'solo',label:'🎮 ソロ'},{key:'duo',label:'👥 デュオ/トリオ'},{key:'full',label:'🏆 フルパ'}];
+  document.getElementById('ttModeStats').innerHTML=modes.map(({key,label})=>{
+    const ml=all.filter(b=>b.match_type===key);
+    const mw=ml.filter(b=>b.result==='win').length;
+    const mt=ml.length;
+    const mwr=mt>0?((mw/mt)*100).toFixed(1)+'%':'—';
+    const col=mt>0?(parseFloat(mwr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+    return `<div class="series-compare-row"><div class="series-name-cell">${label}</div><div class="series-val">${mt}</div><div class="series-val">${mw}</div><div class="series-wr-cell" style="color:${col}">${mwr}</div></div>`;
+  }).join('');
+  const pm={};
+  all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
+  const top5=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).slice(0,5);
+  document.getElementById('ttPokeStats').innerHTML=top5.length
+    ? top5.map(([name,s])=>{
+        const t=s.w+s.l,wr=((s.w/t)*100).toFixed(1);
+        const col=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
+        return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${name}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
+      }).join('')
+    : '<div class="poke-mode-empty">ポケモン記録なし</div>';
+}
+
+// ---- ポケモン別詳細 ----
+function initPokeDetailSelect(){
+  const sel=document.getElementById('detailPokeSelect');
+  if(!sel)return;
+  const all=allSeriesData.flatMap(s=>s.battles);
+  const pokeSet=new Set(all.filter(b=>b.pokemon).map(b=>b.pokemon));
+  const current=sel.value;
+  sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${p}">${p}</option>`).join('');
+  if(current)sel.value=current;
+  if(sel.value) renderPokeDetail();
+}
+
+function switchDetailMode(mode){
+  detailMode=mode;
+  document.querySelectorAll('.detail-mode-tab').forEach((t,i)=>t.classList.toggle('active',
+    (i===0&&mode==='all')||(i===1&&mode==='solo')||(i===2&&mode==='duo')||(i===3&&mode==='full')));
+  renderPokeDetail();
+}
+
+function renderPokeDetail(){
+  const pokeName=document.getElementById('detailPokeSelect')?.value;
+  const content=document.getElementById('pokeDetailContent');
+  if(!content)return;
+  if(!pokeName){content.innerHTML='<div class="empty">ポケモンを選択してください</div>';return;}
+
+  const all=allSeriesData.flatMap(s=>s.battles);
+  let battles=all.filter(b=>b.pokemon===pokeName);
+  if(detailMode!=='all') battles=battles.filter(b=>b.match_type===detailMode);
+
+  if(!battles.length){content.innerHTML='<div class="empty" style="padding:1.5rem 0;">このモードの記録がありません</div>';return;}
+
+  const w=battles.filter(b=>b.result==='win').length;
+  const t=battles.length;
+  const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+
+  const makeTable=(label, keyFn)=>{
+    const map={};
+    battles.forEach(b=>{
+      const keys=keyFn(b);
+      keys.forEach(k=>{
+        if(!k)return;
+        if(!map[k])map[k]={w:0,l:0};
+        b.result==='win'?map[k].w++:map[k].l++;
+      });
+    });
+    if(!Object.keys(map).length) return '';
+    const rows=Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
+      const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
+      const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
+      return `<tr><td>${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+    }).join('');
+    return `<div class="detail-subsection">
+      <div class="detail-subsection-title">${label}</div>
+      <table class="stat-table">
+        <thead><tr><th>名前</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  };
+
+  const skill1Table=makeTable('わざ１', b=>[b.skill1].filter(Boolean));
+  const skill2Table=makeTable('わざ２', b=>[b.skill2].filter(Boolean));
+  const itemTable=makeTable('もちもの', b=>b.items?(b.items.split(',').filter(Boolean)):[]);
+  const biTable=makeTable('バトルアイテム', b=>[b.battle_item].filter(Boolean));
+
+  const wrCol=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
+  content.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <div class="stat-box" style="flex:1;"><div class="stat-label">試合数</div><div class="stat-val">${t}</div></div>
+      <div class="stat-box" style="flex:1;"><div class="stat-label">勝利</div><div class="stat-val win">${w}</div></div>
+      <div class="stat-box" style="flex:1;"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
+      <div class="stat-box" style="flex:1;"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:16px;color:${wrCol}">${wr}</div></div>
+    </div>
+    ${skill1Table||''}${skill2Table||''}${itemTable||''}${biTable||''}
+    ${!skill1Table&&!skill2Table&&!itemTable&&!biTable?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
+  `;
+}
+
+function toggleMode(mode){const b=document.getElementById('body-'+mode),a=document.getElementById('arrow-'+mode);b.classList.toggle('open');a.classList.toggle('open');}
+
+async function updateUsername(){
+  const username=document.getElementById('newUsername').value.trim();
+  const msg=document.getElementById('usernameMsg');
+  if(!username){msg.textContent='表示名を入力してください';msg.className='profile-msg error';return;}
+  const {error}=await db.auth.updateUser({data:{username}});
+  if(error){msg.textContent='エラー: '+error.message;msg.className='profile-msg error';}
+  else{document.getElementById('usernameDisplay').textContent=username;msg.textContent='✓ 更新しました！';msg.className='profile-msg success';setTimeout(()=>{msg.textContent='';},3000);}
+}
+async function updatePassword(){
+  const np=document.getElementById('newPassword').value,cf=document.getElementById('confirmPassword').value;
+  const msg=document.getElementById('passwordMsg');
+  if(!np||!cf){msg.textContent='パスワードを入力してください';msg.className='profile-msg error';return;}
+  if(np!==cf){msg.textContent='パスワードが一致しません';msg.className='profile-msg error';return;}
+  if(np.length<6){msg.textContent='6文字以上で入力してください';msg.className='profile-msg error';return;}
+  const {error}=await db.auth.updateUser({password:np});
+  if(error){msg.textContent='エラー: '+error.message;msg.className='profile-msg error';}
+  else{document.getElementById('newPassword').value='';document.getElementById('confirmPassword').value='';msg.textContent='✓ 変更しました！';msg.className='profile-msg success';setTimeout(()=>{msg.textContent='';},3000);}
+}
+
+function renderPokeList(search='',typeFilter='all'){
+  const list=document.getElementById('pokeList');
+  let html='',hasAny=false;
+  const types=typeFilter==='all'?Object.keys(POKEMON_DATA):[typeFilter];
+  types.forEach(type=>{
+    const {label,cls,pokemon}=POKEMON_DATA[type];
+    const filtered=search?pokemon.filter(p=>p.includes(search)):pokemon;
+    if(!filtered.length)return;
+    hasAny=true;
+    const chips=filtered.map(p=>`<span class="poke-chip${selectedPoke===p?' selected':''}" onclick="selectPoke('${p}')">${iconImg(p,'chip-icon',28)}${p}</span>`).join('');
+    html+=`<div class="type-section"><div class="type-section-label ${cls}">${label}</div><div class="poke-chips">${chips}</div></div>`;
+  });
+  list.innerHTML=hasAny?html:`<div class="no-results">「${search}」は見つかりませんでした</div>`;
+}
+function openDropdown(){document.getElementById('pokeDropdown').classList.add('open');document.getElementById('pokeSearch').value='';renderPokeList('',activeTypeFilter);setTimeout(()=>document.getElementById('pokeSearch').focus(),50);}
+function closeDropdown(){document.getElementById('pokeDropdown').classList.remove('open');}
+function selectPoke(name){
+  selectedPoke=name;
+  const u=getIconUrl(name);
+  document.getElementById('pokeDisplayBtn').innerHTML=u?`<img src="${u}" class="poke-display-icon" width="30" height="30" alt="${name}" /><span>${name}</span>`:`<span>${name}</span>`;
+  document.getElementById('clearPokeBtn').style.display='';
+  updateDetailForPoke(name);
+  // ポケモン選択時に詳細セクションを自動展開
+  const sec=document.getElementById('detailSection');
+  const arr=document.getElementById('detailArrow');
+  if(sec&&!sec.classList.contains('open')){
+    sec.classList.add('open');
+    if(arr)arr.classList.add('open');
+  }
+  closeDropdown();
+}
+function clearPoke(){
+  selectedPoke='';
+  document.getElementById('pokeDisplayBtn').innerHTML='<span class="poke-display-placeholder">タップして選択 / 検索...</span>';
+  document.getElementById('clearPokeBtn').style.display='none';
+  resetDetail();
+}
+function filterPoke(q){renderPokeList(q,activeTypeFilter);}
+function filterType(e,type){activeTypeFilter=type;document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');renderPokeList(document.getElementById('pokeSearch').value,type);}
+document.addEventListener('click',e=>{if(!e.target.closest('.poke-selector-wrap'))closeDropdown();});
+
+async function loadSeries(){
+  const {data}=await db.from('series').select('*').order('created_at',{ascending:false});
+  const sel=document.getElementById('seriesSelect');
+  sel.innerHTML='<option value="">— シリーズを選択 —</option>';
+  (data||[]).forEach(s=>{const opt=document.createElement('option');opt.value=s.id;opt.textContent=s.name;sel.appendChild(opt);});
+  if(currentSeriesId){sel.value=currentSeriesId;if(!sel.value)currentSeriesId=null;}
+}
+async function addSeries(){
+  const name=document.getElementById('newSeriesInput').value.trim();
+  if(!name)return;
+  const {data:{user}}=await db.auth.getUser();
+  const {data,error}=await db.from('series').insert({name,user_id:user.id}).select().single();
+  if(!error){document.getElementById('newSeriesInput').value='';await loadSeries();document.getElementById('seriesSelect').value=data.id;currentSeriesId=data.id;document.getElementById('statsTitle').textContent=name;await loadBattles();showCards(true);}
+}
+async function onSeriesChange(){
+  currentSeriesId=document.getElementById('seriesSelect').value||null;
+  if(currentSeriesId){const sel=document.getElementById('seriesSelect');document.getElementById('statsTitle').textContent=sel.options[sel.selectedIndex].text;await loadBattles();showCards(true);}
+  else showCards(false);
+}
+function showCards(show){['statsCard','inputCard','historyCard'].forEach(id=>document.getElementById(id).style.display=show?'':'none');document.getElementById('seriesActions').style.display=show?'':'none';}
+
+// ---- シリーズ削除・名前変更 ----
+async function deleteSeries(){
+  if(!currentSeriesId)return;
+  const sel=document.getElementById('seriesSelect');
+  const name=sel.options[sel.selectedIndex]?.text||'このシリーズ';
+  if(!confirm(`「${name}」を削除しますか？\n対戦記録もすべて削除されます。`))return;
+  await db.from('battles').delete().eq('series_id',currentSeriesId);
+  await db.from('series').delete().eq('id',currentSeriesId);
+  currentSeriesId=null;battles=[];
+  showCards(false);
+  await loadSeries();
+}
+function openRenameModal(){
+  if(!currentSeriesId)return;
+  const sel=document.getElementById('seriesSelect');
+  document.getElementById('renameInput').value=sel.options[sel.selectedIndex]?.text||'';
+  document.getElementById('renameModal').classList.add('open');
+  setTimeout(()=>document.getElementById('renameInput').focus(),50);
+}
+async function renameSeries(){
+  const name=document.getElementById('renameInput').value.trim();
+  if(!name){return;}
+  await db.from('series').update({name}).eq('id',currentSeriesId);
+  document.getElementById('statsTitle').textContent=name;
+  closeModal('renameModal');
+  await loadSeries();
+  document.getElementById('seriesSelect').value=currentSeriesId;
+}
+
+function initEditItemSelects(){
+  ['editItem1','editItem2','editItem3'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    if(sel.options.length<=1)
+      sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+  });
+  const bi=document.getElementById('editBattleItem');
+  if(bi&&bi.options.length<=1)
+    bi.innerHTML='<option value="">— 選択 —</option>'+BATTLE_ITEMS_LIST.map(i=>`<option value="${i}">${i}</option>`).join('');
+}
+
+function updateEditSkillsForPoke(pokeName){
+  const skill=SKILLS[pokeName];
+  const s1=document.getElementById('editSkill1');
+  const s2=document.getElementById('editSkill2');
+  if(s1) s1.innerHTML='<option value="">— 選択 —</option>'+(skill?skill.s1.map(s=>`<option value="${s}">${s}</option>`).join(''):'');
+  if(s2) s2.innerHTML='<option value="">— 選択 —</option>'+(skill?skill.s2.map(s=>`<option value="${s}">${s}</option>`).join(''):'');
+  const dedicated=DEDICATED_ITEMS[pokeName];
+  const fw=document.getElementById('editItem1Fixed');
+  const nw=document.getElementById('editItem1Normal');
+  const fv=document.getElementById('editItem1FixedVal');
+  if(fw&&nw&&fv){
+    if(dedicated){fw.style.display='';nw.style.display='none';fv.textContent=dedicated+' （固定）';}
+    else{fw.style.display='none';nw.style.display='';}
+  }
+}
+
+function onEditPokeInput(val){
+  const name=val.trim();
+  updateEditSkillsForPoke(name);
+}
+
+function openEditModal(id,result,matchType,pokemon,createdAt){
+  document.getElementById('editBattleId').value=id;
+  document.getElementById('editResult').value=result;
+  document.getElementById('editMatchType').value=matchType;
+  document.getElementById('editPokemon').value=pokemon;
+  const d=new Date(createdAt);
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('editDatetime').value=local;
+  // もちもの・バトルアイテム選択肢初期化
+  initEditItemSelects();
+  // ポケモンに応じた技・専用もちもの更新
+  updateEditSkillsForPoke(pokemon);
+  // 既存データを探してセット
+  const battle=battles.find(b=>b.id===id);
+  if(battle){
+    const s1=document.getElementById('editSkill1');
+    const s2=document.getElementById('editSkill2');
+    if(s1&&battle.skill1)s1.value=battle.skill1;
+    if(s2&&battle.skill2)s2.value=battle.skill2;
+    const dedicated=DEDICATED_ITEMS[pokemon];
+    const itemArr=battle.items?battle.items.split(','):[];
+    if(!dedicated){const i1=document.getElementById('editItem1');if(i1)i1.value=itemArr[0]||'';}
+    const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[dedicated?0:1]||'';
+    const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[dedicated?1:2]||'';
+    const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
+  }
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function saveEdit(){
+  const id=document.getElementById('editBattleId').value;
+  const result=document.getElementById('editResult').value;
+  const match_type=document.getElementById('editMatchType').value;
+  const pokemon=document.getElementById('editPokemon').value.trim()||null;
+  const dtLocal=document.getElementById('editDatetime').value;
+  const created_at=dtLocal?new Date(dtLocal).toISOString():undefined;
+  const skill1=document.getElementById('editSkill1')?.value||null;
+  const skill2=document.getElementById('editSkill2')?.value||null;
+  const dedicated=pokemon?DEDICATED_ITEMS[pokemon]:null;
+  const i1=dedicated||document.getElementById('editItem1')?.value||null;
+  const i2=document.getElementById('editItem2')?.value||null;
+  const i3=document.getElementById('editItem3')?.value||null;
+  const items=[i1,i2,i3].filter(Boolean).join(',')||null;
+  const battle_item=document.getElementById('editBattleItem')?.value||null;
+  const update={result,match_type,pokemon,skill1,skill2,items,battle_item};
+  if(created_at)update.created_at=created_at;
+  await db.from('battles').update(update).eq('id',id);
+  closeModal('editModal');
+  await loadBattles();
+}
+
+// ---- モーダル共通 ----
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');
+});
+
+// ---- PWA ----
+let pwaPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();pwaPrompt=e;
+  document.getElementById('pwaBar').classList.add('show');
+});
+function pwaInstall(){
+  if(!pwaPrompt)return;
+  pwaPrompt.prompt();
+  pwaPrompt.userChoice.then(()=>{pwaPrompt=null;pwaDismiss();});
+}
+function pwaDismiss(){document.getElementById('pwaBar').classList.remove('show');}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+}
+async function loadBattles(){
+  if(!currentSeriesId)return;
+  const {data}=await db.from('battles').select('*').eq('series_id',currentSeriesId).order('created_at',{ascending:false});
+  battles=data||[];renderStats();renderHistory();
+}
+async function record(result){
+  if(!currentSeriesId)return;
+  const {data:{user}}=await db.auth.getUser();
+  const pokemon=selectedPoke||null;
+  const match_type=document.getElementById('matchType').value;
+  const skill1=document.getElementById('skill1')?.value||null;
+  const skill2=document.getElementById('skill2')?.value||null;
+  const dedicated=pokemon?DEDICATED_ITEMS[pokemon]:null;
+  const i1=dedicated||document.getElementById('item1')?.value||null;
+  const i2=document.getElementById('item2')?.value||null;
+  const i3=document.getElementById('item3')?.value||null;
+  const items=[i1,i2,i3].filter(Boolean).join(',')||null;
+  const battle_item=document.getElementById('battleItem')?.value||null;
+  await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,pokemon,skill1,skill2,items,battle_item});
+  await loadBattles();
+}
+async function deleteEntry(id){await db.from('battles').delete().eq('id',id);await loadBattles();}
+async function clearAll(){
+  if(!currentSeriesId||!confirm('このシリーズの全履歴を削除しますか？'))return;
+  await db.from('battles').delete().eq('series_id',currentSeriesId);await loadBattles();
+}
+
+function calcWR(w,t){return t>0?(w/t*100).toFixed(1):null;}
+function buildMap(list){const m={};list.filter(b=>b.pokemon).forEach(b=>{if(!m[b.pokemon])m[b.pokemon]={w:0,l:0};b.result==='win'?m[b.pokemon].w++:m[b.pokemon].l++;});return m;}
+function pokeGridHTML(map){
+  return Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,s])=>{
+    const t=s.w+s.l,wr=calcWR(s.w,t);
+    return `<div class="poke-box">${iconImg(n,'poke-icon',36)}<div class="poke-info"><div class="poke-name">${n}</div><div class="poke-record">${s.w}勝 ${s.l}敗 <span class="poke-wr">${wr?wr+'%':'—'}</span></div><div class="wr-bar" style="margin-top:3px;"><div class="wr-fill" style="width:${wr||0}%"></div></div></div></div>`;
+  }).join('');
+}
+function pokeModeHTML(map){
+  if(!Object.keys(map).length)return '<div class="poke-mode-empty">記録なし</div>';
+  return Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,s])=>{
+    const t=s.w+s.l,wr=calcWR(s.w,t);
+    return `<div class="poke-mode-item">${iconImg(n,'poke-mode-icon',28)}<div class="poke-mode-info"><div class="poke-mode-name">${n}</div><div class="poke-mode-rec">${s.w}勝 ${s.l}敗 <span class="poke-mode-wr">${wr?wr+'%':'—'}</span></div></div></div>`;
+  }).join('');
+}
+function renderStats(){
+  const solo=battles.filter(b=>b.match_type==='solo'),duo=battles.filter(b=>b.match_type==='duo'),full=battles.filter(b=>b.match_type==='full');
+  const sT=(l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById('sTotal').textContent=w+lo;document.getElementById('sWins').textContent=w;document.getElementById('sLosses').textContent=lo;document.getElementById('sWR').textContent=wr?wr+'%':'—';document.getElementById('sWRBar').style.width=(wr||0)+'%';};
+  const sM=(p,l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById(p+'W').textContent=w;document.getElementById(p+'L').textContent=lo;document.getElementById(p+'WR').textContent=wr?wr+'%':'—';document.getElementById(p+'Bar').style.width=(wr||0)+'%';};
+  sT(battles);sM('solo',solo);sM('duo',duo);sM('full',full);
+  const wp=battles.filter(b=>b.pokemon);
+  if(wp.length){
+    document.getElementById('pokeSection').style.display='';
+    document.getElementById('pokeGrid').innerHTML=pokeGridHTML(buildMap(wp));
+    document.getElementById('grid-solo').innerHTML=pokeModeHTML(buildMap(solo.filter(b=>b.pokemon)));
+    document.getElementById('grid-duo').innerHTML=pokeModeHTML(buildMap(duo.filter(b=>b.pokemon)));
+    document.getElementById('grid-full').innerHTML=pokeModeHTML(buildMap(full.filter(b=>b.pokemon)));
+  } else document.getElementById('pokeSection').style.display='none';
+}
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  if(!battles.length){list.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  const lm={solo:'ソロ',duo:'デュオ/トリオ',full:'フルパ'},cm={solo:'badge-solo',duo:'badge-duo',full:'badge-full'};
+  list.innerHTML=battles.map((b,i)=>{
+    const d=new Date(b.created_at),ds=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const rb=b.result==='win'?'<span class="badge badge-win">勝利</span>':'<span class="badge badge-loss">敗北</span>';
+    const tb=`<span class="badge ${cm[b.match_type]||'badge-solo'}">${lm[b.match_type]||b.match_type}</span>`;
+    return `<div class="history-item"><span class="num">#${battles.length-i}</span>${rb}${tb}<span class="h-poke">${b.pokemon?iconImg(b.pokemon,'h-icon',24):''}${b.pokemon||'—'}</span><span class="h-date">${ds}</span><button class="btn-del" style="font-size:12px;color:var(--accent);margin-right:2px;" onclick="openEditModal('${b.id}','${b.result}','${b.match_type}','${b.pokemon||''}','${b.created_at}')">✏️</button><button class="btn-del" onclick="deleteEntry('${b.id}')">✕</button></div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
