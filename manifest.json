@@ -1,0 +1,16 @@
+{
+  "name": "ポケモンユナイト 対戦トラッカー",
+  "short_name": "ユナイトトラッカー",
+  "description": "ポケモンユナイトの対戦記録をシリーズごとに管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#7c83f5",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    }
+  ]
+}
