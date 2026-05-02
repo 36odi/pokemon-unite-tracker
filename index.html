@@ -1725,18 +1725,43 @@ function renderPokeDetail(){
   if(!pokeName){content.innerHTML='<div class="empty">ポケモンを選択してください</div>';return;}
 
   const all=allSeriesData.flatMap(s=>s.battles);
-  let battles=all.filter(b=>b.pokemon===pokeName);
-  if(detailMode!=='all') battles=battles.filter(b=>b.match_type===detailMode);
+  let bs=all.filter(b=>b.pokemon===pokeName);
+  if(detailMode!=='all') bs=bs.filter(b=>b.match_type===detailMode);
+  if(!bs.length){content.innerHTML='<div class="empty" style="padding:1.5rem 0;">このモードの記録がありません</div>';return;}
 
-  if(!battles.length){content.innerHTML='<div class="empty" style="padding:1.5rem 0;">このモードの記録がありません</div>';return;}
-
-  const w=battles.filter(b=>b.result==='win').length;
-  const t=battles.length;
+  const w=bs.filter(b=>b.result==='win').length;
+  const t=bs.length;
   const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+  const wrCol=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
 
-  const makeTable=(label, keyFn)=>{
+  // ---- セット集計ヘルパー ----
+  const makeSetMap=(keyFn)=>{
     const map={};
-    battles.forEach(b=>{
+    bs.forEach(b=>{
+      const k=keyFn(b);
+      if(!k)return;
+      if(!map[k])map[k]={w:0,l:0};
+      b.result==='win'?map[k].w++:map[k].l++;
+    });
+    return map;
+  };
+
+  const makeSetTable=(map)=>{
+    if(!Object.keys(map).length) return '<div class="poke-mode-empty">記録なし（詳細設定を記録すると表示されます）</div>';
+    return `<table class="stat-table">
+      <thead><tr><th>セット</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead>
+      <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
+        const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
+        const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
+        return `<tr><td style="font-size:11px;">${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  };
+
+  // ---- 個別集計ヘルパー ----
+  const makeIndivTable=(keyFn)=>{
+    const map={};
+    bs.forEach(b=>{
       const keys=keyFn(b);
       keys.forEach(k=>{
         if(!k)return;
@@ -1744,36 +1769,76 @@ function renderPokeDetail(){
         b.result==='win'?map[k].w++:map[k].l++;
       });
     });
-    if(!Object.keys(map).length) return '';
-    const rows=Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
-      const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
-      const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
-      return `<tr><td>${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
-    }).join('');
-    return `<div class="detail-subsection">
-      <div class="detail-subsection-title">${label}</div>
-      <table class="stat-table">
-        <thead><tr><th>名前</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+    if(!Object.keys(map).length) return '<div class="poke-mode-empty">記録なし</div>';
+    return `<table class="stat-table">
+      <thead><tr><th>名前</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead>
+      <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
+        const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
+        const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
+        return `<tr><td>${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
   };
 
-  const skill1Table=makeTable('わざ１', b=>[b.skill1].filter(Boolean));
-  const skill2Table=makeTable('わざ２', b=>[b.skill2].filter(Boolean));
-  const itemTable=makeTable('もちもの', b=>b.items?(b.items.split(',').filter(Boolean)):[]);
-  const biTable=makeTable('バトルアイテム', b=>[b.battle_item].filter(Boolean));
+  // セット単位の集計
+  const skillSetMap = makeSetMap(b=>b.skill1&&b.skill2?`${b.skill1} ＋ ${b.skill2}`:null);
+  const itemSetMap  = makeSetMap(b=>b.items&&b.items.trim()?b.items.split(',').filter(Boolean).join(' / '):null);
+  const biMap       = makeSetMap(b=>b.battle_item||null);
 
-  const wrCol=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
+  // 個別の集計
+  const skill1Indiv = makeIndivTable(b=>[b.skill1].filter(Boolean));
+  const skill2Indiv = makeIndivTable(b=>[b.skill2].filter(Boolean));
+  const itemIndiv   = makeIndivTable(b=>b.items?b.items.split(',').filter(Boolean):[]);
+
+  const hasSet=Object.keys(skillSetMap).length||Object.keys(itemSetMap).length||Object.keys(biMap).length;
+
   content.innerHTML=`
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <!-- 基本成績 -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
       <div class="stat-box" style="flex:1;"><div class="stat-label">試合数</div><div class="stat-val">${t}</div></div>
       <div class="stat-box" style="flex:1;"><div class="stat-label">勝利</div><div class="stat-val win">${w}</div></div>
       <div class="stat-box" style="flex:1;"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
       <div class="stat-box" style="flex:1;"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:16px;color:${wrCol}">${wr}</div></div>
     </div>
-    ${skill1Table||''}${skill2Table||''}${itemTable||''}${biTable||''}
-    ${!skill1Table&&!skill2Table&&!itemTable&&!biTable?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
+
+    ${!hasSet?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
+
+    <!-- 技セット別 -->
+    <div class="detail-subsection">
+      <div class="detail-subsection-title">⚔️ 技セット別（わざ1 ＋ わざ2）</div>
+      ${makeSetTable(skillSetMap)}
+    </div>
+
+    <!-- もちものセット別 -->
+    <div class="detail-subsection">
+      <div class="detail-subsection-title">🎒 もちものセット別</div>
+      ${makeSetTable(itemSetMap)}
+    </div>
+
+    <!-- バトルアイテム別 -->
+    <div class="detail-subsection">
+      <div class="detail-subsection-title">💊 バトルアイテム別</div>
+      ${makeSetTable(biMap)}
+    </div>
+
+    <!-- 個別詳細（折りたたみ） -->
+    <div class="poke-mode-block" style="margin-top:10px;">
+      <div class="poke-mode-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open')">
+        <span class="poke-mode-title" style="font-size:12px;color:var(--text2);">個別詳細（わざ1・わざ2・もちもの単体）</span>
+        <span class="poke-mode-arrow">▼</span>
+      </div>
+      <div class="poke-mode-body">
+        <div class="detail-subsection" style="margin-top:8px;">
+          <div class="detail-subsection-title">わざ１</div>${skill1Indiv}
+        </div>
+        <div class="detail-subsection">
+          <div class="detail-subsection-title">わざ２</div>${skill2Indiv}
+        </div>
+        <div class="detail-subsection">
+          <div class="detail-subsection-title">もちもの（単体）</div>${itemIndiv}
+        </div>
+      </div>
+    </div>
   `;
 }
 
