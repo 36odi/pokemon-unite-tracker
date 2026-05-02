@@ -296,6 +296,11 @@
   .detail-subsection{margin-bottom:12px;}
   .detail-subsection-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;padding:4px 8px;background:var(--bg3);border-radius:var(--radius-sm);}
 
+  /* アイテムアイコンプレビュー */
+  .item-select-wrap{display:flex;align-items:center;gap:6px;}
+  .item-select-wrap select{flex:1;margin-top:0;}
+  .item-preview{width:32px;height:32px;object-fit:contain;flex-shrink:0;border-radius:4px;}
+
   /* 既存のbtn-row */
   .btn-row{display:flex;gap:8px;width:100%;}
   .btn-win{flex:1;background:var(--win-bg);color:var(--win);border:1px solid var(--win);border-radius:var(--radius-sm);padding:16px;font-size:16px;font-weight:700;cursor:pointer;width:50%;}
@@ -577,21 +582,33 @@
             <div class="detail-label">もちもの①</div>
             <div id="item1Fixed" style="display:none;"><div class="detail-fixed" id="item1FixedVal"></div></div>
             <div id="item1Normal">
-              <select class="detail-select" id="item1"><option value="">— 選択 —</option></select>
+              <div class="item-select-wrap">
+                <img class="item-preview" id="item1Img" src="" alt="" style="display:none;" />
+                <select class="detail-select" id="item1" onchange="updateItemIcon('item1','item1Img')"><option value="">— 選択 —</option></select>
+              </div>
             </div>
           </div>
           <div>
             <div class="detail-label">もちもの②</div>
-            <select class="detail-select" id="item2"><option value="">— 選択 —</option></select>
+            <div class="item-select-wrap">
+              <img class="item-preview" id="item2Img" src="" alt="" style="display:none;" />
+              <select class="detail-select" id="item2" onchange="updateItemIcon('item2','item2Img')"><option value="">— 選択 —</option></select>
+            </div>
           </div>
           <div>
             <div class="detail-label">もちもの③</div>
-            <select class="detail-select" id="item3"><option value="">— 選択 —</option></select>
+            <div class="item-select-wrap">
+              <img class="item-preview" id="item3Img" src="" alt="" style="display:none;" />
+              <select class="detail-select" id="item3" onchange="updateItemIcon('item3','item3Img')"><option value="">— 選択 —</option></select>
+            </div>
           </div>
         </div>
         <div>
           <div class="detail-label">バトルアイテム</div>
-          <select class="detail-select" id="battleItem"><option value="">— 選択 —</option></select>
+          <div class="item-select-wrap">
+            <img class="item-preview" id="battleItemImg" src="" alt="" style="display:none;" />
+            <select class="detail-select" id="battleItem" onchange="updateItemIcon('battleItem','battleItemImg')"><option value="">— 選択 —</option></select>
+          </div>
         </div>
         <div style="height:10px;"></div>
       </div>
@@ -853,19 +870,33 @@
     <div class="modal-field">
       <label>もちもの①</label>
       <div id="editItem1Fixed" style="display:none;"><div class="detail-fixed" id="editItem1FixedVal"></div></div>
-      <div id="editItem1Normal"><select id="editItem1"><option value="">— 選択 —</option></select></div>
+      <div id="editItem1Normal">
+        <div class="item-select-wrap">
+          <img class="item-preview" id="editItem1Img" src="" alt="" style="display:none;" />
+          <select id="editItem1" onchange="updateItemIcon('editItem1','editItem1Img')"><option value="">— 選択 —</option></select>
+        </div>
+      </div>
     </div>
     <div class="modal-field">
       <label>もちもの②</label>
-      <select id="editItem2"><option value="">— 選択 —</option></select>
+      <div class="item-select-wrap">
+        <img class="item-preview" id="editItem2Img" src="" alt="" style="display:none;" />
+        <select id="editItem2" onchange="updateItemIcon('editItem2','editItem2Img')"><option value="">— 選択 —</option></select>
+      </div>
     </div>
     <div class="modal-field">
       <label>もちもの③</label>
-      <select id="editItem3"><option value="">— 選択 —</option></select>
+      <div class="item-select-wrap">
+        <img class="item-preview" id="editItem3Img" src="" alt="" style="display:none;" />
+        <select id="editItem3" onchange="updateItemIcon('editItem3','editItem3Img')"><option value="">— 選択 —</option></select>
+      </div>
     </div>
     <div class="modal-field">
       <label>バトルアイテム</label>
-      <select id="editBattleItem"><option value="">— 選択 —</option></select>
+      <div class="item-select-wrap">
+        <img class="item-preview" id="editBattleItemImg" src="" alt="" style="display:none;" />
+        <select id="editBattleItem" onchange="updateItemIcon('editBattleItem','editBattleItemImg')"><option value="">— 選択 —</option></select>
+      </div>
     </div>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeModal('editModal')">キャンセル</button>
@@ -1033,7 +1064,20 @@ const DEDICATED_ITEMS = {
   'メガギャラドス': 'ギャラドスナイト',
 };
 
-const GENERAL_ITEMS = ['アクセルリスト','エオスビスケット','おまもりこばん','とつげきチョッキ','もうこうダンベル','おおきなねっこ','おたすけバリア','じゅうてんチャーム','こだわりスカーフ','こだわりメガネ','のろいのバングル','のろいのおこう','いやしのかんむり','ドライブレンズ','エナジーアンプ','がくしゅうそうち','かるいし','きあいのハチマキ','たべのこし','ちからのハチマキ','れんだスカーフ','するどいツメ','レスキューフード','きょうめいガード','ゴツゴツメット','ピントレンズ','ゴールサポーター','かいがらのすず','すりぬけスプーン','しんげきメガネ','ふんばりベルト','さきがけベル','じゃくてんほけん','ものしりメガネ'];
+const GENERAL_ITEMS = [
+  'アクセルリスト','エオスビスケット','エナジーアンプ',
+  'おおきなねっこ','おたすけバリア','おまもりこばん',
+  'かいがらのすず','がくしゅうそうち','かるいし','きあいのハチマキ','きょうめいガード',
+  'こだわりスカーフ','こだわりメガネ','ゴールサポーター','ゴツゴツメット',
+  'さきがけベル','しんげきメガネ','じゃくてんほけん','じゅうてんチャーム',
+  'するどいツメ','すりぬけスプーン',
+  'たべのこし','ちからのハチマキ','とつげきチョッキ','ドライブレンズ',
+  'のろいのおこう','のろいのバングル',
+  'ピントレンズ','ふんばりベルト',
+  'もうこうダンベル','ものしりメガネ',
+  'レスキューフード','れんだスカーフ',
+  'いやしのかんむり',
+];
 
 const BATTLE_ITEMS_LIST = ['キズぐすり','プラスパワー','スピーダー','エネコのシッポ','だっしゅつボタン','どんそくスモーク','なんでもなおし','ゴールかそくそうち','ヌケニンにんぎょう','ゴールコントローラー'];
 
@@ -1045,11 +1089,33 @@ function toggleDetail(){
   arr.classList.toggle('open',open);
 }
 
+// もちもの重複防止：他のセレクトで選ばれているものを除外して選択肢を更新
+function refreshItemSelects(changedId){
+  const ids=['item1','item2','item3'];
+  const vals={};
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)vals[id]=el.value;
+  });
+  ids.forEach(id=>{
+    if(id===changedId)return; // 変更したセレクト自身はそのまま
+    const el=document.getElementById(id);
+    if(!el||el.style.display==='none')return;
+    const current=vals[id];
+    const others=ids.filter(x=>x!==id).map(x=>vals[x]).filter(Boolean);
+    el.innerHTML='<option value="">— 選択 —</option>'+
+      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current)
+        .map(i=>`<option value="${i}">${i}</option>`).join('');
+    el.value=current;
+  });
+}
+
 function initDetailSelects(){
   ['item1','item2','item3'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
     sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    sel.onchange=()=>refreshItemSelects(id);
   });
   const bi=document.getElementById('battleItem');
   if(bi)bi.innerHTML='<option value="">— 選択 —</option>'+BATTLE_ITEMS_LIST.map(i=>`<option value="${i}">${i}</option>`).join('');
@@ -1088,6 +1154,9 @@ function resetDetail(){
   ['skill1','skill2','item1','item2','item3','battleItem'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
+  ['item1Img','item2Img','item3Img','battleItemImg'].forEach(id=>{
+    const img=document.getElementById(id);if(img){img.src='';img.style.display='none';}
+  });
   const fw=document.getElementById('item1Fixed');
   const nw=document.getElementById('item1Normal');
   if(fw)fw.style.display='none';
@@ -1100,6 +1169,42 @@ function togglePw(id, btn) {
   const isHidden = input.type === 'password';
   input.type = isHidden ? 'text' : 'password';
   btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+// ---- アイテムアイコン ----
+const ITEM_IMG_PATH = 'images/';
+function getItemImgSrc(name){ return name ? `${ITEM_IMG_PATH}${name}.png` : ''; }
+
+function updateItemIcon(selectId, imgId){
+  const sel=document.getElementById(selectId);
+  const img=document.getElementById(imgId);
+  if(!sel||!img)return;
+  const val=sel.value;
+  if(val){
+    img.src=getItemImgSrc(val);
+    img.alt=val;
+    img.style.display='';
+    img.onerror=()=>{img.style.display='none';};
+  } else {
+    img.src='';img.style.display='none';
+  }
+  // 重複防止も実行
+  if(selectId.startsWith('edit')) refreshEditItemSelects(selectId);
+  else refreshItemSelects(selectId);
+}
+
+function refreshAllItemIcons(){
+  [['item1','item1Img'],['item2','item2Img'],['item3','item3Img'],['battleItem','battleItemImg'],
+   ['editItem1','editItem1Img'],['editItem2','editItem2Img'],['editItem3','editItem3Img'],['editBattleItem','editBattleItemImg']
+  ].forEach(([sid,iid])=>updateItemIcon(sid,iid));
+}
+
+// アイテム固定表示時のアイコン
+function showDedicatedItemIcon(name, imgId){
+  const img=document.getElementById(imgId);
+  if(!img)return;
+  if(name){img.src=getItemImgSrc(name);img.style.display='';img.onerror=()=>{img.style.display='none';};}
+  else {img.src='';img.style.display='none';}
 }
 
 // ---- パスワードリセット ----
@@ -1818,7 +1923,11 @@ function renderPokeDetail(){
 
   // セット単位の集計
   const skillSetMap = makeSetMap(b=>b.skill1&&b.skill2?`${b.skill1} ＋ ${b.skill2}`:null);
-  const itemSetMap  = makeSetMap(b=>b.items&&b.items.trim()?b.items.split(',').filter(Boolean).join(' / '):null);
+  const itemSetMap  = makeSetMap(b=>{
+    if(!b.items||!b.items.trim())return null;
+    const sorted=b.items.split(',').filter(Boolean).sort((a,c)=>a.localeCompare(c,'ja'));
+    return sorted.join(' / ');
+  });
   const biMap       = makeSetMap(b=>b.battle_item||null);
 
   // 個別の集計
@@ -1996,10 +2105,28 @@ function initEditItemSelects(){
     if(!sel)return;
     if(sel.options.length<=1)
       sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    sel.onchange=()=>refreshEditItemSelects(id);
   });
   const bi=document.getElementById('editBattleItem');
   if(bi&&bi.options.length<=1)
     bi.innerHTML='<option value="">— 選択 —</option>'+BATTLE_ITEMS_LIST.map(i=>`<option value="${i}">${i}</option>`).join('');
+}
+
+function refreshEditItemSelects(changedId){
+  const ids=['editItem1','editItem2','editItem3'];
+  const vals={};
+  ids.forEach(id=>{const el=document.getElementById(id);if(el)vals[id]=el.value;});
+  ids.forEach(id=>{
+    if(id===changedId)return;
+    const el=document.getElementById(id);
+    if(!el||el.style.display==='none')return;
+    const current=vals[id];
+    const others=ids.filter(x=>x!==id).map(x=>vals[x]).filter(Boolean);
+    el.innerHTML='<option value="">— 選択 —</option>'+
+      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current)
+        .map(i=>`<option value="${i}">${i}</option>`).join('');
+    el.value=current;
+  });
 }
 
 function updateEditSkillsForPoke(pokeName){
@@ -2048,6 +2175,12 @@ function openEditModal(id,result,matchType,pokemon,createdAt){
     const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[dedicated?0:1]||'';
     const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[dedicated?1:2]||'';
     const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
+    // アイコン更新
+    setTimeout(()=>{
+      ['editItem1','editItem2','editItem3','editBattleItem'].forEach(sid=>{
+        updateItemIcon(sid, sid+'Img');
+      });
+    },50);
   }
   document.getElementById('editModal').classList.add('open');
 }
