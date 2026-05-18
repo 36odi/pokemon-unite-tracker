@@ -197,5 +197,7 @@ const out = [
 ].join('\n');
 
 const outPath = 'C:/Users/ishgo/Downloads/pokemon-unite-tracker/lab_data_generated.js';
+const prodPath = 'C:/Users/ishgo/Downloads/pokemon-unite-tracker/lab_data.js';
 fs.writeFileSync(outPath, out, 'utf-8');
-console.error(`生成完了: ${out.length} bytes → ${outPath}`);
+fs.writeFileSync(prodPath, out, 'utf-8');
+console.error(`生成完了: ${out.length} bytes → ${prodPath}`);

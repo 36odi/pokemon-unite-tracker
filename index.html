@@ -569,8 +569,8 @@
   .medal-help-btn{font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;}
   .medal-help-btn:hover{border-color:var(--accent);color:var(--accent);}
   /* ヘルプモーダル */
-  .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
-  .help-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px;max-height:calc(100vh - 2rem);overflow-y:auto;padding:1.25rem;margin:auto;}
+  .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;overscroll-behavior:contain;}
+  .help-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px;max-height:calc(100vh - 2rem);max-height:calc(100dvh - 2rem);overflow-y:auto;padding:1.25rem;margin:auto;}
   .help-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
   .help-modal-title{font-size:15px;font-weight:700;}
   .help-modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;}
@@ -1248,6 +1248,11 @@
             </select>
             <div id="labDmgOut2" class="lab-dmg-out"></div>
           </div>
+        </div>
+        <!-- 通常攻撃 -->
+        <div id="labNormalSection" style="display:none;">
+          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
+          <div id="labDmgOutNormal" class="lab-dmg-out"></div>
         </div>
         <!-- ユナイトわざ -->
         <div id="labUniteSection" style="display:none;">
@@ -2176,6 +2181,17 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v3.2',
+    date: '2026-05-18',
+    items: [
+      'スキルダメージ比較に通常攻撃を追加（全ポケモン対応）',
+      'スキルデータを更新（わざの強化後(+)形式を追加し、強化前後のダメージを比較できるよう改善）',
+      'スキルデータのダメージ種別表記を日本語に統一',
+      'メダル補正の防御・特防下降値を赤字で表示するよう改善',
+      'ヘルプモーダルのスマホ対応を改善（iOS Safariで背景がスクロールしてしまう問題を修正）',
+    ]
+  },
   {
     version: 'v3.1',
     date: '2026-05-18',
@@ -4584,13 +4600,14 @@ function labRenderStatGrid(el,stats,color){
   if(!entries.length){
     el.innerHTML='<div class="empty" style="font-size:12px;grid-column:span 2;">データなし</div>'; return;
   }
-  el.innerHTML=entries.map(([name,val])=>`
-    <div class="lab-stat-box">
+  el.innerHTML=entries.map(([name,val])=>{
+    const c=(typeof val==='number'&&val<0)?'var(--loss)':color;
+    const disp=typeof val==='number'?(Number.isInteger(val)?val:val.toFixed(1)):val;
+    return `<div class="lab-stat-box">
       <div class="lab-stat-name">${name}</div>
-      <div class="lab-stat-val" style="color:${color};">${
-        typeof val==='number'?(Number.isInteger(val)?val:val.toFixed(1)):val
-      }</div>
-    </div>`).join('');
+      <div class="lab-stat-val" style="color:${c};">${disp}</div>
+    </div>`;
+  }).join('');
 }
 
 // ---- スキルダメージ ----
@@ -4615,6 +4632,14 @@ function labUpdateSkillSection(poke){
 
   fillSlot('わざ1','labSkill1Sel','labSkill1Upg','labDmgOut1');
   fillSlot('わざ2','labSkill2Sel','labSkill2Upg','labDmgOut2');
+
+  // 通常攻撃（選択肢なし、全行を直接表示）
+  const normalRows=rows.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
+  const normalSec=document.getElementById('labNormalSection');
+  if(normalSec){
+    normalSec.style.display=normalRows.length?'block':'none';
+    if(normalRows.length) _renderDmgRows('labDmgOutNormal', normalRows);
+  }
 
   // ユナイトわざ（選択肢なし、全行を直接表示）
   const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
@@ -4665,9 +4690,12 @@ function calcLabDamageSlot(slotNum){
 function calcLabDamageAll(){
   calcLabDamageSlot(1);
   calcLabDamageSlot(2);
-  // ユナイトわざも更新
   const poke=document.getElementById('labPokeSelect')?.value;
   if(!poke||!labCalcResult) return;
+  // 通常攻撃も更新
+  const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
+  if(normalRows.length) _renderDmgRows('labDmgOutNormal', normalRows);
+  // ユナイトわざも更新
   const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
   if(uniteRows.length) _renderDmgRows('labDmgOutUnite', uniteRows);
 }
