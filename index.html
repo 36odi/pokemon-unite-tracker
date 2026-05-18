@@ -6,6 +6,7 @@
 <title>ポケモンユナイト 対戦トラッカー</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="lab_data.js"></script>
 <style>
   :root {
     --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--border:#2e3250;
@@ -177,8 +178,8 @@
   .btn-help{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:50%;width:24px;height:24px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
   .btn-help:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* ヘルプモーダル */
-  .help-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;}
+  /* ヘルプモーダル（#helpModal 内の .help-modal はこちらを使用） */
+  .modal-overlay .help-modal{max-width:440px;max-height:calc(100vh - 4rem);overflow-y:auto;}
   .help-modal h3{font-size:15px;font-weight:700;margin-bottom:1.25rem;}
   .help-section{margin-bottom:1.25rem;}
   .help-section:last-child{margin-bottom:0;}
@@ -487,6 +488,116 @@
   /* ===== D2 アカウント削除 ===== */
   .btn-delete-account{width:100%;background:var(--loss-bg);color:var(--loss);border:1px solid var(--loss);border-radius:var(--radius-sm);padding:9px;font-size:13px;font-weight:600;cursor:pointer;}
   .btn-delete-account:hover{background:var(--loss);color:#fff;}
+  /* ===== ラボタブ ===== */
+  .lab-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:1rem;font-size:12px;color:var(--text3);}
+  .lab-stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px;}
+  .lab-stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 10px;}
+  .lab-stat-name{font-size:10px;color:var(--text3);margin-bottom:2px;}
+  .lab-stat-val{font-size:15px;font-weight:700;}
+  .lab-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text);font-size:12px;outline:none;cursor:pointer;}
+  .lab-select:focus{border-color:var(--accent);}
+  /* もちもの行 */
+  .lab-item-row{margin-bottom:10px;}
+  .lab-item-row-top{display:flex;gap:6px;align-items:center;margin-bottom:4px;}
+  .lab-item-row-bot{display:flex;gap:6px;align-items:center;padding-left:22px;}
+  .lab-item-label{font-size:11px;color:var(--text3);width:18px;flex-shrink:0;font-weight:600;}
+  .lab-grade-lbl{font-size:11px;font-weight:700;color:var(--accent);min-width:30px;flex-shrink:0;}
+  .lab-grade-range{flex:1;accent-color:var(--accent);height:4px;cursor:pointer;}
+  /* ダメージ表示 */
+  .lab-damage-box{background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 10px;text-align:center;margin-top:4px;}
+  .lab-damage-num{font-size:22px;font-weight:700;color:var(--accent);}
+  .lab-damage-sub{font-size:10px;color:var(--text2);margin-top:2px;}
+  /* 2カラムスキルグリッド */
+  .lab-skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .lab-skill-col{display:flex;flex-direction:column;gap:5px;}
+  .lab-skill-slot-lbl{font-size:10px;font-weight:700;color:var(--accent);text-align:center;padding:3px 0;background:var(--accent-bg);border-radius:var(--radius-sm);letter-spacing:.05em;}
+  .lab-skill-col .lab-select{font-size:12px;margin-top:0;}
+  .lab-dmg-out{min-height:36px;}
+  /* レベル */
+  .lab-lv-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .lab-lv-val{font-size:14px;font-weight:700;color:var(--accent);min-width:18px;text-align:center;}
+  /* ===== メダルセット作成 ===== */
+  .medal-slot-bar{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0;}
+  .medal-slot-btn{width:52px;height:52px;border-radius:50%;border:2px dashed var(--border);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;position:relative;transition:border-color .15s,box-shadow .15s;flex-shrink:0;}
+  .medal-slot-btn.active-slot{border:2px solid var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+  .medal-slot-btn.filled{border-style:solid;}
+  .medal-slot-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;text-align:center;line-height:1.2;padding:2px;text-shadow:0 1px 2px rgba(0,0,0,0.6);}
+  .medal-slot-idx{font-size:8px;color:var(--text3);position:absolute;bottom:0px;right:0px;background:var(--bg2);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+  .medal-slot-del{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:var(--loss);color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid #b71c1c;z-index:2;}
+  .medal-slot-rar{position:absolute;top:-3px;left:-3px;width:15px;height:15px;border-radius:50%;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,.4);z-index:2;color:#fff;}
+  .medal-slot-rar.bronze{background:#a0522d;}
+  .medal-slot-rar.silver{background:#9e9e9e;}
+  .medal-slot-rar.gold{background:#f9a825;}
+  .medal-hint-rarity{display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;}
+  .medal-hint-rar-btn{padding:2px 9px;font-size:10px;border-radius:999px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;}
+  .medal-hint-rar-btn.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+  .medal-bulk-rar{display:flex;align-items:center;gap:4px;}
+  .medal-bulk-btn{padding:2px 9px;font-size:10px;border-radius:999px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;}
+  .medal-bulk-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .medal-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .mf-label{font-size:10px;color:var(--text3);margin-bottom:3px;}
+  .medal-list{display:flex;flex-direction:column;gap:3px;max-height:300px;overflow-y:auto;}
+  .medal-chip{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg3);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);transition:border-color .1s,background .1s;}
+  .medal-chip:hover:not(.in-slot){border-color:var(--accent-bg);background:var(--bg2);}
+  .medal-chip.in-slot{border-color:var(--accent);background:var(--accent-bg);}
+  .medal-chip-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .medal-chip-dot2{width:7px;height:7px;border-radius:50%;flex-shrink:0;opacity:.8;}
+  .medal-chip-name{font-size:12px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .medal-chip-stat{font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0;}
+  .medal-chip-pla{font-size:9px;background:#6a1de0;color:#e0d7ff;padding:1px 4px;border-radius:999px;flex-shrink:0;}
+  /* チップ内レアリティボタン */
+  .medal-chip-rar{display:flex;gap:2px;flex-shrink:0;}
+  .mcr-btn{font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text3);cursor:pointer;line-height:1.2;transition:background .1s,border-color .1s,color .1s;}
+  .mcr-btn:hover{opacity:.8;}
+  .mcr-btn.rar-bronze{border-color:#a0522d;background:#2a1206;color:#cd9e6e;}
+  .mcr-btn.rar-silver{border-color:#9e9e9e;background:#1a1a1a;color:#cfcfcf;}
+  .mcr-btn.rar-gold  {border-color:#f9a825;background:#2a1c00;color:#f9c825;}
+  .medal-color-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;flex-shrink:0;}
+  .medal-color-row{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;}
+  .medal-color-badge{display:flex;align-items:center;background:var(--bg3);border-radius:var(--radius-sm);padding:4px 8px;gap:4px;font-size:11px;}
+  .medal-set-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--radius-sm);font-size:11px;margin-bottom:3px;}
+  .medal-set-on{background:rgba(76,175,80,.12);border:1px solid #4caf5044;color:var(--text);}
+  .medal-set-off{background:var(--bg3);border:1px solid var(--border);color:var(--text3);}
+  .medal-set-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;}
+  .medal-set-tag-on{background:#4caf50;color:#fff;}
+  .medal-set-tag-off{background:var(--border);color:var(--text3);}
+  .medal-rarity-row{display:flex;gap:5px;}
+  .medal-rarity-btn{padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;}
+  .medal-rarity-btn.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+  .medal-empty-msg{text-align:center;font-size:12px;color:var(--text3);padding:1rem;}
+  /* ヘルプボタン */
+  .medal-help-btn{font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;}
+  .medal-help-btn:hover{border-color:var(--accent);color:var(--accent);}
+  /* ヘルプモーダル */
+  .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
+  .help-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px;max-height:calc(100vh - 2rem);overflow-y:auto;padding:1.25rem;margin:auto;}
+  .help-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .help-modal-title{font-size:15px;font-weight:700;}
+  .help-modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;}
+  .help-modal-close:hover{color:var(--text);}
+  .help-section{margin-bottom:1rem;}
+  .help-section-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .help-row{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;line-height:1.6;}
+  .help-icon{flex-shrink:0;width:20px;text-align:center;color:var(--text3);}
+  .help-tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;flex-shrink:0;margin-right:4px;}
+  .help-tag.bronze{background:#2a1206;color:#cd9e6e;border:1px solid #a0522d;}
+  .help-tag.silver{background:#1a1a1a;color:#cfcfcf;border:1px solid #9e9e9e;}
+  .help-tag.gold  {background:#2a1c00;color:#f9c825;border:1px solid #f9a825;}
+  .help-tag.green {background:var(--win-bg);color:var(--win);border:1px solid #2e5c30;}
+  .help-tip{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.7;margin-top:6px;}
+  /* プリセット */
+  .medal-preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .medal-preset-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;text-align:center;transition:border-color .15s;}
+  .medal-preset-card.has-data{border-color:#3a4060;}
+  .medal-preset-num{font-size:10px;color:var(--text3);margin-bottom:2px;}
+  .medal-preset-info{font-size:10px;color:var(--text2);margin-bottom:5px;min-height:16px;line-height:1.4;}
+  .medal-preset-btns{display:flex;gap:3px;}
+  .medal-preset-btn{flex:1;font-size:10px;padding:3px 2px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);}
+  .medal-preset-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .medal-preset-btn.load{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+  .medal-preset-btn.load:hover{background:var(--accent);color:#fff;}
+  .medal-preset-btn.del{color:var(--text3);}
+  .medal-preset-btn.del:hover{border-color:var(--loss);color:var(--loss);}
 </style>
 <link rel="manifest" href="manifest.json" />
 </head>
@@ -577,7 +688,7 @@
   <div class="page-tabs">
     <div class="page-tab active" onclick="showPage('tracker')">📊 トラッカー</div>
     <div class="page-tab" onclick="showPage('analysis')">📈 分析</div>
-    <div class="page-tab" onclick="showPage('profile')">👤 プロフィール</div>
+    <div class="page-tab" onclick="showPage('lab')">🔬 ラボ</div>
   </div>
 
   <div id="trackerPage">
@@ -1014,6 +1125,224 @@
     </div>
   </div>
 
+  <!-- ラボページ -->
+  <div id="labPage" style="display:none;">
+    <!-- 読み込み中バナー -->
+    <div id="labLoadingMsg" class="card lab-loading" style="display:none;">
+      <div class="card-loading-circle"></div>
+      <span id="labLoadingText">データ読み込み中...</span>
+    </div>
+
+    <!-- サブタブ -->
+    <div class="analysis-tabs">
+      <div class="analysis-tab active" onclick="switchLab('calc')">🧮 ステータス計算</div>
+      <div class="analysis-tab" onclick="switchLab('medal')">🎖️ メダルセット作成</div>
+    </div>
+
+    <!-- ===== ステータス・ダメージ計算 パネル ===== -->
+    <div id="labCalcPanel">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-title" style="margin-bottom:0;">ポケモン設定</div>
+          <button class="medal-help-btn" onclick="showCalcHelp()">❓ 使い方</button>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">ポケモン</div>
+          <select class="lab-select" id="labPokeSelect">
+            <option value="">— 選択してください —</option>
+          </select>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div class="lab-lv-row">
+            <span style="font-size:11px;color:var(--text3);">レベル</span>
+            <span class="lab-lv-val" id="labLvLabel">9</span>
+          </div>
+          <input type="range" id="labLvSlider" min="1" max="15" value="9"
+            style="width:100%;accent-color:var(--accent);"
+            oninput="document.getElementById('labLvLabel').textContent=this.value;calcLabStatsIfReady()">
+        </div>
+
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div id="labItemRows">
+          <div class="lab-item-row">
+            <div class="lab-item-row-top">
+              <span class="lab-item-label">①</span>
+              <select class="lab-select" id="labItem1" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+            </div>
+            <div class="lab-item-row-bot">
+              <span class="lab-grade-lbl" id="labGradeLabel1">G30</span>
+              <input type="range" class="lab-grade-range" id="labGrade1" min="1" max="40" value="30"
+                oninput="document.getElementById('labGradeLabel1').textContent='G'+this.value;calcLabStatsIfReady()">
+            </div>
+          </div>
+          <div class="lab-item-row">
+            <div class="lab-item-row-top">
+              <span class="lab-item-label">②</span>
+              <select class="lab-select" id="labItem2" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+            </div>
+            <div class="lab-item-row-bot">
+              <span class="lab-grade-lbl" id="labGradeLabel2">G30</span>
+              <input type="range" class="lab-grade-range" id="labGrade2" min="1" max="40" value="30"
+                oninput="document.getElementById('labGradeLabel2').textContent='G'+this.value;calcLabStatsIfReady()">
+            </div>
+          </div>
+          <div class="lab-item-row">
+            <div class="lab-item-row-top">
+              <span class="lab-item-label">③</span>
+              <select class="lab-select" id="labItem3" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+            </div>
+            <div class="lab-item-row-bot">
+              <span class="lab-grade-lbl" id="labGradeLabel3">G30</span>
+              <input type="range" class="lab-grade-range" id="labGrade3" min="1" max="40" value="30"
+                oninput="document.getElementById('labGradeLabel3').textContent='G'+this.value;calcLabStatsIfReady()">
+            </div>
+          </div>
+        </div>
+
+        <!-- メダルセット選択（任意） -->
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-top:14px;margin-bottom:6px;">メダルセット（任意）</div>
+        <select class="lab-select" id="labMedalSetSel" onchange="calcLabStatsIfReady()" style="margin-top:0;">
+          <option value="">— 使用しない —</option>
+        </select>
+
+        <button class="btn-save" style="width:100%;margin-top:8px;" onclick="calcLabStats(true)">計算する</button>
+      </div>
+
+      <!-- 結果カード -->
+      <div class="card" id="labResultCard" style="display:none;">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">基本ステータス</div>
+        <div id="labBaseStats" class="lab-stat-grid"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 4px;">もちもの補正</div>
+        <div id="labItemBonus" class="lab-stat-grid"></div>
+        <div id="labMedalBonusSection" style="display:none;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 4px;">メダル補正</div>
+          <div id="labMedalBonus" class="lab-stat-grid"></div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 4px;">合計</div>
+        <div id="labTotalStats" class="lab-stat-grid"></div>
+      </div>
+
+      <!-- スキルダメージカード -->
+      <div class="card" id="labSkillCard" style="display:none;">
+        <div class="card-title" style="margin-bottom:10px;">スキルダメージ比較</div>
+        <div class="lab-skill-grid">
+          <!-- わざ1 -->
+          <div class="lab-skill-col">
+            <div class="lab-skill-slot-lbl">わざ 1</div>
+            <select class="lab-select" id="labSkill1Sel" onchange="labSkillChanged(1)">
+              <option value="">— わざを選択 —</option>
+            </select>
+            <select class="lab-select" id="labSkill1Upg" onchange="calcLabDamageSlot(1)" style="font-size:11px;padding:5px 8px;">
+              <option value="">—</option>
+            </select>
+            <div id="labDmgOut1" class="lab-dmg-out"></div>
+          </div>
+          <!-- わざ2 -->
+          <div class="lab-skill-col">
+            <div class="lab-skill-slot-lbl">わざ 2</div>
+            <select class="lab-select" id="labSkill2Sel" onchange="labSkillChanged(2)">
+              <option value="">— わざを選択 —</option>
+            </select>
+            <select class="lab-select" id="labSkill2Upg" onchange="calcLabDamageSlot(2)" style="font-size:11px;padding:5px 8px;">
+              <option value="">—</option>
+            </select>
+            <div id="labDmgOut2" class="lab-dmg-out"></div>
+          </div>
+        </div>
+        <!-- ユナイトわざ -->
+        <div id="labUniteSection" style="display:none;">
+          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">ユナイトわざ</div>
+          <div id="labDmgOutUnite" class="lab-dmg-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== メダルセット作成 パネル ===== -->
+    <div id="labMedalPanel" style="display:none;">
+
+      <!-- プリセット保存 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="card-title" style="margin-bottom:0;">💾 プリセット保存（8パターン）</div>
+          <button class="medal-help-btn" onclick="showMedalHelp()">❓ 使い方</button>
+        </div>
+        <div class="medal-preset-grid" id="medalPresetGrid"><!-- JS生成 --></div>
+      </div>
+
+      <!-- スロット -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="card-title" style="margin-bottom:0;">メダルスロット <span id="medalSlotCount" style="font-size:12px;color:var(--text3);">0/10</span></div>
+          <button onclick="labClearAllMedals()" style="font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;">クリア</button>
+        </div>
+        <div class="medal-slot-bar" id="medalSlotBar"><!-- JS生成 --></div>
+        <div id="medalActiveHint" style="font-size:11px;color:var(--accent);margin-top:8px;text-align:center;min-height:16px;"></div>
+      </div>
+
+      <!-- フィルター + 一覧 -->
+      <div class="card">
+        <div class="medal-filter-grid">
+          <div>
+            <div class="mf-label">色1</div>
+            <select class="lab-select" id="mfColor1" onchange="labRenderMedalList()"><option value="">すべて</option></select>
+          </div>
+          <div>
+            <div class="mf-label">色2</div>
+            <select class="lab-select" id="mfColor2" onchange="labRenderMedalList()">
+              <option value="">すべて</option>
+              <option value="__none__">なし（単色）</option>
+            </select>
+          </div>
+          <div>
+            <div class="mf-label">↑ステータス</div>
+            <select class="lab-select" id="mfUpStat" onchange="labRenderMedalList()"><option value="">すべて</option></select>
+          </div>
+          <div>
+            <div class="mf-label">↓ステータス</div>
+            <select class="lab-select" id="mfDnStat" onchange="labRenderMedalList()"><option value="">すべて</option></select>
+          </div>
+          <div>
+            <div class="mf-label">レアリティ</div>
+            <select class="lab-select" id="mfRarity" onchange="labRenderMedalList()">
+              <option value="">すべて</option>
+              <option value="bronze">銅以上</option>
+              <option value="silver">銀以上</option>
+              <option value="gold">金</option>
+              <option value="platinum">プラチナのみ</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn-save" style="width:100%;padding:6px;font-size:11px;" onclick="labResetMedalFilters()">リセット</button>
+          </div>
+        </div>
+        <div id="medalListCount" style="font-size:11px;color:var(--text3);margin-bottom:6px;"></div>
+        <div id="medalListContainer" class="medal-list"><!-- JS生成 --></div>
+      </div>
+
+      <!-- 結果 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);">一括レアリティ設定</div>
+          <div class="medal-bulk-rar">
+            <span style="font-size:10px;color:var(--text3);">全スロット：</span>
+            <button class="medal-bulk-btn" onclick="labSetAllRarity('bronze')">銅</button>
+            <button class="medal-bulk-btn" onclick="labSetAllRarity('silver')">銀</button>
+            <button class="medal-bulk-btn" onclick="labSetAllRarity('gold')">金</button>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">カラー内訳・セット効果</div>
+        <div id="labMedalColorCount" class="medal-color-row" style="margin-bottom:8px;">
+          <span style="font-size:12px;color:var(--text3);">メダル未選択</span>
+        </div>
+        <div id="labMedalSetEffects" style="margin-bottom:8px;"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">合計ステータス</div>
+        <div id="labMedalTotal" class="lab-stat-grid">
+          <div class="empty" style="font-size:12px;grid-column:span 2;">メダルを選択すると集計されます</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 更新履歴ページ -->
   <div id="changelogPage" style="display:none;">
     <div class="card">
@@ -1025,6 +1354,100 @@
     </div>
   </div>
 
+</div>
+
+<!-- メダルヘルプモーダル -->
+<div class="help-overlay" id="medalHelpOverlay" style="display:none;" onclick="if(event.target===this)closeMedalHelp()">
+  <div class="help-modal">
+    <div class="help-modal-header">
+      <div class="help-modal-title">🎖️ メダルセット作成 使い方</div>
+      <button class="help-modal-close" onclick="closeMedalHelp()">✕</button>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">メダルの追加</div>
+      <div class="help-row"><span class="help-icon">①</span><span>一覧から<strong>メダル名をクリック</strong>→ フィルターの「レアリティ」と同じ品質でセット（未設定時は金）</span></div>
+      <div class="help-row"><span class="help-icon">②</span><span>一覧の <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> を直接クリック → 品質を指定して追加</span></div>
+      <div class="help-tip">💡 レアリティフィルターを「銀以上」にしてメダルをクリックすると、全部まとめて銀でセットできます。</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">レアリティの変更（セット済みメダル）</div>
+      <div class="help-row"><span class="help-icon">🔄</span><span>セット済みメダルの <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> をクリック → そのスロットのレアリティだけ変更（メダルは外れない）</span></div>
+      <div class="help-row"><span class="help-icon">🗑</span><span>セット済みメダルの<strong>名前エリアをクリック</strong> → スロットから解除</span></div>
+      <div class="help-row"><span class="help-icon">⚡</span><span>結果カードの「一括レアリティ設定」→ 全スロットをまとめて変更</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">スロット操作</div>
+      <div class="help-row"><span class="help-icon">●</span><span>スロット（丸いボタン）をクリック → セット先を切り替え（青枠がアクティブ）</span></div>
+      <div class="help-row"><span class="help-icon">✕</span><span>スロット右上の ✕ → そのスロットを解除</span></div>
+      <div class="help-row"><span class="help-icon">🔢</span><span>メダルを追加すると自動的に次の空きスロットへ移動</span></div>
+      <div class="help-row"><span class="help-icon">🔴</span><span>スロット左上の <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> バッジ → 現在のレアリティ表示</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">セット効果</div>
+      <div class="help-row"><span class="help-icon">🎨</span><span>同じ色のメダルを複数セットすると色ボーナスが発動</span></div>
+      <div class="help-row"><span class="help-icon">📊</span><span>結果カードの「カラー内訳・セット効果」で現在の達成状況を確認（<span class="help-tag green">✓</span> が達成済み）</span></div>
+      <div class="help-tip">
+        主なセット効果（カッコ内は発動枚数）<br>
+        🤍 ホワイト(2/4/6枚): HP +1/2/4%　　🤎 ブラウン(2/4/6枚): 攻撃 +1/2/4%<br>
+        💙 ブルー(2/4/6枚): 防御 +2/4/8%　　💚 グリーン(2/4/6枚): 特攻 +1/2/4%<br>
+        💜 パープル(2/4/6枚): 特防 +2/4/8%　🖤 ブラック(3/5/7枚): わざの待ち時間 -1/2/4%
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">プリセット保存（8パターン）</div>
+      <div class="help-row"><span class="help-icon">💾</span><span><strong>保存</strong> → 現在の10スロット＋レアリティ設定を保存</span></div>
+      <div class="help-row"><span class="help-icon">📂</span><span><strong>読込</strong> → 保存したセットを復元</span></div>
+      <div class="help-row"><span class="help-icon">☁</span><span>Supabaseに自動同期されるため、<strong>別のブラウザ・端末でも同じプリセットを利用可能</strong></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ステータス計算 ヘルプモーダル -->
+<div class="help-overlay" id="calcHelpOverlay" style="display:none;" onclick="if(event.target===this)closeCalcHelp()">
+  <div class="help-modal">
+    <div class="help-modal-header">
+      <div class="help-modal-title">📊 ステータス計算 使い方</div>
+      <button class="help-modal-close" onclick="closeCalcHelp()">✕</button>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">基本の使い方</div>
+      <div class="help-row"><span class="help-icon">①</span><span><strong>ポケモン</strong>を選択 → 基本ステータスが自動入力</span></div>
+      <div class="help-row"><span class="help-icon">②</span><span><strong>レベル</strong>スライダーで戦闘中のレベルを指定（1〜15）</span></div>
+      <div class="help-row"><span class="help-icon">③</span><span><strong>もちもの</strong>を最大3個選択し、グレードスライダー（G1〜G40）で強化段階を設定</span></div>
+      <div class="help-row"><span class="help-icon">④</span><span>「計算する」ボタンを押す、またはスライダーを動かすと<strong>リアルタイム更新</strong></span></div>
+      <div class="help-tip">💡 スライダーを動かすだけで即座に再計算されます。「計算する」ボタンは結果カードへ自動スクロールします。</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">メダルセット（任意）</div>
+      <div class="help-row"><span class="help-icon">🎖</span><span>「メダルセット作成」で<strong>保存したプリセット</strong>をステータス計算に反映できます</span></div>
+      <div class="help-row"><span class="help-icon">📊</span><span>メダル補正（個別上昇値 ＋ 色セットボーナス）が「メダル補正」行に表示され<strong>合計に加算</strong></span></div>
+      <div class="help-tip">💡 色セットボーナスの %効果は「基本ステータス × %」で自動換算されます。</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">結果の見方</div>
+      <div class="help-row"><span class="help-icon">⬜</span><span><strong>基本ステータス</strong>：レベルに応じたポケモン本来の値</span></div>
+      <div class="help-row"><span class="help-icon">🟢</span><span><strong>もちもの補正</strong>：選択したもちものグレードによる加算値</span></div>
+      <div class="help-row"><span class="help-icon">🟠</span><span><strong>メダル補正</strong>：選択したメダルセットの効果合計（選択時のみ表示）</span></div>
+      <div class="help-row"><span class="help-icon">🔵</span><span><strong>合計</strong>：実際の戦闘ステータス（基本 ＋ もちもの ＋ メダル）</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">スキルダメージ</div>
+      <div class="help-row"><span class="help-icon">⚔</span><span><strong>わざ1 / わざ2</strong>を選択するとダメージ計算式と数値が表示</span></div>
+      <div class="help-row"><span class="help-icon">🔼</span><span><strong>アップグレード段階</strong>を切り替えて強化後のダメージを比較可能</span></div>
+      <div class="help-row"><span class="help-icon">🎯</span><span><strong>ユナイトわざ</strong>は自動表示（選択不要）</span></div>
+      <div class="help-row"><span class="help-icon">✕ ヒット</span><span>多段ヒット・継続ダメージのわざは <strong>1ヒット分 × 回数 → 合計</strong> も表示</span></div>
+      <div class="help-tip">💡 ダメージは「合計」ステータス（もちもの・メダル込み）を元に計算されます。</span></div>
+    </div>
+  </div>
 </div>
 
 <!-- シェア画像モーダル -->
@@ -1086,6 +1509,7 @@
   <div class="drawer-title">ページ</div>
   <button class="drawer-item" onclick="showPage('tracker');closeDrawer()">📊 トラッカー</button>
   <button class="drawer-item" onclick="showPage('analysis');closeDrawer()">📈 分析</button>
+  <button class="drawer-item" onclick="showPage('lab');closeDrawer()">🔬 ラボ</button>
   <button class="drawer-item" onclick="showPage('profile');closeDrawer()">👤 プロフィール</button>
   <div class="drawer-title">その他</div>
   <button class="drawer-item" onclick="openCsvModal();closeDrawer()">📥 CSVエクスポート</button>
@@ -1739,18 +2163,30 @@ db.auth.onAuthStateChange(async(event,session)=>{
 
 function showPage(page){
   navId++; // ナビゲーションガード：進行中の非同期描画を無効化
-  ['trackerPage','analysisPage','profilePage','changelogPage'].forEach(id=>document.getElementById(id).style.display='none');
+  ['trackerPage','analysisPage','labPage','profilePage','changelogPage'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById(page+'Page').style.display='block';
   window.scrollTo({top:0,behavior:'instant'}); // スクロール位置をリセット
   document.querySelectorAll('.page-tab').forEach((t,i)=>t.classList.toggle('active',
-    (i===0&&page==='tracker')||(i===1&&page==='analysis')||(i===2&&page==='profile')));
+    (i===0&&page==='tracker')||(i===1&&page==='analysis')||(i===2&&page==='lab')));
   if(page==='analysis') loadAnalysis();
   if(page==='changelog') renderChangelog();
+  if(page==='lab') loadLabData();
 }
 
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v2.8',
+    date: '2026-05-18',
+    items: [
+      'ステータス計算にメダルセット連携を追加（保存済みプリセットを任意で適用し、メダル補正・セットボーナスを合計に反映）',
+      'スキルデータを更新（多段ヒット・継続ダメージに対応し、1ヒット分と合計ダメージを両表示）',
+      'ユナイトわざの全ダメージ成分を表示するよう改善（以前は最初の1行のみ表示）',
+      'ステータス計算にヘルプボタンを追加（使い方・各項目の説明）',
+      'ヘルプモーダルの表示位置を修正（PC環境で画面下端に固定されスクロールできない問題を解消、画面中央に変更）',
+    ]
+  },
   {
     version: 'v2.7',
     date: '2026-05-16',
@@ -3978,6 +4414,803 @@ async function renderSeriesAnalysis(){
     },100);
   }
   }catch(err){content.innerHTML=`<div class="empty" style="color:#ef5350;padding:1rem;">エラー: ${err.message}<br><small>${err.stack||''}</small></div>`;}
+}
+
+// ==================== ラボタブ ====================
+// データは lab_data.js で定義済み（LAB_MEDAL_SETS / LAB_MEDALS / LAB_ITEMS / LAB_SKILLS / LAB_STATUS）
+
+// lab_data.js からロード済み: LAB_MEDAL_SETS / LAB_MEDALS / LAB_ITEMS / LAB_SKILLS / LAB_STATUS
+let labCalcResult = null; // 直前の計算結果（合計ステータス）
+let labDataReady  = false;
+let labSkillPoke  = null; // スキルカードに表示中のポケモン
+
+// スライダー変更時のリアルタイム計算（ポケモン選択済みの場合のみ）
+function calcLabStatsIfReady(){
+  if(document.getElementById('labPokeSelect')?.value) calcLabStats(false);
+}
+
+// ---- データ初期化（lab_data.jsはページロード時に同期読み込み済み）----
+function loadLabData(){
+  if(labDataReady) return;
+  labDataReady = true;
+  const msg=document.getElementById('labLoadingMsg');
+  if(msg) msg.style.display='none';
+  labInitUI();
+}
+
+// ---- UI 初期化（lab_data.js ロード後に同期実行）----
+function labInitUI(){
+  // ポケモン選択（LAB_STATUSにあるポケモンのみ表示）
+  const pokeEl=document.getElementById('labPokeSelect');
+  if(pokeEl){
+    const all=Object.values(POKEMON_DATA).flatMap(d=>d.pokemon).sort();
+    all.forEach(p=>{
+      const o=document.createElement('option'); o.value=p; o.textContent=p;
+      pokeEl.appendChild(o);
+    });
+  }
+  // もちもの選択（3スロット）
+  const itemNames=Object.keys(LAB_ITEMS||{}).sort();
+  for(let s=1;s<=3;s++){
+    const sel=document.getElementById('labItem'+s);
+    if(sel){
+      sel.innerHTML='<option value="">なし</option>';
+      itemNames.forEach(n=>{ const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o); });
+    }
+    // グレードは range input なので value のみセット（HTMLのdefaultは30）
+    const gsel=document.getElementById('labGrade'+s);
+    if(gsel && gsel.type==='range') gsel.value='30';
+    const glbl=document.getElementById('labGradeLabel'+s);
+    if(glbl) glbl.textContent='G30';
+  }
+  // メダル UI 初期化
+  labInitMedalUI();
+}
+
+// ---- サブタブ切替 ----
+function switchLab(tab){
+  document.querySelectorAll('#labPage .analysis-tab').forEach((t,i)=>{
+    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='medal'));
+  });
+  document.getElementById('labCalcPanel').style.display=tab==='calc'?'block':'none';
+  document.getElementById('labMedalPanel').style.display=tab==='medal'?'block':'none';
+}
+
+// ---- ステータス計算 ----
+// もちもの補正名 → 基本ステータス名マッピング
+const LAB_STAT_MAP={
+  'HP':'HP','最大HP':'HP',
+  '攻撃':'攻撃','とくこう':'特攻','特攻':'特攻',
+  '防御':'防御','特防':'特防','とくぼう':'特防',
+  '移動速度':'移動速度','HP回復':'HP回復',
+  '通常攻撃の速さ':'通常攻撃の速さ','急所率':'急所率'
+};
+const LAB_STAT_ORDER=['HP','攻撃','防御','特攻','特防','移動速度'];
+
+function calcLabStats(scroll=false){
+  const poke=document.getElementById('labPokeSelect')?.value;
+  const lv=parseInt(document.getElementById('labLvSlider')?.value||'9');
+  if(!poke){ if(scroll) alert('ポケモンを選択してください'); return; }
+
+  // --- 基本ステータス（LAB_STATUSから直接取得）---
+  const baseStats={};
+  const sd=LAB_STATUS?.[poke];
+  if(sd){
+    const idx=lv-1; // LAB_STATUSは0-indexed (lv1=index0, lv15=index14)
+    if(sd.hp[idx]!==undefined){
+      baseStats['HP']   =sd.hp[idx];
+      baseStats['攻撃'] =sd.atk[idx];
+      baseStats['防御'] =sd.def[idx];
+      baseStats['特攻'] =sd.spatk[idx];
+      baseStats['特防'] =sd.spdef[idx];
+      baseStats['移動速度']=sd.ms[idx];
+    }
+  }
+
+  // --- もちもの補正（LAB_ITEMSから直接取得）---
+  const itemBonus={};
+  for(let s=1;s<=3;s++){
+    const name=document.getElementById('labItem'+s)?.value;
+    const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+    if(!name||!LAB_ITEMS?.[name]) continue;
+    const gs=LAB_ITEMS[name][grade-1]||{};
+    Object.entries(gs).forEach(([k,v])=>{
+      const mapped=LAB_STAT_MAP[k]||k;
+      itemBonus[mapped]=(itemBonus[mapped]||0)+v;
+    });
+  }
+
+  // --- メダル補正（任意） ---
+  const medalSelVal = document.getElementById('labMedalSetSel')?.value;
+  const medalBonus = {};
+  if(medalSelVal !== ''){
+    const presetIdx = parseInt(medalSelVal);
+    const mb = labCalcMedalBonus(presetIdx, baseStats);
+    Object.entries(mb).forEach(([k,v])=>{ medalBonus[k]=(medalBonus[k]||0)+v; });
+  }
+
+  // --- 合計 ---
+  const totals={...baseStats};
+  Object.entries(itemBonus).forEach(([k,v])=>{ totals[k]=(totals[k]||0)+v; });
+  Object.entries(medalBonus).forEach(([k,v])=>{ totals[k]=(totals[k]||0)+v; });
+
+  // --- 表示 ---
+  labRenderStatGrid(document.getElementById('labBaseStats'),baseStats,'var(--text)');
+  labRenderStatGrid(document.getElementById('labItemBonus'),itemBonus,'var(--win)');
+  const medalSec = document.getElementById('labMedalBonusSection');
+  if(Object.keys(medalBonus).length){
+    labRenderStatGrid(document.getElementById('labMedalBonus'),medalBonus,'#ffa726');
+    if(medalSec) medalSec.style.display='block';
+  } else {
+    if(medalSec) medalSec.style.display='none';
+  }
+  labRenderStatGrid(document.getElementById('labTotalStats'),totals,'var(--accent)');
+  document.getElementById('labResultCard').style.display='block';
+  labCalcResult=totals;
+
+  // ポケモンが変わった場合のみスキルセクションを再構築
+  if(labSkillPoke !== poke){ labSkillPoke=poke; labUpdateSkillSection(poke); }
+  else { calcLabDamageAll(); } // 同じポケモン→ダメージだけ再計算
+
+  if(scroll) setTimeout(()=>document.getElementById('labResultCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+function labRenderStatGrid(el,stats,color){
+  if(!el) return;
+  const entries=[];
+  LAB_STAT_ORDER.forEach(k=>{ if(stats[k]!==undefined) entries.push([k,stats[k]]); });
+  Object.entries(stats).forEach(([k,v])=>{ if(!LAB_STAT_ORDER.includes(k)) entries.push([k,v]); });
+  if(!entries.length){
+    el.innerHTML='<div class="empty" style="font-size:12px;grid-column:span 2;">データなし</div>'; return;
+  }
+  el.innerHTML=entries.map(([name,val])=>`
+    <div class="lab-stat-box">
+      <div class="lab-stat-name">${name}</div>
+      <div class="lab-stat-val" style="color:${color};">${
+        typeof val==='number'?(Number.isInteger(val)?val:val.toFixed(1)):val
+      }</div>
+    </div>`).join('');
+}
+
+// ---- スキルダメージ ----
+function labUpdateSkillSection(poke){
+  const card=document.getElementById('labSkillCard');
+  if(!card) return;
+  const rows=LAB_SKILLS?.[poke];
+  if(!rows||!rows.length){ card.style.display='none'; return; }
+
+  const fillSlot=(slotKey, selId, upgId, outId)=>{
+    const skills=[...new Set(rows.filter(r=>r.slot===slotKey&&r.coeff!=null).map(r=>r.name).filter(Boolean))];
+    const sel=document.getElementById(selId);
+    const upg=document.getElementById(upgId);
+    const out=document.getElementById(outId);
+    if(!sel||!upg||!out) return;
+    sel.innerHTML='<option value="">— わざを選択 —</option>';
+    skills.forEach(s=>{ const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o); });
+    upg.innerHTML='<option value="">—</option>';
+    out.innerHTML='';
+    if(skills.length===1){ sel.value=skills[0]; _fillUpgrades(poke, skills[0], upgId, outId); }
+  };
+
+  fillSlot('わざ1','labSkill1Sel','labSkill1Upg','labDmgOut1');
+  fillSlot('わざ2','labSkill2Sel','labSkill2Upg','labDmgOut2');
+
+  // ユナイトわざ（選択肢なし、全行を直接表示）
+  const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
+  const uniteSec=document.getElementById('labUniteSection');
+  if(uniteSec){
+    uniteSec.style.display=uniteRows.length?'block':'none';
+    if(uniteRows.length) _renderDmgRows('labDmgOutUnite', uniteRows);
+  }
+
+  card.style.display='block';
+}
+
+function labSkillChanged(slotNum){
+  const poke=document.getElementById('labPokeSelect')?.value;
+  const skillName=document.getElementById('labSkill'+slotNum+'Sel')?.value;
+  _fillUpgrades(poke, skillName, 'labSkill'+slotNum+'Upg', 'labDmgOut'+slotNum);
+}
+
+function _fillUpgrades(poke, skillName, upgId, outId){
+  const upg=document.getElementById(upgId);
+  const out=document.getElementById(outId);
+  if(!upg||!out){ return; }
+  upg.innerHTML='';
+  out.innerHTML='';
+  if(!poke||!skillName) return;
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&r.coeff!=null);
+  const upgs=[...new Set(rows.map(r=>r.upg))];
+  upgs.forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u;
+    o.textContent=u?`Lv${u} アップグレード後`:'アップグレードなし';
+    upg.appendChild(o);
+  });
+  // 最初のアップグレード選択肢のダメージを表示
+  if(rows.length) _renderDmgRows(outId, rows.filter(r=>r.upg===(upgs[0]||'')));
+}
+
+function calcLabDamageSlot(slotNum){
+  const poke=document.getElementById('labPokeSelect')?.value;
+  const skillName=document.getElementById('labSkill'+slotNum+'Sel')?.value;
+  const upgVal=document.getElementById('labSkill'+slotNum+'Upg')?.value;
+  const outId='labDmgOut'+slotNum;
+  if(!skillName||!labCalcResult){ document.getElementById(outId).innerHTML=''; return; }
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&r.upg===upgVal&&r.coeff!=null);
+  _renderDmgRows(outId, rows);
+}
+
+function calcLabDamageAll(){
+  calcLabDamageSlot(1);
+  calcLabDamageSlot(2);
+  // ユナイトわざも更新
+  const poke=document.getElementById('labPokeSelect')?.value;
+  if(!poke||!labCalcResult) return;
+  const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
+  if(uniteRows.length) _renderDmgRows('labDmgOutUnite', uniteRows);
+}
+
+function _renderDmgRows(outId, rows){
+  const out=document.getElementById(outId);
+  if(!out||!labCalcResult) return;
+  if(!rows.length){ out.innerHTML='<div style="font-size:11px;color:var(--text3);padding:4px;">データなし</div>'; return; }
+  out.innerHTML=rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
+  if(!out.innerHTML) out.innerHTML='<div style="font-size:11px;color:var(--text3);padding:4px;">計算不可</div>';
+}
+
+function _renderDmgOut(outId, r, calc){
+  const tmp=labCalcResult; labCalcResult=calc||labCalcResult;
+  _renderDmgRows(outId,[r]);
+  labCalcResult=tmp;
+}
+
+function _calcDmgHtml(r){
+  if(!labCalcResult) return '';
+  const st=r.stat||'';
+  const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
+  if(coeff==null||coeff<=0) return '';
+  // ステータス種別（日本語・英語両対応）
+  let base=0; let statLabel='';
+  if(/特攻|Sp\.?\s*Atk|sp_?atk/i.test(st)){ base=labCalcResult['特攻']||0; statLabel='特攻'; }
+  else if(/攻撃|^Atk$/i.test(st))           { base=labCalcResult['攻撃']||0; statLabel='攻撃'; }
+  else if(/HP/i.test(st))                    { base=labCalcResult['HP']||0;   statLabel='HP';   }
+  const lv = parseInt(document.getElementById('labLvSlider')?.value||'9');
+  const lvBonus = lvScale * (lv - 1);
+  const perHit = Math.round((coeff/100)*base + lvBonus + fixed);
+  const hits = r.hits || 1;
+  const hitsVar = r.hitsVar || false;
+  // 式の表示
+  const parts = [`${coeff}% × ${base}`];
+  if(lvScale) parts.push(`${lvScale} × (Lv${lv}-1)`);
+  parts.push(`${fixed}`);
+  const formula = parts.join(' + ');
+  const label = r.dmgType || (statLabel+'ダメージ');
+  // ヒット数が複数の場合は合計も表示
+  if(hits > 1){
+    const total = perHit * hits;
+    const hitsNote = hitsVar ? `最大${hits}回` : `× ${hits}ヒット`;
+    return `<div class="lab-damage-box">
+      <div class="lab-damage-num">${perHit.toLocaleString()} <span style="font-size:13px;color:var(--text2);">${hitsNote}</span></div>
+      <div class="lab-damage-num" style="font-size:18px;color:#ffa726;margin-top:2px;">合計 ${total.toLocaleString()}</div>
+      <div class="lab-damage-sub">${label}（${formula}）</div>
+    </div>`;
+  }
+  return `<div class="lab-damage-box">
+    <div class="lab-damage-num">${perHit.toLocaleString()}</div>
+    <div class="lab-damage-sub">${label}（${formula}）</div>
+  </div>`;
+}
+
+// ---- メダルセット作成 ----
+const MEDAL_COLOR_HEX={
+  'ホワイト':'#b0bec5','ブラウン':'#a1887f','ブルー':'#5c7fe0',
+  'グリーン':'#43a047','パープル':'#ab47bc','イエロー':'#f9a825',
+  'レッド':'#ef5350','ブラック':'#546e7a','ピンク':'#f06292',
+  'ネイビー':'#3f51b5','グレー':'#78909c'
+};
+
+let labMedalSlots    = Array(10).fill(null); // null or medal name
+let labMedalRarities = Array(10).fill('gold'); // per-slot: 'bronze'|'silver'|'gold'
+let labActiveMedalSlot = 0;
+
+function labMedalGetVal(m, rarity, dir) {
+  // dir: 'up' | 'dn'
+  const b = dir==='up' ? m.bUp : m.bDn;
+  const s = dir==='up' ? m.sUp : m.sDn;
+  const g = dir==='up' ? m.gUp : m.gDn;
+  if (rarity==='bronze') return b ?? s ?? g ?? null;
+  if (rarity==='silver') return s ?? b ?? g ?? null;
+  return g ?? s ?? b ?? null;
+}
+
+// ---- ステータス計算用メダル補正 ----
+// presetIdx: labMedalPresets のインデックス
+// baseStats: {HP, 攻撃, 防御, 特攻, 特防, 移動速度} — % セットボーナス計算に使用
+function labCalcMedalBonus(presetIdx, baseStats){
+  const obj = _presetToObj(labMedalPresets[presetIdx]);
+  if(!obj) return {};
+  const slots    = obj.slots    || Array(10).fill(null);
+  const rarities = obj.rarities || Array(10).fill('gold');
+  const flat = {};
+  const colorCount = {};
+
+  slots.forEach((name, si)=>{
+    if(!name) return;
+    const m = LAB_MEDALS.find(x=>x.name===name);
+    if(!m) return;
+    const rar = rarities[si] || 'gold';
+    if(m.c1) colorCount[m.c1]=(colorCount[m.c1]||0)+1;
+    if(m.c2) colorCount[m.c2]=(colorCount[m.c2]||0)+1;
+    if(m.upStat && m.upStat!=='なし'){
+      const v = labMedalGetVal(m, rar, 'up');
+      if(v!=null){ const k=LAB_STAT_MAP[m.upStat]||m.upStat; flat[k]=(flat[k]||0)+v; }
+    }
+    if(m.dnStat && m.dnStat!=='なし'){
+      const v = labMedalGetVal(m, rar, 'dn');
+      if(v!=null){ const k=LAB_STAT_MAP[m.dnStat]||m.dnStat; flat[k]=(flat[k]||0)+v; }
+    }
+  });
+
+  // セットボーナス（色ごとの発動効果）
+  Object.entries(colorCount).forEach(([c, n])=>{
+    const tiers = LAB_MEDAL_SETS?.[c] || [];
+    const active = tiers.filter(t=>n>=t.count);
+    if(!active.length) return;
+    const top = active[active.length-1];
+    const k = LAB_STAT_MAP[top.target] || top.target;
+    let add = top.val || 0;
+    if(top.isPct){
+      // % は基本ステータスに対して計算
+      const base = baseStats?.[k] || 0;
+      add = Math.round(base * add / 100);
+    }
+    flat[k] = (flat[k]||0) + add;
+  });
+
+  return flat;
+}
+
+// ステータス計算のメダルセット選択プルダウンを更新
+function labRefreshCalcMedalSelect(){
+  const sel = document.getElementById('labMedalSetSel');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— 使用しない —</option>';
+  labMedalPresets.forEach((preset, i)=>{
+    if(!preset) return;
+    const obj = _presetToObj(preset);
+    const count = (obj?.slots||[]).filter(Boolean).length;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `パターン${i+1}（${count}枚）`;
+    sel.appendChild(opt);
+  });
+  // 選択を復元（まだ存在するプリセットなら保持）
+  if(cur!=='' && sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+}
+
+function labInitMedalUI(){
+  if(!LAB_MEDALS) return;
+  labMedalSlots = Array(10).fill(null);
+  labActiveMedalSlot = 0;
+
+  // メダル一覧クリック（イベント委任）
+  const container = document.getElementById('medalListContainer');
+  if(container && !container._labListener){
+    container._labListener = true;
+    container.addEventListener('click', e => {
+      // レアリティボタンが押された場合
+      const rarBtn = e.target.closest('.mcr-btn');
+      if(rarBtn){
+        const chip = rarBtn.closest('.medal-chip');
+        const name = chip?.dataset.medal;
+        const rar  = rarBtn.dataset.rar;
+        if(!name || !rar) return;
+        if(chip.classList.contains('in-slot')){
+          // in-slot → そのスロットのレアリティを変更
+          const idx = labMedalSlots.indexOf(name);
+          if(idx >= 0){ labMedalRarities[idx]=rar; labRenderMedalSlots(); labRenderMedalList(); labUpdateMedalResult(); }
+        } else {
+          // 未追加 → 指定レアリティで追加
+          labAddMedalToSlot(name, rar);
+        }
+        return;
+      }
+      // チップ本体クリック
+      const chip = e.target.closest('.medal-chip');
+      if(!chip) return;
+      const name = chip.dataset.medal;
+      if(!name) return;
+      if(chip.classList.contains('in-slot')){
+        // in-slot → スロットから解除
+        const idx = labMedalSlots.indexOf(name);
+        if(idx >= 0) labRemoveMedalFromSlot(idx);
+      } else {
+        // フィルターのレアリティを自動適用して追加
+        const fRar = document.getElementById('mfRarity')?.value || '';
+        const rar = fRar==='gold'?'gold': fRar==='silver'?'silver': fRar==='bronze'?'bronze': 'gold';
+        labAddMedalToSlot(name, rar);
+      }
+    });
+  }
+
+  // フィルター選択肢を構築
+  const colors = [...new Set(LAB_MEDALS.flatMap(m=>[m.c1,m.c2]).filter(Boolean))].sort();
+  const c2Set  = [...new Set(LAB_MEDALS.map(m=>m.c2).filter(Boolean))].sort();
+  const upStats= [...new Set(LAB_MEDALS.map(m=>m.upStat).filter(v=>v&&v!=='なし'))].sort();
+  const dnStats= [...new Set(LAB_MEDALS.map(m=>m.dnStat).filter(v=>v&&v!=='なし'))].sort();
+
+  const addOpts = (id, arr) => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    arr.forEach(v=>{ const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o); });
+  };
+  addOpts('mfColor1', colors);
+  addOpts('mfColor2', c2Set);
+  addOpts('mfUpStat', upStats);
+  addOpts('mfDnStat', dnStats);
+
+  labLoadMedalPresets();
+  labRenderMedalPresets();
+  labRenderMedalSlots();
+  labRenderMedalList();
+  labUpdateMedalResult();
+}
+
+// ---- スロット描画 ----
+function labRenderMedalSlots(){
+  const bar = document.getElementById('medalSlotBar');
+  if(!bar) return;
+  const filled = labMedalSlots.filter(Boolean).length;
+  document.getElementById('medalSlotCount').textContent = `${filled}/10`;
+
+  bar.innerHTML = '';
+  labMedalSlots.forEach((name, i) => {
+    const btn = document.createElement('button');
+    btn.type='button';
+    btn.className='medal-slot-btn' + (i===labActiveMedalSlot?' active-slot':'') + (name?' filled':'');
+    btn.onclick = () => labSelectMedalSlot(i);
+
+    if(name){
+      const m = LAB_MEDALS.find(x=>x.name===name);
+      const hex = m ? (MEDAL_COLOR_HEX[m.c1]||'#9399b2') : '#9399b2';
+      const short = name.length>4 ? name.slice(0,3)+'…' : name;
+      const rar = labMedalRarities[i]||'gold';
+      const rarLabel = rar==='bronze'?'銅':rar==='silver'?'銀':'金';
+      btn.innerHTML = `
+        <div class="medal-slot-icon" style="background:${hex};">${short}</div>
+        <div class="medal-slot-idx">${i+1}</div>
+        <div class="medal-slot-del" onclick="event.stopPropagation();labRemoveMedalFromSlot(${i})">✕</div>
+        <div class="medal-slot-rar ${rar}">${rarLabel}</div>`;
+    } else {
+      btn.innerHTML = `<div style="font-size:10px;color:var(--text3);">${i+1}</div>`;
+    }
+    bar.appendChild(btn);
+  });
+
+  // ヒント更新（アクティブスロットにメダルがあればレアリティ切替を表示）
+  const hint = document.getElementById('medalActiveHint');
+  if(hint){
+    const cur = labMedalSlots[labActiveMedalSlot];
+    if(cur){
+      const rar = labMedalRarities[labActiveMedalSlot]||'gold';
+      const rarLabel = rar==='bronze'?'銅':rar==='silver'?'銀':'金';
+      hint.innerHTML = `<span style="font-size:11px;color:var(--text2);">スロット${labActiveMedalSlot+1}：${cur}（${rarLabel}）　一覧の 銅/銀/金 ボタンでレアリティを変更</span>`;
+    } else {
+      hint.innerHTML = `<span style="font-size:11px;color:var(--accent);">スロット${labActiveMedalSlot+1}を選択中 ← 一覧からメダルを選択、または 銅/銀/金 を直接クリック</span>`;
+    }
+  }
+}
+
+function labSelectMedalSlot(i){
+  labActiveMedalSlot = i;
+  labRenderMedalSlots();
+}
+
+function labRemoveMedalFromSlot(i){
+  labMedalSlots[i] = null;
+  labMedalRarities[i] = 'gold';
+  labRenderMedalSlots();
+  labRenderMedalList();
+  labUpdateMedalResult();
+}
+
+function labClearAllMedals(){
+  labMedalSlots    = Array(10).fill(null);
+  labMedalRarities = Array(10).fill('gold');
+  labActiveMedalSlot = 0;
+  labRenderMedalSlots();
+  labRenderMedalList();
+  labUpdateMedalResult();
+}
+
+// ---- フィルター & 一覧描画 ----
+function labResetMedalFilters(){
+  ['mfColor1','mfColor2','mfUpStat','mfDnStat','mfRarity'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  labRenderMedalList();
+}
+
+function labRenderMedalList(){
+  const container = document.getElementById('medalListContainer');
+  if(!container||!LAB_MEDALS) return;
+  const fc1    = document.getElementById('mfColor1')?.value||'';
+  const fc2    = document.getElementById('mfColor2')?.value||'';
+  const fUp    = document.getElementById('mfUpStat')?.value||'';
+  const fDn    = document.getElementById('mfDnStat')?.value||'';
+  const fRar   = document.getElementById('mfRarity')?.value||'';
+
+  const filtered = LAB_MEDALS.filter(m=>{
+    if(fc1 && m.c1!==fc1 && m.c2!==fc1) return false;
+    if(fc2==='__none__' && m.c2) return false;
+    if(fc2 && fc2!=='__none__' && m.c2!==fc2 && m.c1!==fc2) return false;
+    if(fUp && m.upStat!==fUp) return false;
+    if(fDn && m.dnStat!==fDn) return false;
+    const isPla = m.note&&m.note.includes('プラチナ');
+    if(fRar==='bronze'  && m.bUp==null && m.bDn==null && !isPla) return false;
+    if(fRar==='silver'  && m.sUp==null && m.sDn==null && !isPla) return false;
+    if(fRar==='gold'    && m.gUp==null && m.gDn==null) return false;
+    if(fRar==='platinum'&& !isPla) return false;
+    return true;
+  });
+
+  document.getElementById('medalListCount').textContent = `${filtered.length}件`;
+
+  if(!filtered.length){
+    container.innerHTML='<div class="medal-empty-msg">条件に一致するメダルがありません</div>';
+    return;
+  }
+
+  // フィルターのレアリティ → 表示・デフォルト追加レアリティ
+  const dispRar = fRar==='gold'?'gold': fRar==='silver'?'silver': fRar==='bronze'?'bronze': 'gold';
+
+  container.innerHTML = filtered.map(m=>{
+    const slotIdx = labMedalSlots.indexOf(m.name);
+    const inSlot  = slotIdx >= 0;
+    const slotRar = inSlot ? (labMedalRarities[slotIdx]||'gold') : null;
+    const hex1 = MEDAL_COLOR_HEX[m.c1]||'#9399b2';
+    const hex2 = m.c2 ? (MEDAL_COLOR_HEX[m.c2]||'#9399b2') : '';
+    const isPla = m.note&&m.note.includes('プラチナ');
+    // 表示値はフィルターレアリティ基準（未選択なら金）
+    const upV = labMedalGetVal(m, dispRar, 'up');
+    const dnV = labMedalGetVal(m, dispRar, 'dn');
+    const upTxt = (m.upStat&&m.upStat!=='なし'&&upV!=null) ? `<span style="color:var(--win);">+${upV} ${m.upStat}</span>` : '';
+    const dnTxt = (m.dnStat&&m.dnStat!=='なし'&&dnV!=null) ? `<span style="color:var(--loss);">${dnV} ${m.dnStat}</span>` : '';
+    // レアリティボタン（in-slotの場合は現在のレアリティをハイライト）
+    const rarBtns = [['bronze','銅'],['silver','銀'],['gold','金']].map(([rv,lb])=>{
+      const isActive = inSlot && slotRar===rv;
+      return `<button class="mcr-btn${isActive?' rar-'+rv:''}" data-rar="${rv}">${lb}</button>`;
+    }).join('');
+    return `<div class="medal-chip${inSlot?' in-slot':''}" data-medal="${m.name.replace(/"/g,'&quot;')}">
+      <div class="medal-chip-dot" style="background:${hex1};"></div>
+      ${hex2?`<div class="medal-chip-dot2" style="background:${hex2};"></div>`:''}
+      <div class="medal-chip-name">${m.name}</div>
+      <div class="medal-chip-stat">${[upTxt,dnTxt].filter(Boolean).join(' / ')}</div>
+      ${isPla?'<div class="medal-chip-pla">Pla</div>':''}
+      <div class="medal-chip-rar">${rarBtns}</div>
+    </div>`;
+  }).join('');
+}
+
+function labAddMedalToSlot(name, rar='gold'){
+  if(labMedalSlots.includes(name)) return; // すでにセット済み
+  labMedalSlots[labActiveMedalSlot]    = name;
+  labMedalRarities[labActiveMedalSlot] = rar;
+  // 次の空きスロットへ自動移動
+  const next = labMedalSlots.findIndex((v,i)=>i>labActiveMedalSlot && !v);
+  if(next>=0) labActiveMedalSlot=next;
+  labRenderMedalSlots();
+  labRenderMedalList();
+  labUpdateMedalResult();
+}
+
+// ---- プリセット保存・読込 ----
+let labMedalPresets = Array(8).fill(null);
+const PRESET_KEY = 'unite_medal_presets';
+
+// プリセットのslots/raritiesを正規化（旧形式配列にも対応）
+function _presetToObj(p){
+  if(!p) return null;
+  if(Array.isArray(p)) return { slots:[...p], rarities:Array(10).fill('gold') }; // 旧形式
+  return p;
+}
+
+function labLoadMedalPresets(){
+  try{
+    const s = localStorage.getItem(PRESET_KEY);
+    if(s){ const p=JSON.parse(s); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
+  }catch(e){}
+  labRefreshCalcMedalSelect(); // ローカル読込直後に即時反映
+  // Supabaseから非同期読込（完了したらUIを更新）
+  _loadPresetsFromSupabase().then(ok=>{ if(ok){ labRenderMedalPresets(); labRefreshCalcMedalSelect(); } });
+}
+
+async function _loadPresetsFromSupabase(){
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user) return false;
+    const {data,error}=await db.from('medal_presets').select('data').eq('user_id',user.id).maybeSingle();
+    if(error||!data) return false;
+    const p=data.data;
+    if(Array.isArray(p)&&p.length===8){
+      labMedalPresets=p;
+      localStorage.setItem(PRESET_KEY,JSON.stringify(p));
+      return true;
+    }
+  }catch(e){ console.warn('presets load err',e); }
+  return false;
+}
+
+async function _savePresetsToSupabase(){
+  try{
+    const {data:{user}}=await db.auth.getUser();
+    if(!user) return;
+    await db.from('medal_presets').upsert({user_id:user.id,data:labMedalPresets,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  }catch(e){ console.warn('presets save err',e); }
+}
+
+function labRenderMedalPresets(){
+  const grid = document.getElementById('medalPresetGrid');
+  if(!grid) return;
+  grid.innerHTML = labMedalPresets.map((preset, i)=>{
+    const obj = _presetToObj(preset);
+    const count = obj ? (obj.slots||[]).filter(Boolean).length : 0;
+    const colors = obj ? [...new Set(
+      (obj.slots||[]).filter(Boolean).flatMap(name=>{
+        const m=LAB_MEDALS.find(x=>x.name===name);
+        return m ? [m.c1, m.c2].filter(Boolean) : [];
+      })
+    )] : [];
+    const dots = colors.slice(0,5).map(c=>
+      `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${MEDAL_COLOR_HEX[c]||'#9399b2'};margin:0 1px;vertical-align:middle;"></span>`
+    ).join('');
+    return `<div class="medal-preset-card${preset?' has-data':''}">
+      <div class="medal-preset-num">パターン${i+1}</div>
+      <div class="medal-preset-info">${preset ? count+'枚 '+dots : '未保存'}</div>
+      <div class="medal-preset-btns">
+        <button class="medal-preset-btn" onclick="labSaveMedalPreset(${i})">保存</button>
+        ${preset ? `<button class="medal-preset-btn load" onclick="labLoadMedalPreset(${i})">読込</button>` : ''}
+        ${preset ? `<button class="medal-preset-btn del" onclick="labDeleteMedalPreset(${i})">✕</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function labSaveMedalPreset(idx){
+  if(!labMedalSlots.filter(Boolean).length){ alert('メダルを選択してください'); return; }
+  labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities] };
+  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  labRenderMedalPresets();
+  labRefreshCalcMedalSelect();
+  _savePresetsToSupabase();
+}
+
+function labLoadMedalPreset(idx){
+  const obj = _presetToObj(labMedalPresets[idx]);
+  if(!obj) return;
+  labMedalSlots    = [...(obj.slots    || Array(10).fill(null))];
+  labMedalRarities = [...(obj.rarities || Array(10).fill('gold'))];
+  const next = labMedalSlots.findIndex(v=>!v);
+  labActiveMedalSlot = next >= 0 ? next : 0;
+  labRenderMedalSlots();
+  labRenderMedalList();
+  labUpdateMedalResult();
+}
+
+function labDeleteMedalPreset(idx){
+  if(!confirm(`パターン${idx+1}を削除しますか？`)) return;
+  labMedalPresets[idx] = null;
+  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  labRenderMedalPresets();
+  labRefreshCalcMedalSelect();
+  _savePresetsToSupabase();
+}
+
+// ---- レアリティ切替（per-slot / 一括） ----
+function labSetSlotRarity(r){
+  labMedalRarities[labActiveMedalSlot] = r;
+  labRenderMedalSlots();
+  labUpdateMedalResult();
+}
+function labSetAllRarity(r){
+  labMedalRarities = labMedalRarities.map((_,i)=> labMedalSlots[i] ? r : 'gold');
+  labRenderMedalSlots();
+  labUpdateMedalResult();
+}
+
+// ---- 結果集計 ----
+function labUpdateMedalResult(){
+  if(!LAB_MEDALS) return;
+  const colorCount = {};
+  const totalStats = {};
+
+  labMedalSlots.forEach((name, si)=>{
+    if(!name) return;
+    const m = LAB_MEDALS.find(x=>x.name===name);
+    if(!m) return;
+    const slotRar = labMedalRarities[si]||'gold';
+    // カラーカウント（c1・c2両方を加算）
+    if(m.c1) colorCount[m.c1]=(colorCount[m.c1]||0)+1;
+    if(m.c2) colorCount[m.c2]=(colorCount[m.c2]||0)+1;
+    // ステータス集計（per-slotレアリティ）
+    if(m.upStat&&m.upStat!=='なし'){
+      const v=labMedalGetVal(m,slotRar,'up');
+      if(v!=null) totalStats[m.upStat]=(totalStats[m.upStat]||0)+v;
+    }
+    if(m.dnStat&&m.dnStat!=='なし'){
+      const v=labMedalGetVal(m,slotRar,'dn');
+      if(v!=null) totalStats[m.dnStat]=(totalStats[m.dnStat]||0)+v;
+    }
+  });
+
+  // カラー内訳
+  const colorDiv=document.getElementById('labMedalColorCount');
+  if(colorDiv){
+    const entries=Object.entries(colorCount);
+    colorDiv.innerHTML=entries.length
+      ? entries.sort((a,b)=>b[1]-a[1]).map(([c,n])=>{
+          const hex=MEDAL_COLOR_HEX[c]||'#9399b2';
+          const tiers=LAB_MEDAL_SETS?.[c]||[];
+          const active=tiers.filter(t=>n>=t.count);
+          const topEffect=active.length?active[active.length-1]:null;
+          return `<div class="medal-color-badge">
+            <span class="medal-color-dot" style="background:${hex};"></span>
+            <span>${c} ${n}枚</span>
+            ${topEffect?`<span style="color:var(--win);font-size:10px;">▲${topEffect.target} ${topEffect.val}${topEffect.isPct?'%':''}</span>`:''}
+          </div>`;
+        }).join('')
+      : '<span style="font-size:12px;color:var(--text3);">メダル未選択</span>';
+  }
+
+  // セット効果一覧（各色の全閾値を表示、達成済みは緑）
+  const setEl=document.getElementById('labMedalSetEffects');
+  if(setEl){
+    const html=Object.entries(colorCount).sort((a,b)=>b[1]-a[1]).flatMap(([c,n])=>{
+      const hex=MEDAL_COLOR_HEX[c]||'#9399b2';
+      const tiers=LAB_MEDAL_SETS?.[c]||[];
+      return tiers.map(t=>{
+        const on=n>=t.count;
+        return `<div class="medal-set-row ${on?'medal-set-on':'medal-set-off'}">
+          <span class="medal-color-dot" style="background:${hex};"></span>
+          <span class="medal-set-tag ${on?'medal-set-tag-on':'medal-set-tag-off'}">${t.count}枚</span>
+          <span style="flex:1;">${c}：${t.target} ${t.val}${t.isPct?'%':''}</span>
+          <span style="font-size:10px;">${n}/${t.count}${on?' ✓':''}</span>
+        </div>`;
+      });
+    }).join('');
+    setEl.innerHTML=html||'<div style="font-size:12px;color:var(--text3);">セット効果なし</div>';
+  }
+
+  // 合計ステータス
+  const el=document.getElementById('labMedalTotal');
+  if(Object.keys(totalStats).length){
+    labRenderStatGrid(el,totalStats,'var(--accent)');
+  } else if(el){
+    el.innerHTML='<div class="empty" style="font-size:12px;grid-column:span 2;">メダルを選択すると集計されます</div>';
+  }
+}
+
+// labUpdateMedalBonus は互換のため残す
+const labUpdateMedalBonus = labUpdateMedalResult;
+
+// ---- メダルヘルプ ----
+function showCalcHelp(){
+  const el = document.getElementById('calcHelpOverlay');
+  if(el){ el.style.display='flex'; document.body.style.overflow='hidden'; }
+}
+function closeCalcHelp(){
+  const el = document.getElementById('calcHelpOverlay');
+  if(el){ el.style.display='none'; document.body.style.overflow=''; }
+}
+function showMedalHelp(){
+  const el = document.getElementById('medalHelpOverlay');
+  if(el){ el.style.display='flex'; document.body.style.overflow='hidden'; }
+}
+function closeMedalHelp(){
+  const el = document.getElementById('medalHelpOverlay');
+  if(el){ el.style.display='none'; document.body.style.overflow=''; }
 }
 </script>
 </body>
