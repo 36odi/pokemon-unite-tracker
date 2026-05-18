@@ -2242,6 +2242,7 @@ const CHANGELOG = [
       'ステータス計算にもちものの特殊効果を追加（ゴール数・KO/アシストスタック・ダメージ受けスタック・常時%補正・回復/シールド倍率）',
       'もちものの比較機能を追加（現在の構成をAとして保存し、変更後の構成と差分を3列表示）',
       'ポケモン変更時に計算結果・比較スナップショットを自動クリアするよう改善',
+      'シリーズ別勝率推移グラフのY軸を20〜80%に変更し、推移が見やすいよう改善',
     ]
   },
   {
@@ -2885,7 +2886,7 @@ function renderTrendChart(){
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='50%ライン'?null:ctx.parsed.y+'%'}}},
       scales:{
-        y:{min:0,max:100,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
+        y:{min:20,max:80,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
         x:{ticks:{color:'#9399b2',maxTicksLimit:8},grid:{color:'#2e3250'}}
       }
     }
