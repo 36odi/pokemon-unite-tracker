@@ -503,6 +503,17 @@
   .lab-item-label{font-size:11px;color:var(--text3);width:18px;flex-shrink:0;font-weight:600;}
   .lab-grade-lbl{font-size:11px;font-weight:700;color:var(--accent);min-width:30px;flex-shrink:0;}
   .lab-grade-range{flex:1;accent-color:var(--accent);height:4px;cursor:pointer;}
+  .lab-goal-range{flex:1;accent-color:#ffa726;height:4px;cursor:pointer;}
+  .lab-snap-btn{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--accent);color:var(--accent);background:none;cursor:pointer;}
+  .lab-snap-btn:hover{background:var(--accent);color:#fff;}
+  .lab-snap-clear{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--text3);color:var(--text3);background:none;cursor:pointer;}
+  .lab-snap-clear:hover{border-color:var(--loss);color:var(--loss);}
+  .lab-cmp-grid{display:grid;grid-template-columns:1fr auto auto auto;gap:3px 10px;align-items:baseline;}
+  .lab-cmp-hdr{font-size:10px;color:var(--text3);text-align:right;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .lab-cmp-name{font-size:12px;color:var(--text2);}
+  .lab-cmp-val{font-size:13px;font-weight:600;text-align:right;}
+  .lab-cmp-diff{font-size:12px;font-weight:600;text-align:right;}
+  .lab-cmp-up{color:var(--win);} .lab-cmp-down{color:var(--loss);} .lab-cmp-same{color:var(--text3);}
   /* ダメージ表示 */
   .lab-damage-box{background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 10px;text-align:center;margin-top:4px;}
   .lab-damage-num{font-size:22px;font-weight:700;color:var(--accent);}
@@ -1148,7 +1159,7 @@
         </div>
         <div style="margin-bottom:10px;">
           <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">ポケモン</div>
-          <select class="lab-select" id="labPokeSelect">
+          <select class="lab-select" id="labPokeSelect" onchange="labOnPokeChange()">
             <option value="">— 選択してください —</option>
           </select>
         </div>
@@ -1167,7 +1178,7 @@
           <div class="lab-item-row">
             <div class="lab-item-row-top">
               <span class="lab-item-label">①</span>
-              <select class="lab-select" id="labItem1" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+              <select class="lab-select" id="labItem1" onchange="labUpdateGoalRow();labUpdateStackRow();labUpdateDmgStackRow();calcLabStatsIfReady()"><option value="">なし</option></select>
             </div>
             <div class="lab-item-row-bot">
               <span class="lab-grade-lbl" id="labGradeLabel1">G30</span>
@@ -1178,7 +1189,7 @@
           <div class="lab-item-row">
             <div class="lab-item-row-top">
               <span class="lab-item-label">②</span>
-              <select class="lab-select" id="labItem2" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+              <select class="lab-select" id="labItem2" onchange="labUpdateGoalRow();labUpdateStackRow();labUpdateDmgStackRow();calcLabStatsIfReady()"><option value="">なし</option></select>
             </div>
             <div class="lab-item-row-bot">
               <span class="lab-grade-lbl" id="labGradeLabel2">G30</span>
@@ -1189,13 +1200,45 @@
           <div class="lab-item-row">
             <div class="lab-item-row-top">
               <span class="lab-item-label">③</span>
-              <select class="lab-select" id="labItem3" onchange="calcLabStatsIfReady()"><option value="">なし</option></select>
+              <select class="lab-select" id="labItem3" onchange="labUpdateGoalRow();labUpdateStackRow();labUpdateDmgStackRow();calcLabStatsIfReady()"><option value="">なし</option></select>
             </div>
             <div class="lab-item-row-bot">
               <span class="lab-grade-lbl" id="labGradeLabel3">G30</span>
               <input type="range" class="lab-grade-range" id="labGrade3" min="1" max="40" value="30"
                 oninput="document.getElementById('labGradeLabel3').textContent='G'+this.value;calcLabStatsIfReady()">
             </div>
+          </div>
+        </div>
+
+        <!-- ダメージ受けスタック数（じゃくてんほけん等装備時のみ表示） -->
+        <div id="labDmgStackRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">ダメージ受けスタック数</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">ダメージを受けるたびに+1（最大4回）</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="labDmgStackLabel">0スタック</span>
+            <input type="range" class="lab-goal-range" id="labDmgStackSlider" min="0" max="4" value="0"
+              oninput="document.getElementById('labDmgStackLabel').textContent=this.value+'スタック';calcLabStatsIfReady()">
+          </div>
+        </div>
+
+        <!-- KO/アシストスタック数（スタック系アイテム装備時のみ表示） -->
+        <div id="labStackRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">KO/アシスト スタック数</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">KOで+2、アシストで+1（最大20）</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="labStackLabel">0スタック</span>
+            <input type="range" class="lab-goal-range" id="labStackSlider" min="0" max="20" value="0"
+              oninput="document.getElementById('labStackLabel').textContent=this.value+'スタック';calcLabStatsIfReady()">
+          </div>
+        </div>
+
+        <!-- ゴール数（ゴールボーナスアイテム装備時のみ表示） -->
+        <div id="labGoalRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">ゴール数</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="labGoalLabel">0ゴール</span>
+            <input type="range" class="lab-goal-range" id="labGoalSlider" min="0" max="6" value="0"
+              oninput="document.getElementById('labGoalLabel').textContent=this.value+'ゴール';calcLabStatsIfReady()">
           </div>
         </div>
 
@@ -1218,8 +1261,14 @@
           <div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 4px;">メダル補正</div>
           <div id="labMedalBonus" class="lab-stat-grid"></div>
         </div>
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin:12px 0 4px;">合計</div>
-        <div id="labTotalStats" class="lab-stat-grid"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text2);">合計</span>
+          <div style="display:flex;gap:6px;">
+            <button id="labSnapBtn" class="lab-snap-btn" onclick="labSaveSnapshot()">Aとして保存</button>
+            <button id="labSnapClear" class="lab-snap-clear" onclick="labClearSnapshot()" style="display:none;">クリア</button>
+          </div>
+        </div>
+        <div id="labTotalStats"></div>
       </div>
 
       <!-- スキルダメージカード -->
@@ -2183,13 +2232,16 @@ function showPage(page){
 const CHANGELOG = [
   {
     version: 'v3.2',
-    date: '2026-05-18',
+    date: '2026-05-19',
     items: [
       'スキルダメージ比較に通常攻撃を追加（全ポケモン対応）',
       'スキルデータを更新（わざの強化後(+)形式を追加し、強化前後のダメージを比較できるよう改善）',
       'スキルデータのダメージ種別表記を日本語に統一',
       'メダル補正の防御・特防下降値を赤字で表示するよう改善',
       'ヘルプモーダルのスマホ対応を改善（iOS Safariで背景がスクロールしてしまう問題を修正）',
+      'ステータス計算にもちものの特殊効果を追加（ゴール数・KO/アシストスタック・ダメージ受けスタック・常時%補正・回復/シールド倍率）',
+      'もちものの比較機能を追加（現在の構成をAとして保存し、変更後の構成と差分を3列表示）',
+      'ポケモン変更時に計算結果・比較スナップショットを自動クリアするよう改善',
     ]
   },
   {
@@ -4462,6 +4514,133 @@ let labDataReady  = false;
 let labSkillPoke  = null; // スキルカードに表示中のポケモン
 
 // スライダー変更時のリアルタイム計算（ポケモン選択済みの場合のみ）
+const LAB_PCT_ITEMS = {
+  'ものしりメガネ': { stat:'特攻', tiers:[3, 5, 7] },
+};
+
+const LAB_DMG_STACK_ITEMS = {
+  'じゃくてんほけん': { stat:'攻撃', tiers:[1.5, 2.0, 2.5], maxStacks:4 },
+};
+
+function labUpdateDmgStackRow(){
+  const has=[1,2,3].some(s=>LAB_DMG_STACK_ITEMS[document.getElementById('labItem'+s)?.value||'']);
+  const row=document.getElementById('labDmgStackRow');
+  if(!row) return;
+  row.style.display=has?'block':'none';
+  if(!has){
+    const sl=document.getElementById('labDmgStackSlider');
+    const lb=document.getElementById('labDmgStackLabel');
+    if(sl) sl.value=0;
+    if(lb) lb.textContent='0スタック';
+  }
+}
+
+const LAB_STACK_ITEMS = {
+  'ドライブレンズ': { stat:'特攻', tiers:[0.3, 0.45, 0.6], maxStacks:20 },
+  'アクセルリスト': { stat:'攻撃', tiers:[0.3, 0.45, 0.6], maxStacks:20 },
+};
+
+function labUpdateStackRow(){
+  const has=[1,2,3].some(s=>LAB_STACK_ITEMS[document.getElementById('labItem'+s)?.value||'']);
+  const row=document.getElementById('labStackRow');
+  if(!row) return;
+  row.style.display=has?'block':'none';
+  if(!has){
+    const sl=document.getElementById('labStackSlider');
+    const lb=document.getElementById('labStackLabel');
+    if(sl) sl.value=0;
+    if(lb) lb.textContent='0スタック';
+  }
+}
+
+const LAB_SUPPORT_ITEMS = {
+  'レスキューフード': { type:'healShield', tiers:[11,14,17] },
+};
+
+function labGetHealShieldMult(){
+  let pct=0;
+  for(let s=1;s<=3;s++){
+    const name=document.getElementById('labItem'+s)?.value;
+    const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+    if(!name||!LAB_SUPPORT_ITEMS[name]) continue;
+    const info=LAB_SUPPORT_ITEMS[name];
+    if(info.type!=='healShield') continue;
+    const tier=grade>=20?2:grade>=10?1:0;
+    pct+=info.tiers[tier];
+  }
+  return pct>0?{mult:1+pct/100,pct}:{mult:1,pct:0};
+}
+
+const LAB_GOAL_ITEMS = {
+  'エオスビスケット': { stat:'HP',   tiers:[100,150,200], maxGoals:6 },
+  'もうこうダンベル': { stat:'攻撃',  tiers:[6,9,12],     maxGoals:6 },
+  'しんげきメガネ':   { stat:'特攻',  tiers:[8,12,16],    maxGoals:6 },
+};
+
+function labUpdateGoalRow(){
+  const hasGoalItem=[1,2,3].some(s=>LAB_GOAL_ITEMS[document.getElementById('labItem'+s)?.value||'']);
+  const row=document.getElementById('labGoalRow');
+  if(!row) return;
+  row.style.display=hasGoalItem?'block':'none';
+  if(!hasGoalItem){
+    const sl=document.getElementById('labGoalSlider');
+    const lb=document.getElementById('labGoalLabel');
+    if(sl){ sl.value=0; }
+    if(lb){ lb.textContent='0ゴール'; }
+  }
+}
+
+let labSnapshotA = null;
+
+function labOnPokeChange(){
+  document.getElementById('labResultCard').style.display='none';
+  labCalcResult=null;
+  labSnapshotA=null;
+  const sc=document.getElementById('labSnapClear');
+  if(sc) sc.style.display='none';
+  calcLabStatsIfReady();
+}
+
+function labSaveSnapshot(){
+  if(!labCalcResult) return;
+  labSnapshotA={...labCalcResult};
+  const sc=document.getElementById('labSnapClear');
+  if(sc) sc.style.display='';
+  labRenderTotals(labCalcResult);
+}
+
+function labClearSnapshot(){
+  labSnapshotA=null;
+  const sc=document.getElementById('labSnapClear');
+  if(sc) sc.style.display='none';
+  if(labCalcResult) labRenderTotals(labCalcResult);
+}
+
+function labRenderTotals(totals){
+  const el=document.getElementById('labTotalStats');
+  if(!el) return;
+  if(!labSnapshotA){ labRenderStatGrid(el, totals, 'var(--accent)'); return; }
+  const keys=[...new Set([...Object.keys(labSnapshotA),...Object.keys(totals)])];
+  const ordered=LAB_STAT_ORDER.filter(k=>keys.includes(k));
+  el.innerHTML=`<div class="lab-cmp-grid">
+    <div></div>
+    <div class="lab-cmp-hdr">パターンA</div>
+    <div class="lab-cmp-hdr">現在</div>
+    <div class="lab-cmp-hdr">差分</div>
+    ${ordered.map(k=>{
+      const a=labSnapshotA[k]||0; const b=totals[k]||0;
+      const diff=Math.round((b-a)*10)/10;
+      const dc=diff>0?'lab-cmp-up':diff<0?'lab-cmp-down':'lab-cmp-same';
+      const ds=diff>0?'+'+diff:diff===0?'±0':String(diff);
+      const fmt=v=>Number.isInteger(v)?v.toLocaleString():v.toFixed(1);
+      return `<div class="lab-cmp-name">${k}</div>
+        <div class="lab-cmp-val" style="color:var(--text3);">${fmt(a)}</div>
+        <div class="lab-cmp-val" style="color:var(--accent);">${fmt(b)}</div>
+        <div class="lab-cmp-diff ${dc}">${ds}</div>`;
+    }).join('')}
+  </div>`;
+}
+
 function calcLabStatsIfReady(){
   if(document.getElementById('labPokeSelect')?.value) calcLabStats(false);
 }
@@ -4557,6 +4736,62 @@ function calcLabStats(scroll=false){
     });
   }
 
+  // --- 常時パーセント補正 ---
+  for(let s=1;s<=3;s++){
+    const name=document.getElementById('labItem'+s)?.value;
+    const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+    if(!name||!LAB_PCT_ITEMS[name]) continue;
+    const info=LAB_PCT_ITEMS[name];
+    const tier=grade>=20?2:grade>=10?1:0;
+    const mapped=LAB_STAT_MAP[info.stat]||info.stat;
+    const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]/100);
+    itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
+  }
+
+  // --- ダメージ受けスタック補正 ---
+  const dmgStackCount=parseInt(document.getElementById('labDmgStackSlider')?.value||'0');
+  if(dmgStackCount>0){
+    for(let s=1;s<=3;s++){
+      const name=document.getElementById('labItem'+s)?.value;
+      const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+      if(!name||!LAB_DMG_STACK_ITEMS[name]) continue;
+      const info=LAB_DMG_STACK_ITEMS[name];
+      const tier=grade>=20?2:grade>=10?1:0;
+      const mapped=LAB_STAT_MAP[info.stat]||info.stat;
+      const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]*dmgStackCount/100);
+      itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
+    }
+  }
+
+  // --- KO/アシストスタック補正 ---
+  const stackCount=parseInt(document.getElementById('labStackSlider')?.value||'0');
+  if(stackCount>0){
+    for(let s=1;s<=3;s++){
+      const name=document.getElementById('labItem'+s)?.value;
+      const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+      if(!name||!LAB_STACK_ITEMS[name]) continue;
+      const info=LAB_STACK_ITEMS[name];
+      const tier=grade>=20?2:grade>=10?1:0;
+      const mapped=LAB_STAT_MAP[info.stat]||info.stat;
+      const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]*stackCount/100);
+      itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
+    }
+  }
+
+  // --- ゴールボーナス補正 ---
+  const goalCount=parseInt(document.getElementById('labGoalSlider')?.value||'0');
+  if(goalCount>0){
+    for(let s=1;s<=3;s++){
+      const name=document.getElementById('labItem'+s)?.value;
+      const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
+      if(!name||!LAB_GOAL_ITEMS[name]) continue;
+      const info=LAB_GOAL_ITEMS[name];
+      const tier=grade>=20?2:grade>=10?1:0;
+      const mapped=LAB_STAT_MAP[info.stat]||info.stat;
+      itemBonus[mapped]=(itemBonus[mapped]||0)+info.tiers[tier]*goalCount;
+    }
+  }
+
   // --- メダル補正（任意） ---
   const medalSelVal = document.getElementById('labMedalSetSel')?.value;
   const medalBonus = {};
@@ -4581,7 +4816,7 @@ function calcLabStats(scroll=false){
   } else {
     if(medalSec) medalSec.style.display='none';
   }
-  labRenderStatGrid(document.getElementById('labTotalStats'),totals,'var(--accent)');
+  labRenderTotals(totals);
   document.getElementById('labResultCard').style.display='block';
   labCalcResult=totals;
 
@@ -4726,13 +4961,18 @@ function _calcDmgHtml(r){
   else if(/HP/i.test(st))                    { base=labCalcResult['HP']||0;   statLabel='HP';   }
   const lv = parseInt(document.getElementById('labLvSlider')?.value||'9');
   const lvBonus = lvScale * (lv - 1);
-  const perHit = Math.round((coeff/100)*base + lvBonus + fixed);
+  const baseVal = Math.round((coeff/100)*base + lvBonus + fixed);
+  // 回復・シールド行にレスキューフード倍率を適用
+  const isHealShield = /回復|シールド/.test(r.dmgType||'');
+  const {mult, pct} = isHealShield ? labGetHealShieldMult() : {mult:1, pct:0};
+  const perHit = pct>0 ? Math.round(baseVal * mult) : baseVal;
   const hits = r.hits || 1;
   const hitsVar = r.hitsVar || false;
   // 式の表示
   const parts = [`${coeff}% × ${base}`];
   if(lvScale) parts.push(`${lvScale} × (Lv${lv}-1)`);
   parts.push(`${fixed}`);
+  if(pct>0) parts.push(`× ${mult.toFixed(2)} (レスキューフード +${pct}%)`);
   const formula = parts.join(' + ');
   const label = r.dmgType || (statLabel+'ダメージ');
   // ヒット数が複数の場合は合計も表示
