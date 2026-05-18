@@ -370,6 +370,17 @@
   .h-date{font-size:10px;color:var(--text3);}
   .h-actions{display:flex;gap:0;}
 
+  /* 日別勝率 */
+  .daily-wr-row{display:grid;grid-template-columns:52px 1fr 70px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .daily-wr-row:last-child{border-bottom:none;}
+  .daily-wr-date{font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;}
+  .daily-wr-bar-wrap{position:relative;height:16px;background:var(--bg);border-radius:4px;overflow:hidden;}
+  .daily-wr-bar{height:100%;border-radius:4px;transition:width .3s;}
+  .daily-wr-bar.wr-win{background:var(--win);}
+  .daily-wr-bar.wr-loss{background:var(--loss);}
+  .daily-wr-bar.wr-even{background:#9399b2;}
+  .daily-wr-stats{font-size:11px;color:var(--text2);text-align:right;white-space:nowrap;}
+
   @media(max-width:480px){
     .h-card{padding:8px 10px;gap:7px;min-height:68px;}
     .h-poke-img{width:48px;height:48px;}
@@ -1022,6 +1033,11 @@
         </div>
         <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">直近10試合ごとの勝率推移</div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="card-title" style="margin-bottom:12px;">日別勝率</div>
+        <div id="dailyWrList"><div class="empty">データなし</div></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
       </div>
     </div>
     <!-- シリーズ比較 -->
@@ -2864,6 +2880,7 @@ function renderTrendChart(){
   if(trendChartInst){trendChartInst.destroy();trendChartInst=null;}
   if(!s||!s.battles.length){
     canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    renderDailyWinRate([]);
     return;
   }
   const bs=s.battles;
@@ -2902,6 +2919,50 @@ function renderTrendChart(){
       }
     }
   });
+  renderDailyWinRate(bs);
+}
+
+function renderDailyWinRate(battles){
+  const el=document.getElementById('dailyWrList');
+  if(!el) return;
+  if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
+
+  // AM9:00を日の切り替えとしてゲーム日付キーを生成
+  const OFFSET_MS=9*60*60*1000;
+  const toGameDay=ts=>{
+    const d=new Date(new Date(ts).getTime()-OFFSET_MS);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  const fmt=key=>{
+    const [,m,d]=key.split('-');
+    return `${parseInt(m)}/${parseInt(d)}`;
+  };
+
+  // 日別に集計
+  const map={};
+  for(const b of battles){
+    if(!b.created_at) continue;
+    const key=toGameDay(b.created_at);
+    if(!map[key]) map[key]={win:0,loss:0};
+    if(b.result==='win') map[key].win++;
+    else map[key].loss++;
+  }
+
+  // 新しい日が上
+  const keys=Object.keys(map).sort((a,b)=>b.localeCompare(a));
+  el.innerHTML=keys.map(k=>{
+    const {win,loss}=map[k];
+    const total=win+loss;
+    const wr=total>0?Math.round(win/total*100):0;
+    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
+    return `<div class="daily-wr-row">
+      <div class="daily-wr-date">${fmt(k)}</div>
+      <div class="daily-wr-bar-wrap">
+        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
+      </div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+    </div>`;
+  }).join('');
 }
 
 function renderCompareChart(){
