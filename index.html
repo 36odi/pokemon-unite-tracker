@@ -1754,20 +1754,21 @@
 
 <!-- ドロワーメニュー -->
 <!-- 不具合報告/改善要望モーダル -->
-<div class="modal-overlay" id="feedbackOverlay" onclick="closeFeedbackModal()" style="display:none;"></div>
-<div class="modal-card" id="feedbackModal" style="display:none;max-width:340px;">
-  <div class="card-title" style="margin-bottom:12px;">💬 不具合報告 / 改善要望</div>
-  <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">
-    不具合を見つけた場合や、機能の改善・追加のご要望は、開発・運用元のXアカウントへのリプライまたはDMでお気軽にお知らせください。
-  </p>
-  <p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px;">
-    📌 できるだけ具体的な状況（どの画面で・何をしたら・どうなったか）を教えていただけると助かります。
-  </p>
-  <a href="https://x.com/36musyokuodi" target="_blank" rel="noopener"
-    style="display:flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;">
-    𝕏 @36musyokuodi を開く
-  </a>
-  <button class="btn-cancel" onclick="closeFeedbackModal()" style="width:100%;">閉じる</button>
+<div class="modal-overlay" id="feedbackModal" onclick="if(event.target===this)closeFeedbackModal()">
+  <div class="modal" style="max-width:340px;">
+    <div class="card-title" style="margin-bottom:12px;">💬 不具合報告 / 改善要望</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">
+      不具合を見つけた場合や、機能の改善・追加のご要望は、開発・運用元のXアカウントへのリプライまたはDMでお気軽にお知らせください。
+    </p>
+    <p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px;">
+      📌 できるだけ具体的な状況（どの画面で・何をしたら・どうなったか）を教えていただけると助かります。
+    </p>
+    <a href="https://x.com/36musyokuodi" target="_blank" rel="noopener"
+      style="display:flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;">
+      𝕏 @36musyokuodi を開く
+    </a>
+    <button class="btn-cancel" onclick="closeFeedbackModal()" style="width:100%;">閉じる</button>
+  </div>
 </div>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
@@ -3004,8 +3005,8 @@ function openHelp(section){
 // ---- ドロワー ----
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('open');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
-function openFeedbackModal(){document.getElementById('feedbackOverlay').style.display='block';document.getElementById('feedbackModal').style.display='block';}
-function closeFeedbackModal(){document.getElementById('feedbackOverlay').style.display='none';document.getElementById('feedbackModal').style.display='none';}
+function openFeedbackModal(){document.getElementById('feedbackModal').classList.add('open');}
+function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
 
 // ---- 分析 ----
 let trendChartInst=null, compareChartInst=null;
