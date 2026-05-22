@@ -547,6 +547,15 @@
   .lab-skill-slot-lbl{font-size:10px;font-weight:700;color:var(--accent);text-align:center;padding:3px 0;background:var(--accent-bg);border-radius:var(--radius-sm);letter-spacing:.05em;}
   .lab-skill-col .lab-select{font-size:12px;margin-top:0;}
   .lab-dmg-out{min-height:36px;}
+  /* ダメージ計算タブ 出力行 */
+  .lab-dmg-row{display:flex;flex-direction:column;gap:4px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .lab-dmg-row:last-child{border-bottom:none;}
+  .lab-dmg-label{font-size:11px;color:var(--text3);line-height:1.4;}
+  .lab-dmg-val{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .dc-raw{font-size:13px;font-weight:600;color:var(--text2);}
+  .dc-arrow{font-size:12px;color:var(--text3);}
+  .dc-act{font-size:16px;font-weight:700;color:var(--win);}
+  .dc-note{font-size:10px;color:var(--text3);}
   /* レベル */
   .lab-lv-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .lab-lv-val{font-size:14px;font-weight:700;color:var(--accent);min-width:18px;text-align:center;}
@@ -1175,6 +1184,7 @@
     <!-- サブタブ -->
     <div class="analysis-tabs">
       <div class="analysis-tab active" onclick="switchLab('calc')">🧮 ステータス計算</div>
+      <div class="analysis-tab" onclick="switchLab('dmg')">⚔️ ダメージ計算</div>
       <div class="analysis-tab" onclick="switchLab('medal')">🎖️ メダルセット作成</div>
     </div>
 
@@ -1337,6 +1347,163 @@
           <div id="labDmgOutUnite" class="lab-dmg-out"></div>
         </div>
       </div>
+    </div>
+
+    <!-- ===== ダメージ計算 パネル ===== -->
+    <div id="labDmgCalcPanel" style="display:none;">
+
+      <div style="background:#ffa72618;border:1px solid #ffa72660;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#ffa726;line-height:1.7;">
+        ⚠️ <strong>プレビュー版</strong><br>
+        表示されるダメージはゲーム内の実際の値と異なる場合があります。参考程度にご活用ください。
+      </div>
+
+      <!-- 攻撃側 -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">⚔️ 攻撃側（自分）</div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">ポケモン</div>
+          <select class="lab-select" id="dcAtkPoke" onchange="dcPokeChanged()"><option value="">— 選択してください —</option></select>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div class="lab-lv-row">
+            <span style="font-size:11px;color:var(--text3);">レベル</span>
+            <span class="lab-lv-val" id="dcAtkLvLabel">9</span>
+          </div>
+          <input type="range" id="dcAtkLv" min="1" max="15" value="9" style="width:100%;accent-color:var(--accent);"
+            oninput="document.getElementById('dcAtkLvLabel').textContent=this.value;dcCalcIfReady()">
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">①</span>
+            <select class="lab-select" id="dcAtkItem1" onchange="dcUpdateSpecialRows();dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcAtkGLbl1">G30</span>
+            <input type="range" class="lab-grade-range" id="dcAtkGrade1" min="1" max="40" value="30"
+              oninput="document.getElementById('dcAtkGLbl1').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">②</span>
+            <select class="lab-select" id="dcAtkItem2" onchange="dcUpdateSpecialRows();dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcAtkGLbl2">G30</span>
+            <input type="range" class="lab-grade-range" id="dcAtkGrade2" min="1" max="40" value="30"
+              oninput="document.getElementById('dcAtkGLbl2').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">③</span>
+            <select class="lab-select" id="dcAtkItem3" onchange="dcUpdateSpecialRows();dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcAtkGLbl3">G30</span>
+            <input type="range" class="lab-grade-range" id="dcAtkGrade3" min="1" max="40" value="30"
+              oninput="document.getElementById('dcAtkGLbl3').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+        <!-- ダメージ受けスタック -->
+        <div id="dcDmgStackRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">ダメージ受けスタック数</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">ダメージを受けるたびに+1（最大4回）</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="dcDmgStackLabel">0スタック</span>
+            <input type="range" class="lab-goal-range" id="dcDmgStackSlider" min="0" max="4" value="0"
+              oninput="document.getElementById('dcDmgStackLabel').textContent=this.value+'スタック';dcCalcIfReady()">
+          </div>
+        </div>
+        <!-- KO/アシストスタック -->
+        <div id="dcStackRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;">KO/アシスト スタック数</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">KOで+2、アシストで+1（最大20）</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="dcStackLabel">0スタック</span>
+            <input type="range" class="lab-goal-range" id="dcStackSlider" min="0" max="20" value="0"
+              oninput="document.getElementById('dcStackLabel').textContent=this.value+'スタック';dcCalcIfReady()">
+          </div>
+        </div>
+        <!-- ゴール数 -->
+        <div id="dcGoalRow" style="display:none;margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">ゴール数</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="lab-grade-lbl" id="dcGoalLabel">0ゴール</span>
+            <input type="range" class="lab-goal-range" id="dcGoalSlider" min="0" max="6" value="0"
+              oninput="document.getElementById('dcGoalLabel').textContent=this.value+'ゴール';dcCalcIfReady()">
+          </div>
+        </div>
+        <!-- メダルセット -->
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-top:14px;margin-bottom:6px;">メダルセット（任意）</div>
+        <select class="lab-select" id="dcAtkMedal" onchange="dcCalcIfReady()" style="margin-top:0;">
+          <option value="">— 使用しない —</option>
+        </select>
+      </div>
+
+      <!-- 防御側 -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-title" style="margin-bottom:12px;">🛡️ 防御側（相手）</div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">ポケモン</div>
+          <select class="lab-select" id="dcDefPoke" onchange="dcPokeChanged()"><option value="">— 選択してください —</option></select>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div class="lab-lv-row">
+            <span style="font-size:11px;color:var(--text3);">レベル</span>
+            <span class="lab-lv-val" id="dcDefLvLabel">9</span>
+          </div>
+          <input type="range" id="dcDefLv" min="1" max="15" value="9" style="width:100%;accent-color:var(--accent);"
+            oninput="document.getElementById('dcDefLvLabel').textContent=this.value;dcCalcIfReady()">
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">①</span>
+            <select class="lab-select" id="dcDefItem1" onchange="dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcDefGLbl1">G30</span>
+            <input type="range" class="lab-grade-range" id="dcDefGrade1" min="1" max="40" value="30"
+              oninput="document.getElementById('dcDefGLbl1').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">②</span>
+            <select class="lab-select" id="dcDefItem2" onchange="dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcDefGLbl2">G30</span>
+            <input type="range" class="lab-grade-range" id="dcDefGrade2" min="1" max="40" value="30"
+              oninput="document.getElementById('dcDefGLbl2').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+        <div class="lab-item-row">
+          <div class="lab-item-row-top"><span class="lab-item-label">③</span>
+            <select class="lab-select" id="dcDefItem3" onchange="dcCalcIfReady()"><option value="">なし</option></select></div>
+          <div class="lab-item-row-bot"><span class="lab-grade-lbl" id="dcDefGLbl3">G30</span>
+            <input type="range" class="lab-grade-range" id="dcDefGrade3" min="1" max="40" value="30"
+              oninput="document.getElementById('dcDefGLbl3').textContent='G'+this.value;dcCalcIfReady()"></div>
+        </div>
+      </div>
+
+      <button class="btn-save" style="width:100%;margin-top:8px;" onclick="calcDmgCalcMain(true)">計算する</button>
+
+      <!-- 結果カード -->
+      <div class="card" id="dcResultCard" style="display:none;margin-top:12px;">
+        <div id="dcStatSummary" style="margin-bottom:12px;"></div>
+        <!-- わざ1 / わざ2 -->
+        <div class="lab-skill-grid">
+          <div class="lab-skill-col">
+            <div class="lab-skill-slot-lbl">わざ 1</div>
+            <select class="lab-select" id="dcSkill1Sel" onchange="dcSkillChanged(1)"><option value="">— わざを選択 —</option></select>
+            <select class="lab-select" id="dcSkill1Upg" onchange="dcUpdateDmgOutput()" style="font-size:11px;padding:5px 8px;display:none;"><option value="">—</option></select>
+            <div id="dcDmgOut1" class="lab-dmg-out"></div>
+          </div>
+          <div class="lab-skill-col">
+            <div class="lab-skill-slot-lbl">わざ 2</div>
+            <select class="lab-select" id="dcSkill2Sel" onchange="dcSkillChanged(2)"><option value="">— わざを選択 —</option></select>
+            <select class="lab-select" id="dcSkill2Upg" onchange="dcUpdateDmgOutput()" style="font-size:11px;padding:5px 8px;display:none;"><option value="">—</option></select>
+            <div id="dcDmgOut2" class="lab-dmg-out"></div>
+          </div>
+        </div>
+        <!-- 通常攻撃 -->
+        <div id="dcNormalSection" style="display:none;margin-top:10px;">
+          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
+          <div id="dcDmgOutNormal" class="lab-dmg-out"></div>
+        </div>
+        <!-- ユナイトわざ -->
+        <div id="dcUniteSection" style="display:none;margin-top:10px;">
+          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">ユナイトわざ</div>
+          <div id="dcDmgOutUnite" class="lab-dmg-out"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.6;">
+          実ダメ = ⌊⌊生ダメ × 600 ÷ (600 + 防御)⌋ × (1 − 割合無視)⌋ × (1 − 被軽減)
+        </div>
+      </div>
+
     </div>
 
     <!-- ===== メダルセット作成 パネル ===== -->
@@ -2258,6 +2425,14 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v3.3',
+    date: '2026-05-20',
+    items: [
+      'ラボにダメージ計算タブを追加（攻撃側・防御側のポケモン/もちもの/メダルを設定し、防御補正後の実ダメージを算出）',
+      'ダメージ計算の出力を矢印形式（生ダメ → 実ダメ）に変更し視認性を改善',
+    ]
+  },
   {
     version: 'v3.2',
     date: '2026-05-19',
@@ -4761,10 +4936,12 @@ function labInitUI(){
 // ---- サブタブ切替 ----
 function switchLab(tab){
   document.querySelectorAll('#labPage .analysis-tab').forEach((t,i)=>{
-    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='medal'));
+    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='dmg')||(i===2&&tab==='medal'));
   });
   document.getElementById('labCalcPanel').style.display=tab==='calc'?'block':'none';
+  document.getElementById('labDmgCalcPanel').style.display=tab==='dmg'?'block':'none';
   document.getElementById('labMedalPanel').style.display=tab==='medal'?'block':'none';
+  if(tab==='dmg') dcInitUI();
 }
 
 // ---- ステータス計算 ----
@@ -5154,6 +5331,299 @@ function labRefreshCalcMedalSelect(){
   if(cur!=='' && sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
 }
 
+// ================================================================
+// ダメージ計算タブ
+// ================================================================
+
+// 共通ステータス計算（攻撃側・防御側両用）
+function computeStats({poke,lv,items,dmgStack=0,koStack=0,goalCount=0,medalPresetIdx=null}){
+  const sd=LAB_STATUS?.[poke];
+  if(!sd) return null;
+  const idx=lv-1;
+  const base={
+    HP:sd.hp[idx]||0, 攻撃:sd.atk[idx]||0, 防御:sd.def[idx]||0,
+    特攻:sd.spatk[idx]||0, 特防:sd.spdef[idx]||0, 移動速度:sd.ms[idx]||0,
+  };
+  const tierFor=g=>g>=20?2:g>=10?1:0;
+  const ib={};
+  // グレード補正
+  for(const {name,grade} of items){
+    if(!name||!LAB_ITEMS?.[name]) continue;
+    const gs=LAB_ITEMS[name][grade-1]||{};
+    Object.entries(gs).forEach(([k,v])=>{ const m=LAB_STAT_MAP[k]||k; ib[m]=(ib[m]||0)+v; });
+  }
+  // 常時%補正
+  for(const {name,grade} of items){
+    if(!name||!LAB_PCT_ITEMS?.[name]) continue;
+    const info=LAB_PCT_ITEMS[name]; const tier=tierFor(grade);
+    const m=LAB_STAT_MAP[info.stat]||info.stat;
+    ib[m]=(ib[m]||0)+Math.round((base[m]||0)*info.tiers[tier]/100);
+  }
+  // ダメージ受けスタック
+  if(dmgStack>0) for(const {name,grade} of items){
+    if(!name||!LAB_DMG_STACK_ITEMS?.[name]) continue;
+    const info=LAB_DMG_STACK_ITEMS[name]; const tier=tierFor(grade);
+    const m=LAB_STAT_MAP[info.stat]||info.stat;
+    ib[m]=(ib[m]||0)+Math.round((base[m]||0)*info.tiers[tier]*dmgStack/100);
+  }
+  // KO/アシストスタック
+  if(koStack>0) for(const {name,grade} of items){
+    if(!name||!LAB_STACK_ITEMS?.[name]) continue;
+    const info=LAB_STACK_ITEMS[name]; const tier=tierFor(grade);
+    const m=LAB_STAT_MAP[info.stat]||info.stat;
+    ib[m]=(ib[m]||0)+Math.round((base[m]||0)*info.tiers[tier]*koStack/100);
+  }
+  // ゴール補正
+  if(goalCount>0) for(const {name,grade} of items){
+    if(!name||!LAB_GOAL_ITEMS?.[name]) continue;
+    const info=LAB_GOAL_ITEMS[name]; const tier=tierFor(grade);
+    const m=LAB_STAT_MAP[info.stat]||info.stat;
+    ib[m]=(ib[m]||0)+info.tiers[tier]*goalCount;
+  }
+  // メダル補正
+  const mb={};
+  if(medalPresetIdx!==null){
+    const bonus=labCalcMedalBonus(medalPresetIdx,base);
+    Object.entries(bonus).forEach(([k,v])=>{ mb[k]=(mb[k]||0)+v; });
+  }
+  const totals={...base};
+  Object.entries(ib).forEach(([k,v])=>{ totals[k]=(totals[k]||0)+v; });
+  Object.entries(mb).forEach(([k,v])=>{ totals[k]=(totals[k]||0)+v; });
+  return totals;
+}
+
+// ---- DC: 実ダメージ計算式 ----
+function dcCalcActual(raw,def,pen=0,pctIgnore=0,dmgReduce=0){
+  const defAdj=Math.max(0,def-pen);
+  const step1=Math.floor(raw*600/(600+defAdj));
+  const step2=Math.floor(step1*(1-pctIgnore));
+  const step3=Math.floor(step2*(1-dmgReduce));
+  return Math.max(1,step3);
+}
+
+// ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
+function _dcDmgHtml(r,atkStats,defStats,atkLv){
+  if(!r||r.coeff==null||r.coeff<=0) return null;
+  const st=r.stat||'攻撃';
+  let atkStat=0;
+  if(/特攻|sp_?atk/i.test(st))      atkStat=atkStats['特攻']||0;
+  else if(/HP/i.test(st))            atkStat=atkStats['HP']||0;
+  else                               atkStat=atkStats['攻撃']||0;
+  const defStat=/特攻|sp_?atk/i.test(st)?(defStats['特防']||0):(defStats['防御']||0);
+  const rawPerHit=Math.round(r.coeff/100*atkStat+(r.lvScale||0)*(atkLv-1)+(r.fixed||0));
+  if(rawPerHit<=0) return null;
+  const isHealShield=/回復|シールド/.test(r.dmgType||'');
+  const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat);
+  const hits=r.hits||1;
+  const label=r.dmgType||'ダメージ';
+  const upgTag=r.upg?`<span style="font-size:10px;color:var(--accent);margin-left:3px;">[${r.upg}]</span>`:'';
+  if(isHealShield){
+    return `<div class="lab-dmg-row">
+      <span class="lab-dmg-label">${label}${upgTag}</span>
+      <div class="lab-dmg-val"><span class="dc-act" style="color:#ffa726;">${rawPerHit.toLocaleString()}</span>${hits>1?`<span class="dc-note">× ${r.hitsVar?`最大${hits}ヒット`:`${hits}ヒット`} = ${(rawPerHit*hits).toLocaleString()}</span>`:''}</div>
+    </div>`;
+  }
+  if(hits>1){
+    const hitsNote=r.hitsVar?`最大${hits}ヒット`:`${hits}ヒット`;
+    return `<div class="lab-dmg-row">
+      <span class="lab-dmg-label">${label}${upgTag} <span class="dc-note">(${hitsNote})</span></span>
+      <div class="lab-dmg-val"><span class="dc-note">1ヒット</span><span class="dc-raw">${rawPerHit.toLocaleString()}</span><span class="dc-arrow">→</span><span class="dc-act">${actPerHit.toLocaleString()}</span></div>
+      <div class="lab-dmg-val"><span class="dc-note">合計</span><span class="dc-raw">${(rawPerHit*hits).toLocaleString()}</span><span class="dc-arrow">→</span><span class="dc-act" style="font-size:18px;">${(actPerHit*hits).toLocaleString()}</span></div>
+    </div>`;
+  }
+  return `<div class="lab-dmg-row">
+    <span class="lab-dmg-label">${label}${upgTag}</span>
+    <div class="lab-dmg-val"><span class="dc-raw">${rawPerHit.toLocaleString()}</span><span class="dc-arrow">→</span><span class="dc-act">${actPerHit.toLocaleString()}</span></div>
+  </div>`;
+}
+
+// ---- DC: 状態変数 ----
+let dcAtkStats=null, dcDefStats=null, dcCurAtkPoke=null, dcInited=false;
+
+// ---- DC: UI初期化 ----
+function dcInitUI(){
+  if(!labDataReady) return;
+  if(!dcInited){
+    const pokes=Object.keys(LAB_STATUS||{}).sort((a,b)=>a.localeCompare(b,'ja'));
+    const po='<option value="">— 選択してください —</option>'+pokes.map(p=>`<option value="${p}">${p}</option>`).join('');
+    ['dcAtkPoke','dcDefPoke'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=po; });
+    const items=Object.keys(LAB_ITEMS||{}).sort((a,b)=>a.localeCompare(b,'ja'));
+    const io='<option value="">なし</option>'+items.map(i=>`<option value="${i}">${i}</option>`).join('');
+    ['dcAtkItem1','dcAtkItem2','dcAtkItem3','dcDefItem1','dcDefItem2','dcDefItem3'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=io; });
+    dcInited=true;
+  }
+  dcRefreshMedalSelect();
+}
+
+function dcRefreshMedalSelect(){
+  const sel=document.getElementById('dcAtkMedal');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— 使用しない —</option>';
+  labMedalPresets.forEach((preset,i)=>{
+    if(!preset) return;
+    const obj=_presetToObj(preset);
+    const count=(obj?.slots||[]).filter(Boolean).length;
+    const opt=document.createElement('option');
+    opt.value=i; opt.textContent=`パターン${i+1}（${count}枚）`;
+    sel.appendChild(opt);
+  });
+  if(cur!==''&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+}
+
+// ---- DC: 特殊スライダー表示制御 ----
+function dcUpdateSpecialRows(){
+  const names=[1,2,3].map(i=>document.getElementById(`dcAtkItem${i}`)?.value||'');
+  const show=(id,flag,resetId,resetLbl,resetSuffix)=>{
+    const row=document.getElementById(id);
+    if(!row) return;
+    row.style.display=flag?'block':'none';
+    if(!flag){
+      const sl=document.getElementById(resetId); if(sl) sl.value=0;
+      const lb=document.getElementById(resetLbl); if(lb) lb.textContent='0'+resetSuffix;
+    }
+  };
+  show('dcGoalRow',   names.some(n=>LAB_GOAL_ITEMS?.[n]),   'dcGoalSlider',   'dcGoalLabel',   'ゴール');
+  show('dcStackRow',  names.some(n=>LAB_STACK_ITEMS?.[n]),  'dcStackSlider',  'dcStackLabel',  'スタック');
+  show('dcDmgStackRow',names.some(n=>LAB_DMG_STACK_ITEMS?.[n]),'dcDmgStackSlider','dcDmgStackLabel','スタック');
+}
+
+// ---- DC: ポケモン変更 ----
+function dcPokeChanged(){
+  dcCalcIfReady();
+}
+
+// ---- DC: 自動再計算（結果表示中のみ） ----
+function dcCalcIfReady(){
+  const atk=document.getElementById('dcAtkPoke')?.value;
+  const def=document.getElementById('dcDefPoke')?.value;
+  if(!atk||!def) return;
+  const rc=document.getElementById('dcResultCard');
+  if(rc&&rc.style.display==='none') return;
+  calcDmgCalcMain(false);
+}
+
+// ---- DC: メイン計算 ----
+function calcDmgCalcMain(scroll=false){
+  const atkPoke=document.getElementById('dcAtkPoke')?.value;
+  const defPoke=document.getElementById('dcDefPoke')?.value;
+  if(!atkPoke||!defPoke) return;
+  const atkLv=parseInt(document.getElementById('dcAtkLv')?.value||9);
+  const defLv=parseInt(document.getElementById('dcDefLv')?.value||9);
+  const atkItems=[1,2,3].map(i=>({name:document.getElementById(`dcAtkItem${i}`)?.value||'',grade:parseInt(document.getElementById(`dcAtkGrade${i}`)?.value||30)}));
+  const defItems=[1,2,3].map(i=>({name:document.getElementById(`dcDefItem${i}`)?.value||'',grade:parseInt(document.getElementById(`dcDefGrade${i}`)?.value||30)}));
+  const medalVal=document.getElementById('dcAtkMedal')?.value;
+  dcAtkStats=computeStats({
+    poke:atkPoke, lv:atkLv, items:atkItems,
+    dmgStack:parseInt(document.getElementById('dcDmgStackSlider')?.value||0),
+    koStack: parseInt(document.getElementById('dcStackSlider')?.value||0),
+    goalCount:parseInt(document.getElementById('dcGoalSlider')?.value||0),
+    medalPresetIdx:medalVal!==''?parseInt(medalVal):null,
+  });
+  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems});
+  if(!dcAtkStats||!dcDefStats) return;
+  // ポケモン変更時のみスキルセレクト再構築
+  if(dcCurAtkPoke!==atkPoke){ dcCurAtkPoke=atkPoke; dcUpdateSkillSelects(atkPoke); }
+  dcRenderStatSummary(atkPoke,atkLv,defPoke,defLv);
+  dcUpdateDmgOutput();
+  const rc=document.getElementById('dcResultCard');
+  if(rc) rc.style.display='block';
+  if(scroll) setTimeout(()=>document.getElementById('dcResultCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+// ---- DC: スキルセレクト更新 ----
+function dcUpdateSkillSelects(poke){
+  const skills=LAB_SKILLS?.[poke]||[];
+  for(let slot=1;slot<=2;slot++){
+    const sel=document.getElementById(`dcSkill${slot}Sel`);
+    const upgSel=document.getElementById(`dcSkill${slot}Upg`);
+    if(!sel) continue;
+    const names=[...new Set(skills.filter(r=>r.slot==='わざ'+slot&&r.coeff!=null).map(r=>r.name))];
+    sel.innerHTML='<option value="">— わざを選択 —</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+    sel.value='';
+    if(upgSel){ upgSel.innerHTML='<option value="">—</option>'; upgSel.style.display='none'; }
+    const out=document.getElementById(`dcDmgOut${slot}`);
+    if(out) out.innerHTML='';
+    // わざが1択なら自動選択
+    if(names.length===1){ sel.value=names[0]; dcSkillChanged(slot); }
+  }
+  const ns=document.getElementById('dcNormalSection'); if(ns) ns.style.display='none';
+  const us=document.getElementById('dcUniteSection');  if(us) us.style.display='none';
+}
+
+// ---- DC: わざ変更（アップグレード選択更新） ----
+function dcSkillChanged(slot){
+  const poke=document.getElementById('dcAtkPoke')?.value;
+  const name=document.getElementById(`dcSkill${slot}Sel`)?.value;
+  const upgSel=document.getElementById(`dcSkill${slot}Upg`);
+  if(!upgSel) return;
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
+  const upgs=[...new Set(rows.map(r=>r.upg))];
+  if(upgs.length>1){
+    upgSel.innerHTML=upgs.map(u=>u?`<option value="${u}">Lv${u} アップグレード後</option>`:`<option value="">アップグレードなし</option>`).join('');
+    upgSel.style.display='';
+  } else {
+    upgSel.innerHTML='<option value="">—</option>';
+    upgSel.style.display='none';
+  }
+  dcUpdateDmgOutput();
+}
+
+// ---- DC: ダメージ出力更新 ----
+function dcUpdateDmgOutput(){
+  if(!dcAtkStats||!dcDefStats) return;
+  const poke=document.getElementById('dcAtkPoke')?.value;
+  const atkLv=parseInt(document.getElementById('dcAtkLv')?.value||9);
+  const skills=LAB_SKILLS?.[poke]||[];
+  // わざ1/2
+  for(let slot=1;slot<=2;slot++){
+    const name=document.getElementById(`dcSkill${slot}Sel`)?.value;
+    const upgVal=document.getElementById(`dcSkill${slot}Upg`)?.value||'';
+    const out=document.getElementById(`dcDmgOut${slot}`);
+    if(!out) continue;
+    if(!name){ out.innerHTML=''; continue; }
+    let rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
+    if(rows.some(r=>r.upg===upgVal)) rows=rows.filter(r=>r.upg===upgVal);
+    const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+    out.innerHTML=html||'<div class="empty" style="font-size:12px;">ダメージなし</div>';
+  }
+  // 通常攻撃
+  const normalRows=skills.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null&&r.coeff>0);
+  const ns=document.getElementById('dcNormalSection');
+  const no=document.getElementById('dcDmgOutNormal');
+  if(ns&&no){
+    ns.style.display=normalRows.length?'block':'none';
+    no.innerHTML=normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+  }
+  // ユナイトわざ
+  const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null&&r.coeff>0);
+  const us=document.getElementById('dcUniteSection');
+  const uo=document.getElementById('dcDmgOutUnite');
+  if(us&&uo){
+    us.style.display=uniteRows.length?'block':'none';
+    uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+  }
+}
+
+// ---- DC: ステータスサマリー ----
+function dcRenderStatSummary(atkPoke,atkLv,defPoke,defLv){
+  const el=document.getElementById('dcStatSummary');
+  if(!el||!dcAtkStats||!dcDefStats) return;
+  const fmt=v=>Math.round(v||0).toLocaleString();
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:4px;">
+    <div style="background:var(--bg);border-radius:6px;padding:8px;">
+      <div style="font-weight:700;color:var(--accent);margin-bottom:4px;">⚔️ ${atkPoke} Lv${atkLv}</div>
+      <div style="color:var(--text2);">攻撃: <b>${fmt(dcAtkStats['攻撃'])}</b></div>
+      <div style="color:var(--text2);">特攻: <b>${fmt(dcAtkStats['特攻'])}</b></div>
+    </div>
+    <div style="background:var(--bg);border-radius:6px;padding:8px;">
+      <div style="font-weight:700;color:var(--loss);margin-bottom:4px;">🛡️ ${defPoke} Lv${defLv}</div>
+      <div style="color:var(--text2);">防御: <b>${fmt(dcDefStats['防御'])}</b></div>
+      <div style="color:var(--text2);">特防: <b>${fmt(dcDefStats['特防'])}</b></div>
+    </div>
+  </div>`;
+}
+
 function labInitMedalUI(){
   if(!LAB_MEDALS) return;
   labMedalSlots = Array(10).fill(null);
@@ -5386,9 +5856,9 @@ function labLoadMedalPresets(){
     const s = localStorage.getItem(PRESET_KEY);
     if(s){ const p=JSON.parse(s); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
   }catch(e){}
-  labRefreshCalcMedalSelect(); // ローカル読込直後に即時反映
+  labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); // ローカル読込直後に即時反映
   // Supabaseから非同期読込（完了したらUIを更新）
-  _loadPresetsFromSupabase().then(ok=>{ if(ok){ labRenderMedalPresets(); labRefreshCalcMedalSelect(); } });
+  _loadPresetsFromSupabase().then(ok=>{ if(ok){ labRenderMedalPresets(); labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); } });
 }
 
 async function _loadPresetsFromSupabase(){
@@ -5447,7 +5917,7 @@ function labSaveMedalPreset(idx){
   labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities] };
   localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
   labRenderMedalPresets();
-  labRefreshCalcMedalSelect();
+  labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   _savePresetsToSupabase();
 }
 
@@ -5468,7 +5938,7 @@ function labDeleteMedalPreset(idx){
   labMedalPresets[idx] = null;
   localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
   labRenderMedalPresets();
-  labRefreshCalcMedalSelect();
+  labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   _savePresetsToSupabase();
 }
 
