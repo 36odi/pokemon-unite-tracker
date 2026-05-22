@@ -56,6 +56,9 @@
   .email-section.visible{display:block;}
   .btn-primary{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-size:14px;font-weight:600;cursor:pointer;}
   .btn-primary:hover{opacity:0.9;}
+  .btn-guest{width:100%;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn-guest:hover{background:var(--bg3);}
+  .guest-badge{display:inline-block;font-size:10px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:middle;}
   .auth-msg{font-size:12px;margin-top:12px;text-align:center;min-height:16px;}
   .auth-msg.error{color:var(--loss);} .auth-msg.success{color:var(--win);}
 
@@ -715,6 +718,13 @@
       <button class="btn-primary" id="authBtn" onclick="authAction()">ログイン</button>
     </div>
     <div class="auth-msg" id="authMsg"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap;">または</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+    <button class="btn-guest" onclick="loginAsGuest()">ゲストとして試す</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">登録不要・すべての機能をお試しいただけます</div>
   </div>
 </div>
 
@@ -1123,6 +1133,23 @@
   </div>
 
   <div id="profilePage" style="display:none;">
+    <!-- ゲスト用プロフィール -->
+    <div id="guestProfileCard" style="display:none;">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">👤 ゲストモード</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">
+          現在ゲストとしてご利用中です。<br>
+          対戦記録・メダルプリセットはこのブラウザにのみ保存されており、別のデバイスやブラウザには引き継がれません。
+        </p>
+        <p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px;">
+          継続してご利用の場合はユーザー登録をおすすめします。
+        </p>
+        <button class="btn-guest" onclick="logoutAndRegister()" style="margin-bottom:8px;">ユーザー登録 / ログインへ</button>
+        <button class="btn-delete-account" onclick="deleteGuestData()" style="margin-top:8px;">ゲストデータをすべて削除してログアウト</button>
+      </div>
+    </div>
+    <!-- 通常ユーザー用プロフィール -->
+    <div id="normalProfileCards">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div class="card-title" style="margin-bottom:0;">表示名の変更</div>
@@ -1171,6 +1198,7 @@
       </p>
       <button class="btn-delete-account" onclick="deleteAccount()">すべてのデータを削除する</button>
     </div>
+    </div><!-- /normalProfileCards -->
   </div>
 
   <!-- ラボページ -->
@@ -1754,6 +1782,20 @@
 
 <!-- ドロワーメニュー -->
 <!-- 不具合報告/改善要望モーダル -->
+<div class="modal-overlay" id="guestRegModal" onclick="if(event.target===this)closeGuestRegModal(false)">
+  <div class="modal" style="max-width:320px;">
+    <div class="card-title" style="margin-bottom:12px;">💾 データの保存について</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">
+      ゲストのデータはこのブラウザのみに保存されます。<br>
+      ブラウザやデバイスが変わると引き継ぐことができません。<br>
+      継続してご利用の場合は<strong>ユーザー登録</strong>をおすすめします。
+    </p>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:16px;cursor:pointer;">
+      <input type="checkbox" id="guestHidePromptChk" /> 今後表示しない
+    </label>
+    <button class="btn-primary" onclick="closeGuestRegModal(true)" style="width:100%;">閉じる</button>
+  </div>
+</div>
 <div class="modal-overlay" id="feedbackModal" onclick="if(event.target===this)closeFeedbackModal()">
   <div class="modal" style="max-width:340px;">
     <div class="card-title" style="margin-bottom:12px;">💬 不具合報告 / 改善要望</div>
@@ -2401,7 +2443,63 @@ async function authAction(){
     }
   }
 }
-async function logout(){await db.auth.signOut();}
+// ===== ゲストモード =====
+const GUEST_SERIES_KEY='guest_series';
+function isGuest(){ return localStorage.getItem('guestMode')==='1'; }
+function guestGetSeries(){ try{ return JSON.parse(localStorage.getItem(GUEST_SERIES_KEY)||'[]'); }catch{ return []; } }
+function guestSaveSeries(list){ localStorage.setItem(GUEST_SERIES_KEY,JSON.stringify(list)); }
+function guestGetBattles(sid){ try{ return JSON.parse(localStorage.getItem('guest_battles_'+sid)||'[]'); }catch{ return []; } }
+function guestSaveBattles(sid,list){ localStorage.setItem('guest_battles_'+sid,JSON.stringify(list)); }
+function guestNextId(){ return 'g'+Date.now()+Math.random().toString(36).slice(2,6); }
+
+function loginAsGuest(){
+  localStorage.setItem('guestMode','1');
+  enterGuestMode();
+}
+function enterGuestMode(){
+  document.getElementById('authSection').style.display='none';
+  document.getElementById('appSection').style.display='block';
+  document.getElementById('usernameDisplay').innerHTML='ゲスト<span class="guest-badge">ゲスト</span>';
+  loadSeries();
+  initDetailSelects();
+}
+function showGuestRegPrompt(){
+  if(localStorage.getItem('guestHideRegPrompt')==='1') return;
+  const chk=document.getElementById('guestHidePromptChk');
+  if(chk) chk.checked=false;
+  document.getElementById('guestRegModal').classList.add('open');
+}
+function closeGuestRegModal(save){
+  if(save && document.getElementById('guestHidePromptChk')?.checked){
+    localStorage.setItem('guestHideRegPrompt','1');
+  }
+  document.getElementById('guestRegModal').classList.remove('open');
+}
+function logoutAndRegister(){
+  localStorage.removeItem('guestMode');
+  location.reload();
+}
+function deleteGuestData(){
+  showConfirm('ゲストデータを削除','対戦記録・シリーズをすべて削除してログアウトします。この操作は元に戻せません。','削除する',ok=>{
+    if(!ok) return;
+    const series=guestGetSeries();
+    series.forEach(s=>localStorage.removeItem('guest_battles_'+s.id));
+    localStorage.removeItem(GUEST_SERIES_KEY);
+    localStorage.removeItem('guestMode');
+    localStorage.removeItem('guestHideRegPrompt');
+    location.reload();
+  });
+}
+
+async function logout(){
+  if(isGuest()){
+    localStorage.removeItem('guestMode');
+    localStorage.removeItem('guestHideRegPrompt');
+    location.reload();
+    return;
+  }
+  await db.auth.signOut();
+}
 
 db.auth.onAuthStateChange(async(event,session)=>{
   document.getElementById('loading').style.display='none';
@@ -2409,7 +2507,7 @@ db.auth.onAuthStateChange(async(event,session)=>{
   if(event==='TOKEN_REFRESHED') return;
   // セッション切れ（リフレッシュ失敗）
   if(event==='SIGNED_OUT'&&document.getElementById('appSection').style.display==='block'){
-    showToast('セッションが切れました。再ログインしてください。','warn');
+    if(!isGuest()) showToast('セッションが切れました。再ログインしてください。','warn');
   }
   if(session){
     document.getElementById('authSection').style.display='none';
@@ -2425,6 +2523,7 @@ db.auth.onAuthStateChange(async(event,session)=>{
     loadSeries();
     initDetailSelects();
   } else {
+    if(isGuest()){ enterGuestMode(); return; }
     document.getElementById('authSection').style.display='flex';
     document.getElementById('appSection').style.display='none';
     currentSeriesId=null;battles=[];
@@ -2441,11 +2540,24 @@ function showPage(page){
   if(page==='analysis') loadAnalysis();
   if(page==='changelog') renderChangelog();
   if(page==='lab') loadLabData();
+  if(page==='profile'){
+    const g=isGuest();
+    document.getElementById('guestProfileCard').style.display=g?'block':'none';
+    document.getElementById('normalProfileCards').style.display=g?'none':'block';
+  }
 }
 
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v3.6',
+    date: '2026-05-22',
+    items: [
+      'ゲストログイン機能を追加（登録不要で全機能をお試しいただけます）',
+      'ゲスト利用時、対戦記録・メダルプリセット保存のタイミングでデータ引き継ぎに関する注意を表示',
+    ]
+  },
   {
     version: 'v3.5',
     date: '2026-05-22',
@@ -2727,7 +2839,7 @@ function renderChangelog(){
 async function openCsvModal(){
   document.getElementById('csvMsg').textContent='';
   // シリーズ一覧を取得して表示
-  const {data:seriesList}=await db.from('series').select('*').order('created_at',{ascending:false});
+  const seriesList=isGuest()?guestGetSeries():(await db.from('series').select('*').order('created_at',{ascending:false})).data||[];
   const listEl=document.getElementById('csvSeriesList');
   if(!seriesList||!seriesList.length){
     listEl.innerHTML='<div style="font-size:13px;color:var(--text3);">シリーズがありません</div>';
@@ -2757,8 +2869,14 @@ async function exportCsv(){
   const selectedNames=Object.fromEntries(checked.map(c=>[c.value,c.dataset.name]));
 
   // 選択シリーズの対戦データを取得
-  const {data:allBattles}=await db.from('battles').select('*').in('series_id',selectedIds).order('created_at',{ascending:false});
-  if(!allBattles||!allBattles.length){msg.textContent='選択したシリーズに記録がありません';return;}
+  let allBattles;
+  if(isGuest()){
+    allBattles=selectedIds.flatMap(sid=>guestGetBattles(sid)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  } else {
+    const {data}=await db.from('battles').select('*').in('series_id',selectedIds).order('created_at',{ascending:false});
+    allBattles=data||[];
+  }
+  if(!allBattles.length){msg.textContent='選択したシリーズに記録がありません';return;}
 
   const matchLabel={solo:'ソロ',duo:'デュオ/トリオ',full:'フルパ'};
   const resultLabel={win:'勝利',loss:'敗北'};
@@ -3030,6 +3148,13 @@ async function loadAnalysis(){
     return;
   }
   try {
+    if(isGuest()){
+      const sl=guestGetSeries();
+      allSeriesData=sl.map(s=>({
+        ...s,
+        battles:guestGetBattles(s.id).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
+      }));
+    } else {
     // P1: 必要列のみ取得
     const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
     const {data:allBattles,error:e2}=await db.from('battles')
@@ -3039,6 +3164,7 @@ async function loadAnalysis(){
       ...s,
       battles:(allBattles||[]).filter(b=>b.series_id===s.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
     }));
+    }
     // 勝率推移セレクト
     const sel=document.getElementById('trendSeriesSelect');
     sel.innerHTML=allSeriesData.length
@@ -3501,9 +3627,15 @@ async function loadSeries(){
   // S1: 並び順, S2: アーカイブ表示
   const showArchived=document.getElementById('showArchivedCheck')?.checked||false;
   const sortAsc=seriesSortMode==='name';
-  const sortCol=seriesSortMode==='name'?'name':'created_at';
-  const {data}=await db.from('series').select('*').order(sortCol,{ascending:sortAsc});
-  const list=(data||[]).filter(s=>showArchived||!s.archived);
+  let list;
+  if(isGuest()){
+    list=guestGetSeries().sort((a,b)=>sortAsc?a.name.localeCompare(b.name,'ja'):new Date(b.created_at)-new Date(a.created_at));
+    if(!showArchived) list=list.filter(s=>!s.archived);
+  } else {
+    const sortCol=seriesSortMode==='name'?'name':'created_at';
+    const {data}=await db.from('series').select('*').order(sortCol,{ascending:sortAsc});
+    list=(data||[]).filter(s=>showArchived||!s.archived);
+  }
   const sel=document.getElementById('seriesSelect');
   sel.innerHTML='<option value="">— シリーズを選択 —</option>';
   list.forEach(s=>{
@@ -3518,6 +3650,15 @@ async function loadSeries(){
 async function addSeries(){
   const name=document.getElementById('newSeriesInput').value.trim();
   if(!name)return;
+  if(isGuest()){
+    const s={id:guestNextId(),name,archived:false,created_at:new Date().toISOString()};
+    const list=guestGetSeries();list.unshift(s);guestSaveSeries(list);
+    document.getElementById('newSeriesInput').value='';
+    await loadSeries();
+    document.getElementById('seriesSelect').value=s.id;currentSeriesId=s.id;
+    document.getElementById('statsTitle').textContent=name;
+    await loadBattles();showCards(true);return;
+  }
   const {data:{user}}=await db.auth.getUser();
   const {data,error}=await db.from('series').insert({name,user_id:user.id}).select().single();
   if(!error){document.getElementById('newSeriesInput').value='';await loadSeries();document.getElementById('seriesSelect').value=data.id;currentSeriesId=data.id;document.getElementById('statsTitle').textContent=name;await loadBattles();showCards(true);}
@@ -3533,8 +3674,13 @@ async function onSeriesChange(){
     document.getElementById('historyList').innerHTML='<div class="card-loading-wrap"><div class="card-loading-circle"></div><div class="card-loading-text">読み込み中...</div></div>';
     await loadBattles();
     // S2: アーカイブ状態を取得
-    const {data:sd}=await db.from('series').select('archived').eq('id',currentSeriesId).single();
-    currentSeriesArchived=sd?.archived||false;
+    if(isGuest()){
+      const s=guestGetSeries().find(x=>x.id===currentSeriesId);
+      currentSeriesArchived=s?.archived||false;
+    } else {
+      const {data:sd}=await db.from('series').select('archived').eq('id',currentSeriesId).single();
+      currentSeriesArchived=sd?.archived||false;
+    }
     updateArchiveBtn();
     // U4: フォーム値を復元
     restoreForm();
@@ -3553,6 +3699,12 @@ async function deleteSeries(){
   const name=sel.options[sel.selectedIndex]?.text||'このシリーズ';
   showConfirm('シリーズを削除',`「${name}」を削除しますか？\n対戦記録もすべて削除されます。この操作は元に戻せません。`,'削除する',async ok=>{
     if(!ok)return;
+    if(isGuest()){
+      localStorage.removeItem('guest_battles_'+currentSeriesId);
+      guestSaveSeries(guestGetSeries().filter(s=>s.id!==currentSeriesId));
+      currentSeriesId=null;battles=[];showCards(false);await loadSeries();
+      showToast('シリーズを削除しました','success');return;
+    }
     const {error:e1}=await db.from('battles').delete().eq('series_id',currentSeriesId);
     const {error:e2}=await db.from('series').delete().eq('id',currentSeriesId);
     if(e1||e2){showToast('削除に失敗しました。もう一度お試しください。','error');return;}
@@ -3572,6 +3724,15 @@ function openRenameModal(){
 async function renameSeries(){
   const name=document.getElementById('renameInput').value.trim();
   if(!name){return;}
+  if(isGuest()){
+    const list=guestGetSeries();
+    const s=list.find(x=>x.id===currentSeriesId);
+    if(s){s.name=name;guestSaveSeries(list);}
+    document.getElementById('statsTitle').textContent=name;
+    await loadSeries();document.getElementById('seriesSelect').value=currentSeriesId;
+    document.getElementById('renameModal').classList.remove('open');
+    showToast('名前を変更しました','success');return;
+  }
   const {error}=await db.from('series').update({name}).eq('id',currentSeriesId);
   if(error){showToast('名前の変更に失敗しました。','error');return;}
   document.getElementById('statsTitle').textContent=name;
@@ -4028,6 +4189,11 @@ async function webShare(){
 }
 async function loadBattles(){
   if(!currentSeriesId)return;
+  if(isGuest()){
+    battles=guestGetBattles(currentSeriesId);
+    historyPage=1;analysisNeedsRefresh=true;
+    renderStats();renderHistory();return;
+  }
   // P1: 必要列のみ取得
   const {data}=await db.from('battles')
     .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,note,created_at,series_id')
@@ -4047,6 +4213,35 @@ async function record(result){
   const btnLoss=document.querySelector('.btn-loss');
   if(btnWin)btnWin.disabled=true;
   if(btnLoss)btnLoss.disabled=true;
+  if(isGuest()){
+    try{
+      const pokemon=selectedPoke||null;
+      const match_type=document.getElementById('matchType').value;
+      const rank=document.getElementById('rankSelect')?.value||null;
+      const skill1=document.getElementById('skill1')?.value||null;
+      const skill2=document.getElementById('skill2')?.value||null;
+      const dedicated=pokemon?DEDICATED_ITEMS[pokemon]:null;
+      const i1=dedicated||getItemPickerValue('ip1');
+      const i2=getItemPickerValue('ip2');
+      const i3=getItemPickerValue('ip3');
+      const items=[i1,i2,i3].filter(Boolean).join(',')||null;
+      const battle_item=getItemPickerValue('ipB');
+      const note=document.getElementById('noteInput')?.value.trim()||null;
+      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,note,created_at:new Date().toISOString(),series_id:currentSeriesId};
+      const list=guestGetBattles(currentSeriesId);list.unshift(battle);
+      guestSaveBattles(currentSeriesId,list);
+      if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item}));}catch{}}
+      const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';
+      persistForm();
+      await loadBattles();
+      showGuestRegPrompt();
+    }finally{
+      isRecording=false;
+      if(btnWin)btnWin.disabled=false;
+      if(btnLoss)btnLoss.disabled=false;
+    }
+    return;
+  }
   try {
     const {data:{user},error:authErr}=await db.auth.getUser();
     if(authErr||!user){showToast('セッションが切れました。再ログインしてください。','warn');setTimeout(()=>logout(),1800);return;}
@@ -4084,6 +4279,10 @@ async function record(result){
   }
 }
 async function deleteEntry(id){
+  if(isGuest()){
+    guestSaveBattles(currentSeriesId,guestGetBattles(currentSeriesId).filter(b=>b.id!==id));
+    await loadBattles();return;
+  }
   const {error}=await db.from('battles').delete().eq('id',id);
   if(error){showToast('削除に失敗しました。','error');return;}
   await loadBattles();
@@ -4092,6 +4291,11 @@ async function clearAll(){
   if(!currentSeriesId)return;
   showConfirm('全履歴を削除','このシリーズの全対戦履歴を削除しますか？\nこの操作は元に戻せません。','全削除する',async ok=>{
     if(!ok||!currentSeriesId)return;
+    if(isGuest()){
+      guestSaveBattles(currentSeriesId,[]);
+      battles=[];renderStats();renderHistory();
+      showToast('全履歴を削除しました','success');return;
+    }
     const {error}=await db.from('battles').delete().eq('series_id',currentSeriesId);
     if(error){showToast('削除に失敗しました。もう一度お試しください。','error');return;}
     await loadBattles();
@@ -4374,6 +4578,15 @@ function sortSeries(mode){
 async function toggleArchive(){
   if(!currentSeriesId)return;
   const newVal=!currentSeriesArchived;
+  if(isGuest()){
+    const list=guestGetSeries();
+    const s=list.find(x=>x.id===currentSeriesId);
+    if(s){s.archived=newVal;guestSaveSeries(list);}
+    currentSeriesArchived=newVal;
+    updateArchiveBtn();await loadSeries();
+    document.getElementById('seriesSelect').value=currentSeriesId;
+    showToast(newVal?'シリーズをアーカイブしました':'アーカイブを解除しました','success');return;
+  }
   const {error}=await db.from('series').update({archived:newVal}).eq('id',currentSeriesId);
   if(error){showToast('操作に失敗しました。','error');return;}
   currentSeriesArchived=newVal;
@@ -5956,6 +6169,7 @@ function labSaveMedalPreset(idx){
   localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
+  if(isGuest()){ showGuestRegPrompt(); return; }
   _savePresetsToSupabase();
 }
 
