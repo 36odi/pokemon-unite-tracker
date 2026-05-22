@@ -6108,6 +6108,7 @@ function labLoadMedalPresets(){
     if(s){ const p=JSON.parse(s); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
   }catch(e){}
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); // ローカル読込直後に即時反映
+  if(isGuest()) return; // ゲストはSupabase同期をスキップ
   // Supabaseから非同期読込（完了したらUIを更新）
   _loadPresetsFromSupabase().then(ok=>{ if(ok){ labRenderMedalPresets(); labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); } });
 }
