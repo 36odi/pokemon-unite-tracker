@@ -1380,9 +1380,12 @@
     <!-- ===== ダメージ計算 パネル ===== -->
     <div id="labDmgCalcPanel" style="display:none;">
 
-      <div style="background:#ffa72618;border:1px solid #ffa72660;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#ffa726;line-height:1.7;">
-        ⚠️ <strong>プレビュー版</strong><br>
-        表示されるダメージはゲーム内の実際の値と異なる場合があります。参考程度にご活用ください。
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;background:#ffa72618;border:1px solid #ffa72660;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:#ffa726;line-height:1.7;">
+          ⚠️ <strong>プレビュー版</strong><br>
+          表示されるダメージはゲーム内の実際の値と異なる場合があります。参考程度にご活用ください。
+        </div>
+        <button class="medal-help-btn" onclick="showDmgHelp()" style="flex-shrink:0;margin-top:2px;">❓ 使い方</button>
       </div>
 
       <!-- 攻撃側 -->
@@ -1723,6 +1726,47 @@
       <div class="help-row"><span class="help-icon">🎯</span><span><strong>ユナイトわざ</strong>は自動表示（選択不要）</span></div>
       <div class="help-row"><span class="help-icon">✕ ヒット</span><span>多段ヒット・継続ダメージのわざは <strong>1ヒット分 × 回数 → 合計</strong> も表示</span></div>
       <div class="help-tip">💡 ダメージは「合計」ステータス（もちもの・メダル込み）を元に計算されます。</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ダメージ計算 ヘルプモーダル -->
+<div class="help-overlay" id="dmgHelpOverlay" style="display:none;" onclick="if(event.target===this)closeDmgHelp()">
+  <div class="help-modal">
+    <div class="help-modal-header">
+      <div class="help-modal-title">⚔️ ダメージ計算 使い方</div>
+      <button class="help-modal-close" onclick="closeDmgHelp()">✕</button>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">基本の使い方</div>
+      <div class="help-row"><span class="help-icon">①</span><span><strong>攻撃側</strong>のポケモン・レベル・もちものを設定（任意でメダルセット）</span></div>
+      <div class="help-row"><span class="help-icon">②</span><span><strong>防御側</strong>のポケモン・レベル・もちものを設定</span></div>
+      <div class="help-row"><span class="help-icon">③</span><span>「<strong>計算する</strong>」ボタンを押すと結果カードへ自動スクロール</span></div>
+      <div class="help-row"><span class="help-icon">④</span><span>スライダーを動かすと<strong>リアルタイム再計算</strong></span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">結果の見方</div>
+      <div class="help-row"><span class="help-icon">⚔</span><span><strong>わざ1 / わざ2</strong>を選択するとダメージが表示</span></div>
+      <div class="help-row"><span class="help-icon">🔼</span><span><strong>アップグレード段階</strong>を切り替えて強化前後を比較可能</span></div>
+      <div class="help-row"><span class="help-icon">🎯</span><span><strong>通常攻撃・ユナイトわざ</strong>は自動表示（選択不要）</span></div>
+      <div class="help-row"><span class="help-icon">✕</span><span>多段ヒットわざは <strong>1ヒット × 回数 → 合計</strong> も表示</span></div>
+      <div class="help-tip">💡 ダメージは「生ダメ → 実ダメ」の形式で表示されます。</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">特殊スライダー</div>
+      <div class="help-row"><span class="help-icon">📈</span><span>一部もちものはスタック数・ゴール数などの追加スライダーが表示されます</span></div>
+      <div class="help-tip">💡 もちものを選択すると自動で表示されます。</div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">ダメージ計算式</div>
+      <div class="help-row" style="font-family:monospace;font-size:11px;line-height:1.8;word-break:break-all;">
+        実ダメ = ⌊⌊生ダメ × 600 ÷ (600 + 防御)⌋ × (1 − 割合無視)⌋ × (1 − 被軽減)
+      </div>
+      <div class="help-tip">⚠️ プレビュー版のため、実際のゲーム内の値と差異が生じることがあります。</div>
     </div>
   </div>
 </div>
@@ -3134,6 +3178,12 @@ function openDrawer(){document.getElementById('drawer').classList.add('open');do
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
 function openFeedbackModal(){document.getElementById('feedbackModal').classList.add('open');}
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
+function showCalcHelp(){document.getElementById('calcHelpOverlay').style.display='flex';}
+function closeCalcHelp(){document.getElementById('calcHelpOverlay').style.display='none';}
+function showMedalHelp(){document.getElementById('medalHelpOverlay').style.display='flex';}
+function closeMedalHelp(){document.getElementById('medalHelpOverlay').style.display='none';}
+function showDmgHelp(){document.getElementById('dmgHelpOverlay').style.display='flex';}
+function closeDmgHelp(){document.getElementById('dmgHelpOverlay').style.display='none';}
 
 // ---- 分析 ----
 let trendChartInst=null, compareChartInst=null;
