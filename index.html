@@ -1753,6 +1753,23 @@
 </div>
 
 <!-- ドロワーメニュー -->
+<!-- 不具合報告/改善要望モーダル -->
+<div class="modal-overlay" id="feedbackOverlay" onclick="closeFeedbackModal()" style="display:none;"></div>
+<div class="modal-card" id="feedbackModal" style="display:none;max-width:340px;">
+  <div class="card-title" style="margin-bottom:12px;">💬 不具合報告 / 改善要望</div>
+  <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px;">
+    不具合を見つけた場合や、機能の改善・追加のご要望は、開発・運用元のXアカウントへのリプライまたはDMでお気軽にお知らせください。
+  </p>
+  <p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px;">
+    📌 できるだけ具体的な状況（どの画面で・何をしたら・どうなったか）を教えていただけると助かります。
+  </p>
+  <a href="https://x.com/36musyokuodi" target="_blank" rel="noopener"
+    style="display:flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border-radius:var(--radius-sm);padding:12px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px;">
+    𝕏 @36musyokuodi を開く
+  </a>
+  <button class="btn-cancel" onclick="closeFeedbackModal()" style="width:100%;">閉じる</button>
+</div>
+
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-title">ページ</div>
@@ -1763,6 +1780,7 @@
   <div class="drawer-title">その他</div>
   <button class="drawer-item" onclick="openCsvModal();closeDrawer()">📥 CSVエクスポート</button>
   <button class="drawer-item" onclick="showPage('changelog');closeDrawer()">📋 更新履歴</button>
+  <button class="drawer-item" onclick="openFeedbackModal();closeDrawer()">💬 不具合報告 / 改善要望</button>
   <button class="drawer-item" onclick="logout();closeDrawer()">🚪 ログアウト</button>
   <div class="drawer-close" onclick="closeDrawer()">閉じる ✕</div>
 </div>
@@ -2426,6 +2444,14 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v3.4',
+    date: '2026-05-22',
+    items: [
+      'ダメージ計算タブの上部にプレビュー版の注意書きを追加',
+      'メニュー（☰）に「不具合報告 / 改善要望」項目を追加（Xアカウントへのリンク付き）',
+    ]
+  },
+  {
     version: 'v3.3',
     date: '2026-05-20',
     items: [
@@ -2978,6 +3004,8 @@ function openHelp(section){
 // ---- ドロワー ----
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('open');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
+function openFeedbackModal(){document.getElementById('feedbackOverlay').style.display='block';document.getElementById('feedbackModal').style.display='block';}
+function closeFeedbackModal(){document.getElementById('feedbackOverlay').style.display='none';document.getElementById('feedbackModal').style.display='none';}
 
 // ---- 分析 ----
 let trendChartInst=null, compareChartInst=null;
