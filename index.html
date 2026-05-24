@@ -1546,7 +1546,7 @@
           <div id="dcDmgOutUnite" class="lab-dmg-out"></div>
         </div>
         <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.6;">
-          実ダメ = ⌊⌊生ダメ × 600 ÷ (600 + 防御)⌋ × (1 − 割合無視)⌋ × (1 − 被軽減)
+          実ダメ = ⌊生ダメ × 600 ÷ (600 + 防御 × (1 − 割合無視))⌋ × (1 − 被軽減)
         </div>
       </div>
 
@@ -1779,7 +1779,7 @@
     <div class="help-section">
       <div class="help-section-title">ダメージ計算式</div>
       <div class="help-row" style="font-family:monospace;font-size:11px;line-height:1.8;word-break:break-all;">
-        実ダメ = ⌊⌊生ダメ × 600 ÷ (600 + 防御)⌋ × (1 − 割合無視)⌋ × (1 − 被軽減)
+        実ダメ = ⌊生ダメ × 600 ÷ (600 + 防御 × (1 − 割合無視))⌋ × (1 − 被軽減)
       </div>
       <div class="help-tip">⚠️ プレビュー版のため、実際のゲーム内の値と差異が生じることがあります。</div>
     </div>
@@ -5778,11 +5778,11 @@ function computeStats({poke,lv,items,dmgStack=0,koStack=0,goalCount=0,medalPrese
 
 // ---- DC: 実ダメージ計算式 ----
 function dcCalcActual(raw,def,pen=0,pctIgnore=0,dmgReduce=0){
-  const defAdj=Math.max(0,def-pen);
+  // 割合無視は防御値を直接削減（固定貫通と重なる場合は掛け算）
+  const defAdj=Math.max(0,(def-pen)*(1-pctIgnore));
   const step1=Math.floor(raw*600/(600+defAdj));
-  const step2=Math.floor(step1*(1-pctIgnore));
-  const step3=Math.floor(step2*(1-dmgReduce));
-  return Math.max(1,step3);
+  const step2=Math.floor(step1*(1-dmgReduce));
+  return Math.max(1,step2);
 }
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
