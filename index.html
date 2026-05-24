@@ -2488,16 +2488,19 @@ async function authAction(){
   }
 }
 // ===== ゲストモード =====
+const GUEST_MODE_KEY='guestMode';
 const GUEST_SERIES_KEY='guest_series';
-function isGuest(){ return localStorage.getItem('guestMode')==='1'; }
+const GUEST_HIDE_PROMPT_KEY='guestHideRegPrompt';
+const GUEST_BATTLES_PREFIX='guest_battles_';
+function isGuest(){ return localStorage.getItem(GUEST_MODE_KEY)==='1'; }
 function guestGetSeries(){ try{ return JSON.parse(localStorage.getItem(GUEST_SERIES_KEY)||'[]'); }catch{ return []; } }
 function guestSaveSeries(list){ localStorage.setItem(GUEST_SERIES_KEY,JSON.stringify(list)); }
-function guestGetBattles(sid){ try{ return JSON.parse(localStorage.getItem('guest_battles_'+sid)||'[]'); }catch{ return []; } }
-function guestSaveBattles(sid,list){ localStorage.setItem('guest_battles_'+sid,JSON.stringify(list)); }
+function guestGetBattles(sid){ try{ return JSON.parse(localStorage.getItem(GUEST_BATTLES_PREFIX+sid)||'[]'); }catch{ return []; } }
+function guestSaveBattles(sid,list){ localStorage.setItem(GUEST_BATTLES_PREFIX+sid,JSON.stringify(list)); }
 function guestNextId(){ return 'g'+Date.now()+Math.random().toString(36).slice(2,6); }
 
 function loginAsGuest(){
-  localStorage.setItem('guestMode','1');
+  localStorage.setItem(GUEST_MODE_KEY,'1');
   enterGuestMode();
 }
 function enterGuestMode(){
@@ -2508,37 +2511,40 @@ function enterGuestMode(){
   initDetailSelects();
 }
 function showGuestRegPrompt(){
-  if(localStorage.getItem('guestHideRegPrompt')==='1') return;
+  if(localStorage.getItem(GUEST_HIDE_PROMPT_KEY)==='1') return;
   const chk=document.getElementById('guestHidePromptChk');
   if(chk) chk.checked=false;
   document.getElementById('guestRegModal').classList.add('open');
 }
 function closeGuestRegModal(save){
   if(save && document.getElementById('guestHidePromptChk')?.checked){
-    localStorage.setItem('guestHideRegPrompt','1');
+    localStorage.setItem(GUEST_HIDE_PROMPT_KEY,'1');
   }
   document.getElementById('guestRegModal').classList.remove('open');
 }
 function logoutAndRegister(){
-  localStorage.removeItem('guestMode');
+  localStorage.removeItem(GUEST_MODE_KEY);
+  localStorage.removeItem(GUEST_HIDE_PROMPT_KEY);
   location.reload();
 }
 function deleteGuestData(){
   showConfirm('ゲストデータを削除','対戦記録・シリーズをすべて削除してログアウトします。この操作は元に戻せません。','削除する',ok=>{
     if(!ok) return;
     const series=guestGetSeries();
-    series.forEach(s=>localStorage.removeItem('guest_battles_'+s.id));
+    series.forEach(s=>localStorage.removeItem(GUEST_BATTLES_PREFIX+s.id));
     localStorage.removeItem(GUEST_SERIES_KEY);
-    localStorage.removeItem('guestMode');
-    localStorage.removeItem('guestHideRegPrompt');
+    localStorage.removeItem(GUEST_MODE_KEY);
+    localStorage.removeItem(GUEST_HIDE_PROMPT_KEY);
     location.reload();
   });
 }
 
 async function logout(){
   if(isGuest()){
-    localStorage.removeItem('guestMode');
-    localStorage.removeItem('guestHideRegPrompt');
+    // ゲストログアウト: データは保持（再ログイン後も引き続き利用可）
+    // データごと削除したい場合は deleteGuestData() を使用
+    localStorage.removeItem(GUEST_MODE_KEY);
+    localStorage.removeItem(GUEST_HIDE_PROMPT_KEY);
     location.reload();
     return;
   }
@@ -3178,12 +3184,6 @@ function openDrawer(){document.getElementById('drawer').classList.add('open');do
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
 function openFeedbackModal(){document.getElementById('feedbackModal').classList.add('open');}
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
-function showCalcHelp(){document.getElementById('calcHelpOverlay').style.display='flex';}
-function closeCalcHelp(){document.getElementById('calcHelpOverlay').style.display='none';}
-function showMedalHelp(){document.getElementById('medalHelpOverlay').style.display='flex';}
-function closeMedalHelp(){document.getElementById('medalHelpOverlay').style.display='none';}
-function showDmgHelp(){document.getElementById('dmgHelpOverlay').style.display='flex';}
-function closeDmgHelp(){document.getElementById('dmgHelpOverlay').style.display='none';}
 
 // ---- 分析 ----
 let trendChartInst=null, compareChartInst=null;
@@ -3750,7 +3750,7 @@ async function deleteSeries(){
   showConfirm('シリーズを削除',`「${name}」を削除しますか？\n対戦記録もすべて削除されます。この操作は元に戻せません。`,'削除する',async ok=>{
     if(!ok)return;
     if(isGuest()){
-      localStorage.removeItem('guest_battles_'+currentSeriesId);
+      localStorage.removeItem(GUEST_BATTLES_PREFIX+currentSeriesId);
       guestSaveSeries(guestGetSeries().filter(s=>s.id!==currentSeriesId));
       currentSeriesId=null;battles=[];showCards(false);await loadSeries();
       showToast('シリーズを削除しました','success');return;
@@ -6332,23 +6332,15 @@ function labUpdateMedalResult(){
 // labUpdateMedalBonus は互換のため残す
 const labUpdateMedalBonus = labUpdateMedalResult;
 
-// ---- メダルヘルプ ----
-function showCalcHelp(){
-  const el = document.getElementById('calcHelpOverlay');
-  if(el){ el.style.display='flex'; document.body.style.overflow='hidden'; }
-}
-function closeCalcHelp(){
-  const el = document.getElementById('calcHelpOverlay');
-  if(el){ el.style.display='none'; document.body.style.overflow=''; }
-}
-function showMedalHelp(){
-  const el = document.getElementById('medalHelpOverlay');
-  if(el){ el.style.display='flex'; document.body.style.overflow='hidden'; }
-}
-function closeMedalHelp(){
-  const el = document.getElementById('medalHelpOverlay');
-  if(el){ el.style.display='none'; document.body.style.overflow=''; }
-}
+// ---- ヘルプオーバーレイ ----
+function _openHelpOverlay(id){ const el=document.getElementById(id); if(el){ el.style.display='flex'; document.body.style.overflow='hidden'; } }
+function _closeHelpOverlay(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; document.body.style.overflow=''; } }
+function showCalcHelp(){ _openHelpOverlay('calcHelpOverlay'); }
+function closeCalcHelp(){ _closeHelpOverlay('calcHelpOverlay'); }
+function showMedalHelp(){ _openHelpOverlay('medalHelpOverlay'); }
+function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
+function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
+function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
 </body>
 </html>
