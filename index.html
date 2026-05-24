@@ -1054,10 +1054,25 @@
         <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">直近10試合ごとの勝率推移</div>
       </div>
-      <div class="card" style="margin-top:12px;">
-        <div class="card-title" style="margin-bottom:12px;">日別勝率</div>
-        <div id="dailyWrList"><div class="empty">データなし</div></div>
-        <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
+      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title" style="margin-bottom:0;">日別勝率</div>
+          <span class="poke-mode-arrow open">▼</span>
+        </div>
+        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+          <div id="dailyWrList"><div class="empty">データなし</div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title" style="margin-bottom:0;">週間別勝率</div>
+          <span class="poke-mode-arrow open">▼</span>
+        </div>
+        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+          <div id="weeklyWrList"><div class="empty">データなし</div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00 / 週は月曜〜日曜</div>
+        </div>
       </div>
     </div>
     <!-- シリーズ比較 -->
@@ -2601,6 +2616,14 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v3.7',
+    date: '2026-05-24',
+    items: [
+      '分析の勝率推移タブに週間別勝率を追加',
+      '日別・週間別勝率を折りたたみ表示に対応',
+    ]
+  },
+  {
     version: 'v3.6',
     date: '2026-05-22',
     items: [
@@ -3272,6 +3295,7 @@ function renderTrendChart(){
   if(!s||!s.battles.length){
     canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
     renderDailyWinRate([]);
+    renderWeeklyWinRate([]);
     return;
   }
   const bs=s.battles;
@@ -3311,6 +3335,7 @@ function renderTrendChart(){
     }
   });
   renderDailyWinRate(bs);
+  renderWeeklyWinRate(bs);
 }
 
 function renderDailyWinRate(battles){
@@ -3348,6 +3373,64 @@ function renderDailyWinRate(battles){
     const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
     return `<div class="daily-wr-row">
       <div class="daily-wr-date">${fmt(k)}</div>
+      <div class="daily-wr-bar-wrap">
+        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
+      </div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeeklyWinRate(battles){
+  const el=document.getElementById('weeklyWrList');
+  if(!el) return;
+  if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
+
+  // AM9:00を日の切り替えとして使用（日別と同じ基準）
+  const OFFSET_MS=9*60*60*1000;
+  const toGameDay=ts=>{
+    const d=new Date(new Date(ts).getTime()-OFFSET_MS);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  // ゲーム日付キーからその週の月曜日キーを返す
+  const toWeekKey=dayKey=>{
+    const [y,m,d]=dayKey.split('-').map(Number);
+    const date=new Date(y,m-1,d);
+    const dow=date.getDay(); // 0=日,1=月,...,6=土
+    const diffToMon=dow===0?6:dow-1;
+    const mon=new Date(date);
+    mon.setDate(date.getDate()-diffToMon);
+    const pad=n=>String(n).padStart(2,'0');
+    return `${mon.getFullYear()}-${pad(mon.getMonth()+1)}-${pad(mon.getDate())}`;
+  };
+  // 月曜日キーから "M/D〜M/D" のラベルを生成
+  const weekLabel=monKey=>{
+    const [y,m,d]=monKey.split('-').map(Number);
+    const mon=new Date(y,m-1,d);
+    const sun=new Date(mon);
+    sun.setDate(mon.getDate()+6);
+    return `${m}/${d}〜${sun.getMonth()+1}/${sun.getDate()}`;
+  };
+
+  // 週別に集計
+  const map={};
+  for(const b of battles){
+    if(!b.created_at) continue;
+    const wk=toWeekKey(toGameDay(b.created_at));
+    if(!map[wk]) map[wk]={win:0,loss:0};
+    if(b.result==='win') map[wk].win++;
+    else map[wk].loss++;
+  }
+
+  // 新しい週が上
+  const keys=Object.keys(map).sort((a,b)=>b.localeCompare(a));
+  el.innerHTML=keys.map(k=>{
+    const {win,loss}=map[k];
+    const total=win+loss;
+    const wr=total>0?Math.round(win/total*100):0;
+    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
+    return `<div class="daily-wr-row" style="grid-template-columns:80px 1fr 70px;">
+      <div class="daily-wr-date">${weekLabel(k)}</div>
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
       </div>
