@@ -778,109 +778,6 @@
       </div>
     </div>
 
-    <div class="card" id="statsCard" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">統計 — <span id="statsTitle"></span></div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button class="btn-share-icon" onclick="openShareModal()" title="シェア画像を生成">画像でシェア</button>
-          <button class="btn-help" onclick="openHelp('stats')">？</button>
-        </div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-box"><div class="stat-label">試合数</div><div class="stat-val" id="sTotal">0</div></div>
-        <div class="stat-box"><div class="stat-label">勝利</div><div class="stat-val win" id="sWins">0</div></div>
-        <div class="stat-box"><div class="stat-label">敗北</div><div class="stat-val loss" id="sLosses">0</div></div>
-        <div class="stat-box"><div class="stat-label">勝率</div><div class="stat-val" id="sWR">—</div><div class="wr-bar"><div class="wr-fill" id="sWRBar" style="width:0%"></div></div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="mode-stats">
-        <div class="mode-row">
-          <span class="mode-badge solo">🎮 ソロ</span>
-          <div class="mode-nums">
-            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="soloW">0</div></div>
-            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="soloL">0</div></div>
-          </div>
-          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="soloWR">—</div><div class="wr-bar"><div class="wr-fill" id="soloBar" style="width:0%"></div></div></div>
-        </div>
-        <div class="mode-row">
-          <span class="mode-badge duo">👥 デュオ/トリオ</span>
-          <div class="mode-nums">
-            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="duoW">0</div></div>
-            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="duoL">0</div></div>
-          </div>
-          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="duoWR">—</div><div class="wr-bar"><div class="wr-fill" id="duoBar" style="width:0%"></div></div></div>
-        </div>
-        <div class="mode-row">
-          <span class="mode-badge full">🏆 フルパ</span>
-          <div class="mode-nums">
-            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="fullW">0</div></div>
-            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="fullL">0</div></div>
-          </div>
-          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="fullWR">—</div><div class="wr-bar"><div class="wr-fill" id="fullBar" style="width:0%"></div></div></div>
-        </div>
-      </div>
-      <div id="rankSection" style="display:none;">
-        <div class="divider"></div>
-        <div class="card-title" style="margin-bottom:8px;">ランク別成績</div>
-        <div class="rank-stats" id="rankStats"></div>
-      </div>
-
-      <!-- A1: 連勝連敗 -->
-      <div id="streakSection" style="display:none;">
-        <div class="divider"></div>
-        <div class="streak-toggle" onclick="toggleStreak()">
-          <span class="streak-toggle-arrow" id="streakArrow">▼</span>
-          <span>🔥 連勝・連敗</span>
-        </div>
-        <div class="streak-body" id="streakBody">
-          <div class="streak-grid">
-            <div class="streak-box"><div class="streak-val" id="streakCur">0</div><div class="streak-label" id="streakCurLabel">連勝中</div></div>
-            <div class="streak-box"><div class="streak-val win" id="streakBestW">0</div><div class="streak-label">最大連勝</div></div>
-            <div class="streak-box"><div class="streak-val loss" id="streakBestL">0</div><div class="streak-label">最大連敗</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="pokeSection" style="display:none;">
-        <div class="divider"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <div class="card-title" style="margin-bottom:0;">ポケモン別成績（トータル）</div>
-          <button class="btn-help" onclick="openHelp('pokestats')">？</button>
-        </div>
-        <!-- U6: ポケモン統計並び替え -->
-        <div class="sort-bar" style="margin-top:0;margin-bottom:8px;">
-          <span class="sort-label">並び順：</span>
-          <button class="sort-btn active" id="pokeSortGames" onclick="pokeSort('games')">試合数</button>
-          <button class="sort-btn" id="pokeSortWR" onclick="pokeSort('wr')">勝率</button>
-          <button class="sort-btn" id="pokeSortName" onclick="pokeSort('name')">名前順</button>
-        </div>
-        <div class="poke-grid" id="pokeGrid"></div>
-        <div class="poke-mode-sections">
-          <div class="poke-mode-block">
-            <div class="poke-mode-header" onclick="toggleMode('solo')">
-              <span class="poke-mode-title"><span class="badge badge-solo" style="font-size:10px;padding:2px 8px;">ソロ</span>ポケモン別</span>
-              <span class="poke-mode-arrow" id="arrow-solo">▼</span>
-            </div>
-            <div class="poke-mode-body" id="body-solo"><div class="poke-mode-grid" id="grid-solo"></div></div>
-          </div>
-          <div class="poke-mode-block">
-            <div class="poke-mode-header" onclick="toggleMode('duo')">
-              <span class="poke-mode-title"><span class="badge badge-duo" style="font-size:10px;padding:2px 8px;">デュオ/トリオ</span>ポケモン別</span>
-              <span class="poke-mode-arrow" id="arrow-duo">▼</span>
-            </div>
-            <div class="poke-mode-body" id="body-duo"><div class="poke-mode-grid" id="grid-duo"></div></div>
-          </div>
-          <div class="poke-mode-block">
-            <div class="poke-mode-header" onclick="toggleMode('full')">
-              <span class="poke-mode-title"><span class="badge badge-full" style="font-size:10px;padding:2px 8px;">フルパ</span>ポケモン別</span>
-              <span class="poke-mode-arrow" id="arrow-full">▼</span>
-            </div>
-            <div class="poke-mode-body" id="body-full"><div class="poke-mode-grid" id="grid-full"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="card" id="inputCard" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div class="card-title" style="margin-bottom:0;">対戦を記録する</div>
@@ -1005,6 +902,109 @@
       <div class="btn-row">
         <button class="btn-win" onclick="record('win')">✓ 勝利</button>
         <button class="btn-loss" onclick="record('loss')">✗ 敗北</button>
+      </div>
+    </div>
+
+    <div class="card" id="statsCard" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:0;">統計 — <span id="statsTitle"></span></div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-share-icon" onclick="openShareModal()" title="シェア画像を生成">画像でシェア</button>
+          <button class="btn-help" onclick="openHelp('stats')">？</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-label">試合数</div><div class="stat-val" id="sTotal">0</div></div>
+        <div class="stat-box"><div class="stat-label">勝利</div><div class="stat-val win" id="sWins">0</div></div>
+        <div class="stat-box"><div class="stat-label">敗北</div><div class="stat-val loss" id="sLosses">0</div></div>
+        <div class="stat-box"><div class="stat-label">勝率</div><div class="stat-val" id="sWR">—</div><div class="wr-bar"><div class="wr-fill" id="sWRBar" style="width:0%"></div></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="mode-stats">
+        <div class="mode-row">
+          <span class="mode-badge solo">🎮 ソロ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="soloW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="soloL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="soloWR">—</div><div class="wr-bar"><div class="wr-fill" id="soloBar" style="width:0%"></div></div></div>
+        </div>
+        <div class="mode-row">
+          <span class="mode-badge duo">👥 デュオ/トリオ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="duoW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="duoL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="duoWR">—</div><div class="wr-bar"><div class="wr-fill" id="duoBar" style="width:0%"></div></div></div>
+        </div>
+        <div class="mode-row">
+          <span class="mode-badge full">🏆 フルパ</span>
+          <div class="mode-nums">
+            <div class="mode-num"><div class="mode-num-label">勝利</div><div class="mode-num-val win" id="fullW">0</div></div>
+            <div class="mode-num"><div class="mode-num-label">敗北</div><div class="mode-num-val loss" id="fullL">0</div></div>
+          </div>
+          <div class="mode-wr-wrap"><div class="mode-wr-label">勝率</div><div class="mode-wr-val" id="fullWR">—</div><div class="wr-bar"><div class="wr-fill" id="fullBar" style="width:0%"></div></div></div>
+        </div>
+      </div>
+      <div id="rankSection" style="display:none;">
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:8px;">ランク別成績</div>
+        <div class="rank-stats" id="rankStats"></div>
+      </div>
+
+      <!-- A1: 連勝連敗 -->
+      <div id="streakSection" style="display:none;">
+        <div class="divider"></div>
+        <div class="streak-toggle" onclick="toggleStreak()">
+          <span class="streak-toggle-arrow" id="streakArrow">▼</span>
+          <span>🔥 連勝・連敗</span>
+        </div>
+        <div class="streak-body" id="streakBody">
+          <div class="streak-grid">
+            <div class="streak-box"><div class="streak-val" id="streakCur">0</div><div class="streak-label" id="streakCurLabel">連勝中</div></div>
+            <div class="streak-box"><div class="streak-val win" id="streakBestW">0</div><div class="streak-label">最大連勝</div></div>
+            <div class="streak-box"><div class="streak-val loss" id="streakBestL">0</div><div class="streak-label">最大連敗</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pokeSection" style="display:none;">
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="card-title" style="margin-bottom:0;">ポケモン別成績（トータル）</div>
+          <button class="btn-help" onclick="openHelp('pokestats')">？</button>
+        </div>
+        <!-- U6: ポケモン統計並び替え -->
+        <div class="sort-bar" style="margin-top:0;margin-bottom:8px;">
+          <span class="sort-label">並び順：</span>
+          <button class="sort-btn active" id="pokeSortGames" onclick="pokeSort('games')">試合数</button>
+          <button class="sort-btn" id="pokeSortWR" onclick="pokeSort('wr')">勝率</button>
+          <button class="sort-btn" id="pokeSortName" onclick="pokeSort('name')">名前順</button>
+        </div>
+        <div class="poke-grid" id="pokeGrid"></div>
+        <div class="poke-mode-sections">
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('solo')">
+              <span class="poke-mode-title"><span class="badge badge-solo" style="font-size:10px;padding:2px 8px;">ソロ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-solo">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-solo"><div class="poke-mode-grid" id="grid-solo"></div></div>
+          </div>
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('duo')">
+              <span class="poke-mode-title"><span class="badge badge-duo" style="font-size:10px;padding:2px 8px;">デュオ/トリオ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-duo">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-duo"><div class="poke-mode-grid" id="grid-duo"></div></div>
+          </div>
+          <div class="poke-mode-block">
+            <div class="poke-mode-header" onclick="toggleMode('full')">
+              <span class="poke-mode-title"><span class="badge badge-full" style="font-size:10px;padding:2px 8px;">フルパ</span>ポケモン別</span>
+              <span class="poke-mode-arrow" id="arrow-full">▼</span>
+            </div>
+            <div class="poke-mode-body" id="body-full"><div class="poke-mode-grid" id="grid-full"></div></div>
+          </div>
+        </div>
       </div>
     </div>
 
