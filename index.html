@@ -384,6 +384,13 @@
   .daily-wr-bar.wr-even{background:#9399b2;}
   .daily-wr-stats{font-size:11px;color:var(--text2);text-align:right;white-space:nowrap;}
 
+  /* 今日の成績 */
+  .today-stat{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;font-size:13px;}
+  .today-stat .ts-label{font-weight:600;color:var(--accent);white-space:nowrap;}
+  .today-stat .ts-body{flex:1;color:var(--text);font-weight:600;}
+  .today-stat .ts-wr{font-weight:700;}
+  .today-stat .ts-empty{color:var(--text3);font-weight:500;font-size:12px;}
+
   @media(max-width:480px){
     .h-card{padding:8px 10px;gap:6px;min-height:64px;}
     .h-poke-img{width:44px;height:44px;}
@@ -911,6 +918,7 @@
           <button class="btn-help" onclick="openHelp('stats')">？</button>
         </div>
       </div>
+      <div id="todayStat" class="today-stat" style="display:none;"></div>
       <div class="stats-grid">
         <div class="stat-box"><div class="stat-label">試合数</div><div class="stat-val" id="sTotal">0</div></div>
         <div class="stat-box"><div class="stat-label">勝利</div><div class="stat-val win" id="sWins">0</div></div>
@@ -1024,6 +1032,10 @@
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','solo',this)">ソロ</button>
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','duo',this)">デュオ/トリオ</button>
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','full',this)">フルパ</button>
+        <span style="width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;align-self:center;"></span>
+        <select id="historyPokeFilter" onchange="setHistoryPokeFilter(this.value)" style="width:auto;margin-top:0;padding:4px 8px;font-size:12px;flex-shrink:0;max-width:150px;">
+          <option value="all">全ポケモン</option>
+        </select>
       </div>
       <div id="historyList"><div class="empty">シリーズを選択してください</div></div>
       <div id="historyPagination" class="pagination"></div>
@@ -2612,6 +2624,15 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v3.9',
+    date: '2026-06-02',
+    items: [
+      '統計に「今日の成績」を追加（今日の勝敗・勝率をひと目で確認）',
+      '対戦履歴をポケモン別に絞り込めるよう改善',
+      'シェア画像がPCで保存できない問題を修正',
+    ]
+  },
   {
     version: 'v3.8',
     date: '2026-06-02',
@@ -4263,9 +4284,9 @@ async function generateShareImage(battlesData,titleLabel){
   const footY=H-FOOT_H;
   ctx.fillStyle='#13151f';ctx.fillRect(0,footY,W,FOOT_H);
   ctx.strokeStyle='#2e325050';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,footY);ctx.lineTo(W,footY);ctx.stroke();
-  ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#7c82a8';ctx.textAlign='left';
+  ctx.font='bold 12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#f2f4ff';ctx.textAlign='left';
   ctx.fillText('#ポケモンユナイト  #ポケユナ',32,footY+26);
-  ctx.fillStyle='#6a6f95';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
+  ctx.fillStyle='#d6daf0';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
 
   shareCanvas=canvas;
   shareDataUrl=canvas.toDataURL('image/png');
@@ -4277,24 +4298,30 @@ function downloadShareImage(){
   const a=document.createElement('a');
   const now=new Date();
   a.download=`unite-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.png`;
-  a.href=shareDataUrl;a.click();
+  a.href=shareDataUrl;
+  document.body.appendChild(a);a.click();a.remove();
 }
 
 async function webShare(){
   if(!shareCanvas)return;
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.userAgentData&&navigator.userAgentData.mobile);
   shareCanvas.toBlob(async blob=>{
+    if(!blob){ downloadShareImage(); return; }
     const file=new File([blob],'unite-tracker.png',{type:'image/png'});
-    // スマホ: ネイティブの共有/保存シート（画像のみ）／ PC: ダウンロード
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-      try{await navigator.share({files:[file]});}
-      catch(e){
-        // ユーザーキャンセル(AbortError)はフォールバックしない
-        if(e.name!=='AbortError') downloadShareImage();
-      }
-    } else {
-      downloadShareImage();
-      showToast('画像を保存しました','success');
+    // スマホのみ: ネイティブの共有/保存シート（画像のみ）
+    if(isMobile&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file]}); return; }
+      catch(e){ if(e.name==='AbortError') return; }
     }
+    // PC（およびフォールバック）: 確実にダウンロード保存
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const now=new Date();
+    a.href=url;
+    a.download=`unite-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    showToast('画像を保存しました','success');
   });
 }
 async function loadBattles(){
@@ -4437,6 +4464,7 @@ function renderStats(){
   const sT=(l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById('sTotal').textContent=w+lo;document.getElementById('sWins').textContent=w;document.getElementById('sLosses').textContent=lo;document.getElementById('sWR').textContent=wr?wr+'%':'—';document.getElementById('sWRBar').style.width=(wr||0)+'%';};
   const sM=(p,l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById(p+'W').textContent=w;document.getElementById(p+'L').textContent=lo;document.getElementById(p+'WR').textContent=wr?wr+'%':'—';document.getElementById(p+'Bar').style.width=(wr||0)+'%';};
   sT(battles);sM('solo',solo);sM('duo',duo);sM('full',full);
+  renderToday();
 
   // ランク別成績
   const rankRows=RANKS.map(rank=>{
@@ -4481,8 +4509,27 @@ function renderStats(){
     document.getElementById('grid-full').innerHTML=pokeModeHTML(buildMap(full.filter(b=>b.pokemon)));
   } else document.getElementById('pokeSection').style.display='none';
 }
+function renderToday(){
+  const el=document.getElementById('todayStat');
+  if(!el) return;
+  const OFFSET_MS=9*60*60*1000;
+  const dayKey=ts=>{const d=new Date(new Date(ts).getTime()-OFFSET_MS);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
+  const todayKey=dayKey(Date.now());
+  const todays=battles.filter(b=>b.created_at&&dayKey(b.created_at)===todayKey);
+  el.style.display='';
+  if(!todays.length){
+    el.innerHTML='<span class="ts-label">📅 今日の成績</span><span class="ts-empty">まだ記録がありません</span>';
+    return;
+  }
+  const w=todays.filter(b=>b.result==='win').length;
+  const l=todays.length-w;
+  const wr=Math.round(w/todays.length*100);
+  const col=wr>=50?'var(--win)':'var(--loss)';
+  el.innerHTML=`<span class="ts-label">📅 今日の成績</span><span class="ts-body">${w}勝 ${l}敗　<span class="ts-wr" style="color:${col};">勝率${wr}%</span></span>`;
+}
 function renderHistory(){
   const list=document.getElementById('historyList');
+  refreshPokeFilterOptions();
   // A3: フィルター適用
   const filtered=getFilteredBattles();
   if(!filtered.length){
@@ -4583,7 +4630,7 @@ function changePage(dir){
 }
 
 // ===== 追加グローバル変数 =====
-let historyFilterResult='all', historyFilterMode='all';
+let historyFilterResult='all', historyFilterMode='all', historyFilterPoke='all';
 let pokeStatSort='games';
 let seriesSortMode='date';
 let isRecording=false;
@@ -4668,10 +4715,24 @@ function setHistoryFilter(type,val,el){
   historyPage=1;
   renderHistory();
 }
+function setHistoryPokeFilter(val){
+  historyFilterPoke=val;
+  historyPage=1;
+  renderHistory();
+}
+function refreshPokeFilterOptions(){
+  const sel=document.getElementById('historyPokeFilter');
+  if(!sel)return;
+  const pokes=[...new Set(battles.filter(b=>b.pokemon).map(b=>b.pokemon))].sort((a,b)=>a.localeCompare(b,'ja'));
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">全ポケモン</option>'+pokes.map(p=>`<option value="${p}">${p}</option>`).join('');
+  if(pokes.includes(cur)){ sel.value=cur; } else { sel.value='all'; historyFilterPoke='all'; }
+}
 function getFilteredBattles(){
   return battles.filter(b=>{
     if(historyFilterResult!=='all'&&b.result!==historyFilterResult)return false;
     if(historyFilterMode!=='all'&&b.match_type!==historyFilterMode)return false;
+    if(historyFilterPoke!=='all'&&b.pokemon!==historyFilterPoke)return false;
     return true;
   });
 }
