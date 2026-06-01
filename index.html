@@ -2617,6 +2617,14 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v3.8',
+    date: '2026-06-02',
+    items: [
+      'シェア画像のポケモン欄を「得意ポケモン（勝率50%以上）」に変更',
+      'シェア画像を16:9サイズに最適化し見やすく調整',
+    ]
+  },
+  {
     version: 'v3.7',
     date: '2026-05-24',
     items: [
@@ -4109,21 +4117,21 @@ async function generateShareImage(battlesData,titleLabel){
       b.result==='win'?map[b.pokemon].w++:map[b.pokemon].l++;
     });
     const minT=Math.max(3,Math.ceil(list.length*0.05));
-    const entries=Object.entries(map).map(([name,s])=>({name,w:s.w,t:s.w+s.l,wr:s.w/(s.w+s.l)*100})).filter(p=>p.t>=minT);
-    if(entries.length<3){
-      const all=Object.entries(map).map(([name,s])=>({name,w:s.w,t:s.w+s.l,wr:s.w/(s.w+s.l)*100})).sort((a,b)=>b.t-a.t||b.wr-a.wr);
-      const names=new Set(entries.map(e=>e.name));
-      for(const p of all){if(!names.has(p.name)){entries.push(p);names.add(p.name);}if(entries.length>=3)break;}
-    }
-    return entries.sort((a,b)=>b.wr-a.wr||(b.t-a.t)).slice(0,3);
+    // 規定試合数以上かつ勝率50%以上のみ（シェア画像の「得意枠」として）
+    return Object.entries(map)
+      .map(([name,s])=>({name,w:s.w,t:s.w+s.l,wr:s.w/(s.w+s.l)*100}))
+      .filter(p=>p.t>=minT&&p.wr>=50)
+      .sort((a,b)=>b.wr-a.wr||(b.t-a.t))
+      .slice(0,3);
   };
   const top3=getTop3(battlesData);
+  const hasPokeRecords=battlesData.some(b=>b.pokemon);
 
   const loadImg=url=>new Promise(res=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;setTimeout(()=>res(null),4000);});
   const pokeImgs={};
   await Promise.all(top3.map(async p=>{const url=getIconUrl(p.name);if(url)pokeImgs[p.name]=await loadImg(url);}));
 
-  const W=1200,H=560,HALF=600;
+  const W=1200,H=675,HALF=600;
   const canvas=document.createElement('canvas');
   canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
@@ -4245,14 +4253,14 @@ async function generateShareImage(battlesData,titleLabel){
   const RX=HALF+PAD,RW=HALF-PAD*2;
 
   ctx.font='bold 14px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#9399b2';ctx.textAlign='left';
-  ctx.fillText('🏅 使用ポケモン TOP3（勝率順）',RX,CONTENT_TOP+14);
+  ctx.fillText('🏅 得意ポケモン TOP3（勝率50%以上）',RX,CONTENT_TOP+14);
 
   const POKE_TOP=STAT_TOP,POKE_AVAIL=CONTENT_BOT-POKE_TOP,POKE_GAP=10;
   const PCH=Math.floor((POKE_AVAIL-POKE_GAP*2)/3);
 
   if(!top3.length){
-    ctx.font='14px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#4a4e6a';ctx.textAlign='center';
-    ctx.fillText('ポケモン記録なし',(HALF+W)/2,H/2);ctx.textAlign='left';
+    ctx.font='14px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#5c6080';ctx.textAlign='center';
+    ctx.fillText(hasPokeRecords?'勝率50%以上のポケモンはまだいません':'ポケモン記録なし',(HALF+W)/2,H/2);ctx.textAlign='left';
   } else {
     top3.forEach((poke,pi)=>{
       const cy=POKE_TOP+pi*(PCH+POKE_GAP);
@@ -4282,9 +4290,9 @@ async function generateShareImage(battlesData,titleLabel){
   const footY=H-FOOT_H;
   ctx.fillStyle='#13151f';ctx.fillRect(0,footY,W,FOOT_H);
   ctx.strokeStyle='#2e325050';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,footY);ctx.lineTo(W,footY);ctx.stroke();
-  ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#4a4e6a';ctx.textAlign='left';
+  ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#7c82a8';ctx.textAlign='left';
   ctx.fillText('#ポケモンユナイト  #ポケユナ',32,footY+26);
-  ctx.fillStyle='#3a3e60';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
+  ctx.fillStyle='#6a6f95';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
 
   shareCanvas=canvas;
   shareDataUrl=canvas.toDataURL('image/png');
