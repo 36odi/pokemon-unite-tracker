@@ -1800,7 +1800,8 @@
       <button class="btn-x-post" onclick="postToX()">𝕏 でポスト</button>
     </div>
     <div class="share-hint">
-      スマホ：「シェア / 保存」でXアプリへ直接共有 / PC：「ダウンロード」後に添付 または「𝕏 でポスト」でテキスト投稿
+      スマホ：「シェア / 保存」で画像付きシェア ／ PC：「ダウンロード」して投稿に添付<br>
+      ※「𝕏 でポスト」は仕様上、画像なしのテキストのみ投稿します
     </div>
   </div>
 </div>
@@ -4035,7 +4036,6 @@ if('serviceWorker' in navigator){
 }
 
 // ---- シェア画像生成 ----
-const APP_URL='https://36odi.github.io/pokemon-unite-tracker/';
 let shareCanvas=null;
 let shareDataUrl=null;
 
@@ -4054,7 +4054,7 @@ function buildShareText(titleLabel,battlesData){
   let text=sName?`【${sName}】`:'';
   if(wr!==null)text+=` ${t}試合 勝率${wr}%`;
   if(top)text+=` 主力: ${top[0]}`;
-  text+='\n#ポケモンユナイト #ユナイト対戦記録\n'+APP_URL;
+  text+='\n#ポケモンユナイト #ポケユナ';
   return text;
 }
 
@@ -4283,7 +4283,7 @@ async function generateShareImage(battlesData,titleLabel){
   ctx.fillStyle='#13151f';ctx.fillRect(0,footY,W,FOOT_H);
   ctx.strokeStyle='#2e325050';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,footY);ctx.lineTo(W,footY);ctx.stroke();
   ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#4a4e6a';ctx.textAlign='left';
-  ctx.fillText('#ポケモンユナイト  #ユナイト対戦記録  #PokémonUNITE',32,footY+26);
+  ctx.fillText('#ポケモンユナイト  #ポケユナ',32,footY+26);
   ctx.fillStyle='#3a3e60';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
 
   shareCanvas=canvas;
@@ -4312,11 +4312,9 @@ async function webShare(){
         if(e.name!=='AbortError') downloadShareImage();
       }
     } else {
-      // PC環境: 画像DL + X投稿ウィンドウを開く
+      // PC環境: 画像を保存するのみ（Xは自動で開かない）
       downloadShareImage();
-      setTimeout(()=>{
-        window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
-      },400);
+      showToast('画像を保存しました。お好みのSNSに添付して投稿できます','success');
     }
   });
 }
