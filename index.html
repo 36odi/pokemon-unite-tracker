@@ -436,8 +436,6 @@
   .share-hint{font-size:11px;color:var(--text3);margin-top:8px;text-align:center;line-height:1.6;}
   .btn-share-icon{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:5px 10px;font-size:14px;cursor:pointer;line-height:1;}
   .btn-share-icon:hover{border-color:var(--accent);color:var(--accent);}
-  .btn-x-post{background:#000;color:#fff;border:none;border-radius:var(--radius-sm);padding:9px;font-size:13px;font-weight:600;cursor:pointer;flex:1;}
-  .btn-x-post:hover{opacity:0.85;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .share-spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;gap:12px;}
   .share-spinner-circle{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
@@ -1794,14 +1792,12 @@
       <button class="btn-modal-cancel" style="width:auto;padding:5px 12px;" onclick="closeModal('shareModal')">✕</button>
     </div>
     <div id="sharePreview"></div>
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      <button class="btn-modal-ok" onclick="webShare()" style="flex:1;">📤 シェア / 保存</button>
-      <button class="btn-modal-cancel" onclick="downloadShareImage()" style="flex:1;">💾 ダウンロード</button>
-      <button class="btn-x-post" onclick="postToX()">𝕏 でポスト</button>
+    <div style="margin-top:12px;">
+      <button class="btn-modal-ok" onclick="webShare()" style="width:100%;">📥 画像を保存</button>
     </div>
     <div class="share-hint">
-      スマホ：「シェア / 保存」で画像付きシェア ／ PC：「ダウンロード」して投稿に添付<br>
-      ※「𝕏 でポスト」は仕様上、画像なしのテキストのみ投稿します
+      保存した画像は X（旧Twitter）や Discord など、お好きなSNSで自由にシェアしてください 📣<br>
+      スマホは画像を長押しでも保存できます。
     </div>
   </div>
 </div>
@@ -2622,6 +2618,7 @@ const CHANGELOG = [
     items: [
       'シェア画像のポケモン欄を「得意ポケモン（勝率50%以上）」に変更',
       'シェア画像を16:9サイズに最適化し見やすく調整',
+      'シェア操作を「画像を保存」だけのシンプルな形に変更',
     ]
   },
   {
@@ -4047,25 +4044,6 @@ if('serviceWorker' in navigator){
 let shareCanvas=null;
 let shareDataUrl=null;
 
-function buildShareText(titleLabel,battlesData){
-  const sName=titleLabel||document.getElementById('statsTitle')?.textContent||'';
-  const data=battlesData||battles;
-  const w=data.filter(b=>b.result==='win').length;
-  const t=data.length;
-  const wr=t>0?(w/t*100).toFixed(1):null;
-  const pm={};
-  data.filter(b=>b.pokemon).forEach(b=>{
-    if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};
-    b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;
-  });
-  const top=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l))[0];
-  let text=sName?`【${sName}】`:'';
-  if(wr!==null)text+=` ${t}試合 勝率${wr}%`;
-  if(top)text+=` 主力: ${top[0]}`;
-  text+='\n#ポケモンユナイト #ポケユナ';
-  return text;
-}
-
 function openShareModal(){
   if(!currentSeriesId||!battles.length)return;
   shareCanvas=null;shareDataUrl=null;
@@ -4086,11 +4064,6 @@ function openTotalShareModal(){
   generateShareImage(allBattles,'通算成績');
 }
 
-function postToX(){
-  const titleLabel=document.getElementById('shareModal').dataset.titleLabel||undefined;
-  const text=buildShareText(titleLabel);
-  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
-}
 
 async function generateShareImage(battlesData,titleLabel){
   const preview=document.getElementById('sharePreview');
@@ -4309,20 +4282,18 @@ function downloadShareImage(){
 
 async function webShare(){
   if(!shareCanvas)return;
-  const titleLabel=document.getElementById('shareModal').dataset.titleLabel||undefined;
-  const text=buildShareText(titleLabel);
   shareCanvas.toBlob(async blob=>{
     const file=new File([blob],'unite-tracker.png',{type:'image/png'});
+    // スマホ: ネイティブの共有/保存シート（画像のみ）／ PC: ダウンロード
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-      try{await navigator.share({files:[file],text});}
+      try{await navigator.share({files:[file]});}
       catch(e){
         // ユーザーキャンセル(AbortError)はフォールバックしない
         if(e.name!=='AbortError') downloadShareImage();
       }
     } else {
-      // PC環境: 画像を保存するのみ（Xは自動で開かない）
       downloadShareImage();
-      showToast('画像を保存しました。お好みのSNSに添付して投稿できます','success');
+      showToast('画像を保存しました','success');
     }
   });
 }
