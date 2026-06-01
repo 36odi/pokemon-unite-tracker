@@ -414,6 +414,10 @@
   .profile-msg.success{color:var(--win);} .profile-msg.error{color:var(--loss);}
   #loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);z-index:999;}
 
+  /* 統計セクション折りたたみ */
+  .stat-section-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:8px;}
+  .stat-section-body{display:none;}
+  .stat-section-body.open{display:block;}
   /* ランク別成績 */
   .rank-stats{display:flex;flex-direction:column;gap:6px;}
   .rank-stat-row{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 14px;display:flex;align-items:center;gap:12px;}
@@ -820,16 +824,25 @@
         </div>
         <div class="input-group">
           <label>ランク帯（任意）</label>
-          <select id="rankSelect">
+          <select id="rankSelect" onchange="onRankChange()">
             <option value="">— 選択 —</option>
             <option value="ビギナー">ビギナー</option>
             <option value="スーパー">スーパー</option>
             <option value="ハイパー">ハイパー</option>
             <option value="エリート">エリート</option>
             <option value="エキスパート">エキスパート</option>
-            <option value="マスター">マスター</option>
-            <option value="レジェンド">レジェンド</option>
+            <option value="マスター以上">マスター以上（レート）</option>
           </select>
+          <select id="rankClass" onchange="persistForm()" style="display:none;margin-top:6px;">
+            <option value="">クラス —</option>
+            <option value="5">クラス5</option>
+            <option value="4">クラス4</option>
+            <option value="3">クラス3</option>
+            <option value="2">クラス2</option>
+            <option value="1">クラス1</option>
+          </select>
+          <input id="rankRate" type="number" inputmode="numeric" min="0" max="99999" placeholder="試合後のレート（例: 320）" oninput="onRankRateInput()" style="display:none;margin-top:6px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;" />
+          <div id="rankRateHint" style="display:none;font-size:10px;color:var(--text3);margin-top:4px;"></div>
         </div>
       </div>
       <!-- 詳細設定（任意） -->
@@ -954,8 +967,13 @@
       </div>
       <div id="rankSection" style="display:none;">
         <div class="divider"></div>
-        <div class="card-title" style="margin-bottom:8px;">ランク別成績</div>
-        <div class="rank-stats" id="rankStats"></div>
+        <div class="stat-section-head" onclick="toggleStatSection(this)">
+          <span class="card-title" style="margin-bottom:0;">ランク別成績</span>
+          <span class="poke-mode-arrow open">▼</span>
+        </div>
+        <div class="stat-section-body open">
+          <div class="rank-stats" id="rankStats"></div>
+        </div>
       </div>
 
       <!-- A1: 連勝連敗 -->
@@ -976,10 +994,14 @@
 
       <div id="pokeSection" style="display:none;">
         <div class="divider"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <div class="card-title" style="margin-bottom:0;">ポケモン別成績（トータル）</div>
-          <button class="btn-help" onclick="openHelp('pokestats')">？</button>
+        <div class="stat-section-head" onclick="toggleStatSection(this)">
+          <span class="card-title" style="margin-bottom:0;">ポケモン別成績（トータル）</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <button class="btn-help" onclick="event.stopPropagation();openHelp('pokestats')">？</button>
+            <span class="poke-mode-arrow open">▼</span>
+          </span>
         </div>
+        <div class="stat-section-body open">
         <!-- U6: ポケモン統計並び替え -->
         <div class="sort-bar" style="margin-top:0;margin-bottom:8px;">
           <span class="sort-label">並び順：</span>
@@ -1010,6 +1032,7 @@
             </div>
             <div class="poke-mode-body" id="body-full"><div class="poke-mode-grid" id="grid-full"></div></div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -1937,16 +1960,24 @@
     </div>
     <div class="modal-field">
       <label>ランク帯</label>
-      <select id="editRank">
+      <select id="editRank" onchange="onEditRankChange()">
         <option value="">— 選択 —</option>
         <option value="ビギナー">ビギナー</option>
         <option value="スーパー">スーパー</option>
         <option value="ハイパー">ハイパー</option>
         <option value="エリート">エリート</option>
         <option value="エキスパート">エキスパート</option>
-        <option value="マスター">マスター</option>
-        <option value="レジェンド">レジェンド</option>
+        <option value="マスター以上">マスター以上（レート）</option>
       </select>
+      <select id="editRankClass" style="display:none;margin-top:6px;">
+        <option value="">クラス —</option>
+        <option value="5">クラス5</option>
+        <option value="4">クラス4</option>
+        <option value="3">クラス3</option>
+        <option value="2">クラス2</option>
+        <option value="1">クラス1</option>
+      </select>
+      <input id="editRankRate" type="number" inputmode="numeric" min="0" max="99999" placeholder="試合後のレート（例: 320）" style="display:none;margin-top:6px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;" />
     </div>
     <div class="modal-field">
       <label>マッチ種別</label>
@@ -2206,10 +2237,26 @@ const RANK_STYLE = {
   'マスター':   {color:'#ef5350', bg:'#2e1b1b'},
   'レジェンド': {color:'#fdd835', bg:'#2a2400'},
 };
+// ランク文字列の内包仕様:
+//  ・クラス付き … "エキスパート・C1"（ビギナー〜エキスパート）
+//  ・レート     … "レート 1530"（1000以上=レジェンド / 未満=マスター を自動判定）
+//  ・旧データ   … "マスター" 等のティア名のみ
+function rankTier(r){
+  if(!r) return null;
+  if(r.startsWith('レート ')){ const n=parseInt(r.slice(3))||0; return n>=1000?'レジェンド':'マスター'; }
+  const i=r.indexOf('・'); return i>=0?r.slice(0,i):r;
+}
+function rankRate(r){ return (r&&r.startsWith('レート '))?(parseInt(r.slice(3))||0):null; }
+function rankLabel(r){
+  if(!r) return '';
+  if(r.startsWith('レート ')){ const n=parseInt(r.slice(3))||0; return (n>=1000?'レジェンド':'マスター')+' '+n.toLocaleString(); }
+  const i=r.indexOf('・C'); if(i>=0) return r.slice(0,i)+' クラス'+r.slice(i+2);
+  return r;
+}
 function rankBadge(rank){
   if(!rank) return '';
-  const s=RANK_STYLE[rank]||{color:'var(--text2)',bg:'var(--bg3)'};
-  return `<span class="badge" style="background:${s.bg};color:${s.color};">${rank}</span>`;
+  const s=RANK_STYLE[rankTier(rank)]||{color:'var(--text2)',bg:'var(--bg3)'};
+  return `<span class="badge" style="background:${s.bg};color:${s.color};">${rankLabel(rank)}</span>`;
 }
 
 // ===== ページネーション =====
@@ -2625,6 +2672,15 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v4.0',
+    date: '2026-06-02',
+    items: [
+      'ランク記録を拡張：ビギナー〜エキスパートはクラスを選択、マスター以上は試合後のレートを入力できるように',
+      'シリーズ分析にマスター以上の「レート推移」グラフを追加',
+      '統計のランク別成績・ポケモン別成績を折りたたみ表示に対応',
+    ]
+  },
+  {
     version: 'v3.9',
     date: '2026-06-02',
     items: [
@@ -2991,7 +3047,7 @@ async function exportCsv(){
     selectedNames[b.series_id]||'',
     resultLabel[b.result]||b.result,
     matchLabel[b.match_type]||b.match_type,
-    b.rank||'',
+    rankLabel(b.rank),
     b.pokemon||'',
     b.skill1||'',
     b.skill2||'',
@@ -3684,9 +3740,9 @@ function renderPokeDetail(){
       // A8: ランク帯別クロス集計
       const rankMap={};
       bs.forEach(b=>{
-        if(!b.rank)return;
-        if(!rankMap[b.rank])rankMap[b.rank]={w:0,l:0};
-        b.result==='win'?rankMap[b.rank].w++:rankMap[b.rank].l++;
+        const rt=rankTier(b.rank); if(!rt)return;
+        if(!rankMap[rt])rankMap[rt]={w:0,l:0};
+        b.result==='win'?rankMap[rt].w++:rankMap[rt].l++;
       });
       const rankRows=RANKS.filter(r=>rankMap[r]).map(r=>{
         const s=rankMap[r],tt=s.w+s.l,rwr=tt>0?((s.w/tt)*100).toFixed(1):null;
@@ -3704,6 +3760,7 @@ function renderPokeDetail(){
 }
 
 function toggleMode(mode){const b=document.getElementById('body-'+mode),a=document.getElementById('arrow-'+mode);b.classList.toggle('open');a.classList.toggle('open');}
+function toggleStatSection(head){const b=head.nextElementSibling;if(b)b.classList.toggle('open');const a=head.querySelector('.poke-mode-arrow');if(a)a.classList.toggle('open');}
 
 async function updateUsername(){
   const username=document.getElementById('newUsername').value.trim();
@@ -3959,7 +4016,7 @@ function openEditModal(id){
   const {result,match_type:matchType,pokemon='',created_at:createdAt,rank=''}=battle;
   document.getElementById('editBattleId').value=id;
   document.getElementById('editResult').value=result;
-  document.getElementById('editRank').value=rank||'';
+  setEditRankFields(rank);
   document.getElementById('editMatchType').value=matchType;
   // ポケモン選択 select を動的生成（タイプ別グループ）
   const epSel=document.getElementById('editPokemon');
@@ -4006,7 +4063,7 @@ async function saveEdit(){
   const i3=document.getElementById('editItem3')?.value||null;
   const items=[i1,i2,i3].filter(Boolean).join(',')||null;
   const battle_item=document.getElementById('editBattleItem')?.value||null;
-  const rank=document.getElementById('editRank')?.value||null;
+  const rank=getEditRankValue();
   const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item};
   if(created_at)update.created_at=created_at;
   const {error}=await db.from('battles').update(update).eq('id',id);
@@ -4354,7 +4411,7 @@ async function record(result){
     try{
       const pokemon=selectedPoke||null;
       const match_type=document.getElementById('matchType').value;
-      const rank=document.getElementById('rankSelect')?.value||null;
+      const rank=getRankValue();
       const skill1=document.getElementById('skill1')?.value||null;
       const skill2=document.getElementById('skill2')?.value||null;
       const dedicated=pokemon?DEDICATED_ITEMS[pokemon]:null;
@@ -4384,7 +4441,7 @@ async function record(result){
     if(authErr||!user){showToast('セッションが切れました。再ログインしてください。','warn');setTimeout(()=>logout(),1800);return;}
     const pokemon=selectedPoke||null;
     const match_type=document.getElementById('matchType').value;
-    const rank=document.getElementById('rankSelect')?.value||null;
+    const rank=getRankValue();
     const skill1=document.getElementById('skill1')?.value||null;
     const skill2=document.getElementById('skill2')?.value||null;
     const dedicated=pokemon?DEDICATED_ITEMS[pokemon]:null;
@@ -4468,7 +4525,7 @@ function renderStats(){
 
   // ランク別成績
   const rankRows=RANKS.map(rank=>{
-    const rl=battles.filter(b=>b.rank===rank);
+    const rl=battles.filter(b=>rankTier(b.rank)===rank);
     if(!rl.length)return null;
     const w=rl.filter(b=>b.result==='win').length;
     const lo=rl.length-w;
@@ -4637,6 +4694,7 @@ let isRecording=false;
 let currentSeriesArchived=false;
 let seriesanalChartInst=null;
 let seriesanalDayChartInst=null;
+let seriesanalRateChartInst=null;
 let navId=0; // ナビゲーションガード用カウンタ
 let streakOpen=false;
 
@@ -4783,20 +4841,109 @@ function updateArchiveBtn(){
 // ===== U4 フォーム入力持続 =====
 function persistForm(){
   const mt=document.getElementById('matchType')?.value;
-  const rank=document.getElementById('rankSelect')?.value;
   if(mt!==undefined)localStorage.setItem('form_matchType',mt);
-  localStorage.setItem('form_rank',rank||'');
+  localStorage.setItem('form_rank',document.getElementById('rankSelect')?.value||'');
+  localStorage.setItem('form_rankClass',document.getElementById('rankClass')?.value||'');
 }
 function restoreForm(){
   const mt=localStorage.getItem('form_matchType');
-  const rank=localStorage.getItem('form_rank');
   if(mt){const el=document.getElementById('matchType');if(el)el.value=mt;}
+  const rank=localStorage.getItem('form_rank');
   if(rank!==null){const el=document.getElementById('rankSelect');if(el)el.value=rank;}
+  const rc=localStorage.getItem('form_rankClass');
+  if(rc!==null){const el=document.getElementById('rankClass');if(el)el.value=rc;}
+  onRankChange();
+}
+// ランク帯の選択に応じてクラス/レート入力を出し分け
+function onRankChange(){
+  const tier=document.getElementById('rankSelect')?.value||'';
+  const clsEl=document.getElementById('rankClass');
+  const rateEl=document.getElementById('rankRate');
+  const hintEl=document.getElementById('rankRateHint');
+  const isMaster=tier==='マスター以上';
+  const isClassTier=!!tier&&!isMaster;
+  if(clsEl) clsEl.style.display=isClassTier?'':'none';
+  if(rateEl) rateEl.style.display=isMaster?'':'none';
+  if(hintEl) hintEl.style.display=isMaster?'':'none';
+  if(isMaster&&rateEl&&!rateEl.value){
+    const last=getLastRate();
+    if(last!=null) rateEl.value=last;
+  }
+  onRankRateInput();
+  persistForm();
+}
+function onRankRateInput(){
+  const rateEl=document.getElementById('rankRate');
+  const hintEl=document.getElementById('rankRateHint');
+  if(!rateEl||!hintEl) return;
+  const v=rateEl.value;
+  if(v===''){ hintEl.textContent='試合後の現在のレートを入力してください（0スタート）'; return; }
+  const n=parseInt(v)||0;
+  hintEl.textContent = n>=1000
+    ? `レジェンド（${n.toLocaleString()}）として記録 ※1000以上でレジェンド`
+    : `マスター（${n.toLocaleString()}）として記録`;
+}
+function getLastRate(){
+  for(const b of battles){ const r=rankRate(b.rank); if(r!=null) return r; }
+  const ls=localStorage.getItem('form_lastRate'); return (ls!==null&&ls!=='')?parseInt(ls):null;
+}
+// 記録フォームから rank 値（内包文字列）を生成
+function getRankValue(){
+  const tier=document.getElementById('rankSelect')?.value||'';
+  if(!tier) return null;
+  if(tier==='マスター以上'){
+    const rv=document.getElementById('rankRate')?.value;
+    if(rv===''||rv==null) return null;
+    const n=Math.max(0,Math.min(99999,parseInt(rv)||0));
+    localStorage.setItem('form_lastRate',String(n));
+    return 'レート '+n;
+  }
+  const cls=document.getElementById('rankClass')?.value;
+  return cls?`${tier}・C${cls}`:tier;
+}
+// 編集モーダル: ランク帯のクラス/レート出し分け・読み込み・生成
+function onEditRankChange(){
+  const tier=document.getElementById('editRank')?.value||'';
+  const isMaster=tier==='マスター以上';
+  const cls=document.getElementById('editRankClass');
+  const rate=document.getElementById('editRankRate');
+  if(cls) cls.style.display=(tier&&!isMaster)?'':'none';
+  if(rate) rate.style.display=isMaster?'':'none';
+}
+function setEditRankFields(rank){
+  const sel=document.getElementById('editRank');
+  const cls=document.getElementById('editRankClass');
+  const rate=document.getElementById('editRankRate');
+  if(cls) cls.value='';
+  if(rate) rate.value='';
+  const tier=rankTier(rank);
+  if(!tier){ if(sel) sel.value=''; onEditRankChange(); return; }
+  const r=rankRate(rank);
+  if(r!=null||tier==='マスター'||tier==='レジェンド'){
+    if(sel) sel.value='マスター以上';
+    if(rate){ const last=getLastRate(); rate.value = r!=null ? r : (last!=null?last:''); }
+  } else {
+    if(sel) sel.value=tier;
+    const i=(rank||'').indexOf('・C');
+    if(i>=0&&cls) cls.value=rank.slice(i+2);
+  }
+  onEditRankChange();
+}
+function getEditRankValue(){
+  const tier=document.getElementById('editRank')?.value||'';
+  if(!tier) return null;
+  if(tier==='マスター以上'){
+    const rv=document.getElementById('editRankRate')?.value;
+    if(rv===''||rv==null) return null;
+    const n=Math.max(0,Math.min(99999,parseInt(rv)||0));
+    return 'レート '+n;
+  }
+  const cls=document.getElementById('editRankClass')?.value;
+  return cls?`${tier}・C${cls}`:tier;
 }
 // フォーム変更時に自動保存
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('matchType')?.addEventListener('change',persistForm);
-  document.getElementById('rankSelect')?.addEventListener('change',persistForm);
 });
 
 // ===== U6 ポケモン統計並び替え =====
@@ -4846,6 +4993,16 @@ async function renderSeriesAnalysis(){
   // チャートを先に破棄
   if(seriesanalChartInst){seriesanalChartInst.destroy();seriesanalChartInst=null;}
   if(seriesanalDayChartInst){seriesanalDayChartInst.destroy();seriesanalDayChartInst=null;}
+  if(seriesanalRateChartInst){seriesanalRateChartInst.destroy();seriesanalRateChartInst=null;}
+
+  // ── レート推移（マスター以上）──
+  const rateBattles=bs.filter(b=>rankRate(b.rank)!=null).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const rateData=rateBattles.map(b=>rankRate(b.rank));
+  const rateLabels=rateBattles.map((b,i)=>String(i+1));
+  const rateShowLegendLine=rateData.length?Math.max(...rateData)>=900:false;
+  const rateHTML=rateData.length>=2
+    ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalRateChart"></canvas></div>`
+    :'<div class="empty" style="padding:0.8rem 0;">マスター以上のレート記録が2件以上必要です</div>';
 
   const w=bs.filter(b=>b.result==='win').length;
   const t=bs.length;
@@ -4884,9 +5041,10 @@ async function renderSeriesAnalysis(){
 
   // ── B1: ランク帯別勝率 ──
   const rankMap={};
-  bs.filter(b=>b.rank).forEach(b=>{
-    if(!rankMap[b.rank])rankMap[b.rank]=[];
-    rankMap[b.rank].push(b);
+  bs.forEach(b=>{
+    const rt=rankTier(b.rank); if(!rt)return;
+    if(!rankMap[rt])rankMap[rt]=[];
+    rankMap[rt].push(b);
   });
   const b1Rows=RANKS.filter(r=>rankMap[r]).map(r=>{
     const arr=rankMap[r];
@@ -5102,6 +5260,10 @@ async function renderSeriesAnalysis(){
       <div class="stat-box"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
       <div class="stat-box"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:18px;color:${wrCol}">${wr}</div></div>
     </div>
+    ${rateData.length>=1?`
+    <div class="card-title" style="margin:10px 0 6px;">📈 レート推移（マスター以上）</div>
+    ${rateHTML}
+    `:''}
     ${pokeList.length?`
     <div class="card-title" style="margin:10px 0 6px;">🎮 使用ポケモン（使用回数順）</div>
     <div class="chart-wrap" style="height:200px;margin-bottom:12px;"><canvas id="seriesanalChart"></canvas></div>
@@ -5169,6 +5331,42 @@ async function renderSeriesAnalysis(){
           scales:{
             x:{stacked:true,ticks:{color:'#9399b2',maxRotation:40,font:{size:10}},grid:{color:'#2e3250'}},
             y:{stacked:true,ticks:{color:'#9399b2',stepSize:1},grid:{color:'#2e3250'}}
+          }
+        }
+      });
+    },100);
+  }
+
+  // ── レート推移チャート ──
+  if(rateData.length>=2){
+    setTimeout(()=>{
+      if(myNav!==navId)return;
+      const canvas=document.getElementById('seriesanalRateChart');
+      if(!canvas)return;
+      const datasets=[{
+        label:'レート',data:rateData,
+        borderColor:'#fdd835',backgroundColor:'#fdd83522',
+        tension:0.25,pointBackgroundColor:'#fdd835',pointRadius:3,fill:true
+      }];
+      if(rateShowLegendLine) datasets.push({
+        label:'レジェンド(1000)',data:rateData.map(()=>1000),
+        borderColor:'#7c83f5',borderDash:[4,4],pointRadius:0,fill:false
+      });
+      seriesanalRateChartInst=new Chart(canvas,{
+        type:'line',
+        data:{labels:rateLabels,datasets},
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{
+            legend:{labels:{color:'#9399b2',font:{size:11}}},
+            tooltip:{callbacks:{
+              title:items=>{const b=rateBattles[items[0].dataIndex];return b?new Date(b.created_at).toLocaleDateString():'';},
+              label:ctx=>ctx.dataset.label==='レジェンド(1000)'?null:'レート '+ctx.parsed.y.toLocaleString()
+            }}
+          },
+          scales:{
+            x:{ticks:{color:'#9399b2',maxRotation:0,font:{size:10}},grid:{color:'#2e3250'},title:{display:true,text:'記録順',color:'#5c6080',font:{size:9}}},
+            y:{ticks:{color:'#9399b2'},grid:{color:'#2e3250'}}
           }
         }
       });
