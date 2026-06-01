@@ -1187,10 +1187,10 @@
         <div class="card-title" style="margin-bottom:12px;">👤 ゲストモード</div>
         <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">
           現在ゲストとしてご利用中です。<br>
-          対戦記録・メダルプリセットはこのブラウザにのみ保存されており、別のデバイスやブラウザには引き継がれません。
+          対戦記録はこのブラウザにのみ保存されており、このままでは別のデバイスやブラウザには引き継がれません。
         </p>
-        <p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:16px;">
-          ⚠️ ユーザー登録してもゲストのデータは引き継がれません。新規のデータとして記録が始まります。
+        <p style="font-size:12px;color:var(--accent);line-height:1.6;margin-bottom:16px;">
+          ✅ ユーザー登録 / ログインすると、今ある対戦記録・メダルプリセットを<strong>アカウントに移行</strong>できます（移行するか確認画面が出ます）。
         </p>
         <button class="btn-guest" onclick="logoutAndRegister()" style="margin-bottom:8px;">ユーザー登録 / ログインへ</button>
         <button class="btn-delete-account" onclick="deleteGuestData()" style="margin-top:8px;">ゲストデータをすべて削除してログアウト</button>
@@ -1879,7 +1879,7 @@
     <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">
       ゲストのデータはこのブラウザのみに保存されます。<br>
       ブラウザやデバイスが変わると引き継ぐことができません。<br>
-      継続してご利用の場合は<strong>ユーザー登録</strong>をおすすめします。
+      <strong>ユーザー登録 / ログイン</strong>すれば、今ある記録をアカウントへ移行して引き継げます。
     </p>
     <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:16px;cursor:pointer;">
       <input type="checkbox" id="guestHidePromptChk" /> 今後表示しない
@@ -2563,6 +2563,8 @@ const GUEST_MODE_KEY='guestMode';
 const GUEST_SERIES_KEY='guest_series';
 const GUEST_HIDE_PROMPT_KEY='guestHideRegPrompt';
 const GUEST_BATTLES_PREFIX='guest_battles_';
+const GUEST_MIGRATE_KEY='guestMigratePending';
+const GUEST_PRESET_SNAP_KEY='guest_medal_presets_snap';
 function isGuest(){ return localStorage.getItem(GUEST_MODE_KEY)==='1'; }
 function guestGetSeries(){ try{ return JSON.parse(localStorage.getItem(GUEST_SERIES_KEY)||'[]'); }catch{ return []; } }
 function guestSaveSeries(list){ localStorage.setItem(GUEST_SERIES_KEY,JSON.stringify(list)); }
@@ -2594,6 +2596,16 @@ function closeGuestRegModal(save){
   document.getElementById('guestRegModal').classList.remove('open');
 }
 function logoutAndRegister(){
+  // ゲストデータ（対戦記録 or メダルプリセット）があれば、登録/ログイン後の移行を提案
+  const hasSeries=guestGetSeries().length>0;
+  const presetStr=localStorage.getItem(PRESET_KEY);
+  let hasPresets=false;
+  try{ const p=JSON.parse(presetStr||'[]'); hasPresets=Array.isArray(p)&&p.some(Boolean); }catch{}
+  if(hasSeries||hasPresets){
+    localStorage.setItem(GUEST_MIGRATE_KEY,'1');
+    // ログイン時にアカウント側プリセットで上書きされる前にスナップショットを保存
+    if(hasPresets) localStorage.setItem(GUEST_PRESET_SNAP_KEY,presetStr);
+  }
   localStorage.removeItem(GUEST_MODE_KEY);
   localStorage.removeItem(GUEST_HIDE_PROMPT_KEY);
   location.reload();
@@ -2608,6 +2620,90 @@ function deleteGuestData(){
     localStorage.removeItem(GUEST_HIDE_PROMPT_KEY);
     location.reload();
   });
+}
+
+// ===== ゲスト → アカウント データ移行 =====
+async function migrateGuestData(){
+  const {data:{user},error:ue}=await db.auth.getUser();
+  if(ue||!user) return {error:'no-user'};
+  const series=guestGetSeries();
+  let seriesCount=0,battleCount=0,presetCount=0,failed=false;
+  // 古いシリーズが先に作られるよう、作成日昇順で移行
+  const ordered=series.slice().sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+  for(const gs of ordered){
+    const ins={name:gs.name,user_id:user.id,archived:!!gs.archived};
+    if(gs.created_at) ins.created_at=gs.created_at;
+    const {data:newSeries,error:se}=await db.from('series').insert(ins).select('id').single();
+    if(se||!newSeries){ failed=true; continue; }
+    seriesCount++;
+    const gb=guestGetBattles(gs.id);
+    if(gb.length){
+      const rows=gb.map(b=>({
+        user_id:user.id, series_id:newSeries.id,
+        result:b.result, match_type:b.match_type, rank:b.rank||null,
+        pokemon:b.pokemon||null, skill1:b.skill1||null, skill2:b.skill2||null,
+        items:b.items||null, battle_item:b.battle_item||null, note:b.note||null,
+        created_at:b.created_at||new Date().toISOString()
+      }));
+      const {error:be}=await db.from('battles').insert(rows);
+      if(be) failed=true; else battleCount+=rows.length;
+    }
+  }
+  // メダルプリセット移行（アカウントの空きスロットを埋める／既存は保持）
+  try{
+    const snap=localStorage.getItem(GUEST_PRESET_SNAP_KEY);
+    if(snap){
+      const gp=JSON.parse(snap);
+      if(Array.isArray(gp)&&gp.some(Boolean)){
+        await _loadPresetsFromSupabase(); // アカウント現在のプリセットを取得
+        const merged=(labMedalPresets||[]).slice(0,8);
+        while(merged.length<8) merged.push(null);
+        for(let i=0;i<8;i++){ if(!merged[i]&&gp[i]){ merged[i]=gp[i]; presetCount++; } }
+        if(presetCount>0){
+          labMedalPresets=merged;
+          await _savePresetsToSupabase();
+          localStorage.setItem(PRESET_KEY,JSON.stringify(merged));
+          if(typeof labRefreshCalcMedalSelect==='function') labRefreshCalcMedalSelect();
+          if(typeof dcRefreshMedalSelect==='function') dcRefreshMedalSelect();
+        }
+      }
+    }
+  }catch(e){ console.warn('preset migrate err',e); failed=true; }
+  // 失敗が無かった場合のみ、ローカルのゲストデータを掃除（データ消失を防ぐ）
+  if(!failed){
+    series.forEach(s=>localStorage.removeItem(GUEST_BATTLES_PREFIX+s.id));
+    localStorage.removeItem(GUEST_SERIES_KEY);
+  }
+  localStorage.removeItem(GUEST_PRESET_SNAP_KEY);
+  return {seriesCount,battleCount,presetCount,failed};
+}
+function offerGuestMigration(){
+  if(localStorage.getItem(GUEST_MIGRATE_KEY)!=='1') return;
+  const series=guestGetSeries();
+  const totalBattles=series.reduce((n,s)=>n+guestGetBattles(s.id).length,0);
+  let presetN=0;
+  try{ const snap=localStorage.getItem(GUEST_PRESET_SNAP_KEY); if(snap){ const p=JSON.parse(snap); if(Array.isArray(p)) presetN=p.filter(Boolean).length; } }catch{}
+  if(!series.length&&!presetN){ localStorage.removeItem(GUEST_MIGRATE_KEY); localStorage.removeItem(GUEST_PRESET_SNAP_KEY); return; }
+  const parts=[];
+  if(series.length) parts.push(`シリーズ ${series.length}件・対戦 ${totalBattles}件`);
+  if(presetN) parts.push(`メダルプリセット ${presetN}件`);
+  showConfirm(
+    'ゲストデータの移行',
+    `ローカル（ゲスト）に保存された以下のデータが見つかりました。\n\n${parts.join('\n')}\n\nこのアカウントに移行しますか？\n※移行するとローカルのゲストデータは削除されます。`,
+    '移行する',
+    async ok=>{
+      localStorage.removeItem(GUEST_MIGRATE_KEY);
+      if(!ok){ localStorage.removeItem(GUEST_PRESET_SNAP_KEY); return; }
+      showToast('移行中です…','success');
+      const r=await migrateGuestData();
+      if(r.error){ showToast('移行に失敗しました。通信状態を確認して、もう一度ログイン手順をお試しください。','error'); return; }
+      if(r.failed){ showToast('一部のデータを移行できませんでした。ゲストデータは保持しています。時間をおいて再度お試しください。','warn'); return; }
+      const msg=[`シリーズ${r.seriesCount}件`,`対戦${r.battleCount}件`];
+      if(r.presetCount) msg.push(`プリセット${r.presetCount}件`);
+      showToast('移行完了：'+msg.join('・'),'success');
+      setTimeout(()=>location.reload(),1600);
+    }
+  );
 }
 
 async function logout(){
@@ -2643,6 +2739,8 @@ db.auth.onAuthStateChange(async(event,session)=>{
     document.getElementById('profileEmailHint').textContent=isFakeEmail(email)?'メールアドレスが未登録のため、パスワードを忘れると復旧できません。':'パスワードリセットメールはこのアドレスに届きます。';
     loadSeries();
     initDetailSelects();
+    // ゲストから登録/ログインした直後なら、データ移行を提案
+    offerGuestMigration();
   } else {
     if(isGuest()){ enterGuestMode(); return; }
     document.getElementById('authSection').style.display='flex';
@@ -2671,6 +2769,13 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v4.1',
+    date: '2026-06-02',
+    items: [
+      'ゲストの対戦記録・メダルプリセットを、ユーザー登録 / ログイン時にアカウントへ移行できるように',
+    ]
+  },
   {
     version: 'v4.0',
     date: '2026-06-02',
