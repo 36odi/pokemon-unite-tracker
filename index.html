@@ -1773,7 +1773,7 @@
       <div class="help-row"><span class="help-icon">🔼</span><span><strong>アップグレード段階</strong>を切り替えて強化後のダメージを比較可能</span></div>
       <div class="help-row"><span class="help-icon">🎯</span><span><strong>ユナイトわざ</strong>は自動表示（選択不要）</span></div>
       <div class="help-row"><span class="help-icon">✕ ヒット</span><span>多段ヒット・継続ダメージのわざは <strong>1ヒット分 × 回数 → 合計</strong> も表示</span></div>
-      <div class="help-tip">💡 ダメージは「合計」ステータス（もちもの・メダル込み）を元に計算されます。</span></div>
+      <div class="help-tip">💡 ダメージは「合計」ステータス（もちもの・メダル込み）を元に計算されます。</div>
     </div>
   </div>
 </div>
@@ -3202,6 +3202,10 @@ const HELP_CONTENT = {
     title: '❓ 統計',
     body: `
       <div class="help-section">
+        <div class="help-section-title">📅 今日の成績</div>
+        <div class="help-item"><span class="help-item-icon">📅</span><span>選択中シリーズの<strong>今日の勝敗・勝率</strong>を統計カード上部に表示します（1日の区切りはAM9:00）。</span></div>
+      </div>
+      <div class="help-section">
         <div class="help-section-title">モード別成績</div>
         <div class="help-item"><span class="help-item-icon">📊</span><span><strong>トータル</strong>：選択中のシリーズの全試合数・勝利・敗北・勝率</span></div>
         <div class="help-item"><span class="help-item-icon">🎮</span><span><strong>ソロ</strong>：1人で参加した試合の成績</span></div>
@@ -3210,8 +3214,8 @@ const HELP_CONTENT = {
       </div>
       <div class="help-section">
         <div class="help-section-title">ランク別成績</div>
-        <div class="help-item"><span class="help-item-icon">🥇</span><span>記録時にランク帯を選択した試合のみ集計されます。</span></div>
-        <div class="help-item"><span class="help-item-icon">📈</span><span>ランク帯ごとの勝敗・勝率を確認できます。</span></div>
+        <div class="help-item"><span class="help-item-icon">🥇</span><span>記録時にランク帯を選択した試合のみ集計されます。マスター以上はレートから<strong>マスター / レジェンド</strong>に自動で振り分けられます。</span></div>
+        <div class="help-item"><span class="help-item-icon">▼</span><span>「ランク別成績」「ポケモン別成績」はタイトルをタップで折りたためます。</span></div>
       </div>
       <div class="help-section">
         <div class="help-section-title">🔥 連勝・連敗</div>
@@ -3248,7 +3252,7 @@ const HELP_CONTENT = {
         <div class="help-item"><span class="help-item-icon">⚔️</span><span><strong>わざ1・わざ2</strong>：使用した技セットを記録</span></div>
         <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>もちもの①②③</strong>：装備したもちものを記録。専用もちものがあるポケモンは①が自動固定。</span></div>
         <div class="help-item"><span class="help-item-icon">💊</span><span><strong>バトルアイテム</strong>：使用したバトルアイテムを記録</span></div>
-        <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ランク帯</strong>：試合時のランク帯を記録（ランク別成績の集計に使用）</span></div>
+        <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ランク帯</strong>：ビギナー〜エキスパートは<strong>クラス</strong>、マスター以上は試合後の<strong>レート</strong>を記録できます（レート1000以上は自動でレジェンド扱い）</span></div>
         <div class="help-item"><span class="help-item-icon">📝</span><span><strong>メモ</strong>：対戦の気づきや反省点などを自由に記入できます</span></div>
       </div>
       <div class="help-section">
@@ -3269,7 +3273,7 @@ const HELP_CONTENT = {
       </div>
       <div class="help-section">
         <div class="help-section-title">フィルター</div>
-        <div class="help-item"><span class="help-item-icon">🔽</span><span>勝利／敗北・モード別でフィルタリングできます。組み合わせて絞り込みも可能です。</span></div>
+        <div class="help-item"><span class="help-item-icon">🔽</span><span>勝利／敗北・モード・<strong>ポケモン別</strong>でフィルタリングできます。組み合わせて絞り込みも可能です。</span></div>
         <div class="help-item"><span class="help-item-icon">📄</span><span>20件ごとにページ分割されています。下のページボタンで切り替えられます。</span></div>
       </div>
       <div class="help-section">
@@ -3315,8 +3319,13 @@ const HELP_CONTENT = {
       <div class="help-section">
         <div class="help-section-title">使い方</div>
         <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">プルダウンからシリーズを選択します。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">試合数・勝率のサマリーと使用ポケモン（上位12体）が表示されます。</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">試合数・勝率のサマリー、レート推移、使用ポケモン（上位12体）が表示されます。</div></div>
         <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">各分析セクションのラベルをタップすると詳細が展開されます。</div></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">📈 レート推移</div>
+        <div class="help-item"><span class="help-item-icon">📈</span><span>マスター以上で記録した<strong>レートの推移</strong>を記録順に折れ線で表示します（レート記録が2件以上で表示）。</span></div>
+        <div class="help-item"><span class="help-item-icon">——</span><span>レートが1000付近まで伸びると、レジェンドの目安となる<strong>1000ライン</strong>も表示されます。</span></div>
       </div>
       <div class="help-section">
         <div class="help-section-title">分析セクション</div>
