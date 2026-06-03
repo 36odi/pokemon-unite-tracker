@@ -1740,6 +1740,7 @@
       <div class="help-section-title">プリセット保存（8パターン）</div>
       <div class="help-row"><span class="help-icon">💾</span><span><strong>保存</strong> → 現在の10スロット＋レアリティ設定を保存</span></div>
       <div class="help-row"><span class="help-icon">📂</span><span><strong>読込</strong> → 保存したセットを復元</span></div>
+      <div class="help-row"><span class="help-icon">✏️</span><span><strong>名前</strong> → カード上部の名前（または「パターン番号」）を<strong>クリックで任意の名前を設定</strong>。ステータス/ダメージ計算のメダルセット選択にも反映されます</span></div>
       <div class="help-row"><span class="help-icon">☁</span><span>Supabaseに自動同期されるため、<strong>別のブラウザ・端末でも同じプリセットを利用可能</strong></span></div>
     </div>
   </div>
@@ -2783,6 +2784,13 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v4.4',
+    date: '2026-06-03',
+    items: [
+      'メダルプリセットに任意の名前を付けられるように（カードの名前をクリックで設定・計算のメダルセット選択にも反映）',
+    ]
+  },
   {
     version: 'v4.3',
     date: '2026-06-03',
@@ -6124,7 +6132,7 @@ function labRefreshCalcMedalSelect(){
     const count = (obj?.slots||[]).filter(Boolean).length;
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = `パターン${i+1}（${count}枚）`;
+    opt.textContent = `${(obj&&obj.name)||('パターン'+(i+1))}（${count}枚）`;
     sel.appendChild(opt);
   });
   // 選択を復元（まだ存在するプリセットなら保持）
@@ -6265,7 +6273,7 @@ function dcRefreshMedalSelect(){
     const obj=_presetToObj(preset);
     const count=(obj?.slots||[]).filter(Boolean).length;
     const opt=document.createElement('option');
-    opt.value=i; opt.textContent=`パターン${i+1}（${count}枚）`;
+    opt.value=i; opt.textContent=`${(obj&&obj.name)||('パターン'+(i+1))}（${count}枚）`;
     sel.appendChild(opt);
   });
   if(cur!==''&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
@@ -6647,7 +6655,7 @@ const PRESET_KEY = 'unite_medal_presets';
 // プリセットのslots/raritiesを正規化（旧形式配列にも対応）
 function _presetToObj(p){
   if(!p) return null;
-  if(Array.isArray(p)) return { slots:[...p], rarities:Array(10).fill('gold') }; // 旧形式
+  if(Array.isArray(p)) return { slots:[...p], rarities:Array(10).fill('gold'), name:null }; // 旧形式
   return p;
 }
 
@@ -6701,8 +6709,9 @@ function labRenderMedalPresets(){
     const dots = colors.slice(0,5).map(c=>
       `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${MEDAL_COLOR_HEX[c]||'#9399b2'};margin:0 1px;vertical-align:middle;"></span>`
     ).join('');
+    const label = (obj && obj.name) ? escapeHtml(obj.name) : `パターン${i+1}`;
     return `<div class="medal-preset-card${preset?' has-data':''}">
-      <div class="medal-preset-num">パターン${i+1}</div>
+      <div class="medal-preset-num"${preset?` onclick="labRenamePreset(${i})" style="cursor:pointer;" title="クリックで名前を変更"`:''}>${label}${preset?' <span style="opacity:.45;">✏️</span>':''}</div>
       <div class="medal-preset-info">${preset ? count+'枚 '+dots : '未保存'}</div>
       <div class="medal-preset-btns">
         <button class="medal-preset-btn" onclick="labSaveMedalPreset(${i})">保存</button>
@@ -6715,11 +6724,27 @@ function labRenderMedalPresets(){
 
 function labSaveMedalPreset(idx){
   if(!labMedalSlots.filter(Boolean).length){ alert('メダルを選択してください'); return; }
-  labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities] };
+  const prev=_presetToObj(labMedalPresets[idx]);
+  labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities], name: (prev&&prev.name)||null };
   localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   if(isGuest()){ showGuestRegPrompt(); return; }
+  _savePresetsToSupabase();
+}
+
+// プリセットに任意の名前を付ける/変更する
+function labRenamePreset(idx){
+  const obj=_presetToObj(labMedalPresets[idx]);
+  if(!obj) return;
+  const input=prompt('プリセット名（任意・空欄で「パターン番号」表示）', obj.name||'');
+  if(input===null) return; // キャンセル
+  obj.name=input.trim()||null;
+  labMedalPresets[idx]=obj;
+  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  labRenderMedalPresets();
+  labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
+  if(isGuest()) return;
   _savePresetsToSupabase();
 }
 
