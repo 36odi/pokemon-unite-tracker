@@ -2241,6 +2241,10 @@ const RANK_STYLE = {
 //  ・クラス付き … "エキスパート・C1"（ビギナー〜エキスパート）
 //  ・レート     … "レート 1530"（1000以上=レジェンド / 未満=マスター を自動判定）
 //  ・旧データ   … "マスター" 等のティア名のみ
+// ユーザー入力（シリーズ名・メモ・検索語など）をHTMLに埋め込む際のエスケープ
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function rankTier(r){
   if(!r) return null;
   if(r.startsWith('レート ')){ const n=parseInt(r.slice(3))||0; return n>=1000?'レジェンド':'マスター'; }
@@ -3114,10 +3118,10 @@ async function openCsvModal(){
   } else {
     listEl.innerHTML=seriesList.map(s=>`
       <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text2);">
-        <input type="checkbox" value="${s.id}" data-name="${s.name}" class="csv-series-check"
+        <input type="checkbox" value="${s.id}" data-name="${escapeHtml(s.name)}" class="csv-series-check"
           style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;"
           ${currentSeriesId===s.id?'checked':''} />
-        ${s.name}
+        ${escapeHtml(s.name)}
       </label>`).join('');
   }
   document.getElementById('csvModal').classList.add('open');
@@ -3445,14 +3449,14 @@ async function loadAnalysis(){
     // 勝率推移セレクト
     const sel=document.getElementById('trendSeriesSelect');
     sel.innerHTML=allSeriesData.length
-      ? allSeriesData.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')
+      ? allSeriesData.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')
       : '<option value="">シリーズなし</option>';
     // A5: シリーズ分析セレクト
     const asel=document.getElementById('seriesanalSelect');
     if(asel){
       const prevVal=asel.value;
       asel.innerHTML='<option value="">— シリーズを選択 —</option>'+
-        allSeriesData.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+        allSeriesData.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
       // 以前の選択を復元、なければ最初のシリーズを自動選択
       if(prevVal&&asel.querySelector(`option[value="${prevVal}"]`)){
         asel.value=prevVal;
@@ -3678,7 +3682,7 @@ function renderCompareChart(){
         const t=s.battles.length;
         const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
         const col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
-        return `<div class="series-compare-row"><div class="series-name-cell">${s.name}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
+        return `<div class="series-compare-row"><div class="series-name-cell">${escapeHtml(s.name)}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
       }).join('')
     : '<div class="empty" style="padding:1rem 0;">データなし</div>';
 }
@@ -3914,7 +3918,7 @@ function renderPokeList(search='',typeFilter='all'){
     const chips=filtered.map(p=>`<span class="poke-chip${selectedPoke===p?' selected':''}" onclick="selectPoke('${p}')">${iconImg(p,'chip-icon',28)}${p}</span>`).join('');
     html+=`<div class="type-section"><div class="type-section-label ${cls}">${label}</div><div class="poke-chips">${chips}</div></div>`;
   });
-  list.innerHTML=hasAny?html:`<div class="no-results">「${search}」は見つかりませんでした</div>`;
+  list.innerHTML=hasAny?html:`<div class="no-results">「${escapeHtml(search)}」は見つかりませんでした</div>`;
 }
 function openDropdown(){document.getElementById('pokeDropdown').classList.add('open');document.getElementById('pokeSearch').value='';renderPokeList('',activeTypeFilter);setTimeout(()=>document.getElementById('pokeSearch').focus(),50);}
 function closeDropdown(){document.getElementById('pokeDropdown').classList.remove('open');}
@@ -4749,7 +4753,7 @@ function renderHistory(){
       :`<div class="h-skill" style="color:var(--text3);">—</div>`;
     // F1: メモ表示
     const noteHtml=b.note
-      ?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📝 ${b.note}</div>`
+      ?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📝 ${escapeHtml(b.note)}</div>`
       :'';
 
     const items=b.items?b.items.split(',').filter(Boolean):[];
