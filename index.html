@@ -3489,7 +3489,13 @@ async function loadAnalysis(){
     }
     analysisLoaded=true;
     analysisNeedsRefresh=false;
-    setTimeout(()=>{ renderTrendChart(); renderTotalStats(); }, 50);
+    setTimeout(()=>{
+      renderTrendChart(); renderTotalStats();
+      // 編集等での再構築時、表示中のサブパネルも新しいデータで再描画（反映漏れ防止）
+      if(document.getElementById('comparePanel')?.style.display!=='none') renderCompareChart();
+      if(document.getElementById('pokedetailPanel')?.style.display!=='none') initPokeDetailSelect();
+      if(document.getElementById('seriesanalPanel')?.style.display!=='none') renderSeriesAnalysis();
+    }, 50);
   } catch(err){ console.error('loadAnalysis error:',err); }
 }
 
@@ -4214,6 +4220,15 @@ async function saveEdit(){
   const rank=getEditRankValue();
   const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item};
   if(created_at)update.created_at=created_at;
+  if(isGuest()){
+    // ゲスト: localStorageの該当試合を更新（is_bot/メモ等の未編集項目は保持）
+    const list=guestGetBattles(currentSeriesId);
+    const idx=list.findIndex(b=>String(b.id)===String(id));
+    if(idx>=0){ list[idx]={...list[idx],...update}; guestSaveBattles(currentSeriesId,list); }
+    closeModal('editModal');
+    await loadBattles();
+    return;
+  }
   const {error}=await db.from('battles').update(update).eq('id',id);
   if(error){showToast('保存に失敗しました。通信状態を確認してください。','error');return;}
   closeModal('editModal');
