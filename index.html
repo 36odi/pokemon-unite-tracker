@@ -1079,10 +1079,10 @@
   <div id="analysisPage" style="display:none;">
     <div class="analysis-tabs">
       <div class="analysis-tab active" onclick="switchAnalysis('trend')">📈 勝率推移</div>
+      <div class="analysis-tab" onclick="switchAnalysis('seriesanal')">📋 シリーズ分析</div>
       <div class="analysis-tab" onclick="switchAnalysis('compare')">📊 シリーズ比較</div>
       <div class="analysis-tab" onclick="switchAnalysis('total')">🏆 通算成績</div>
       <div class="analysis-tab" onclick="switchAnalysis('pokedetail')">🔍 ポケモン別詳細</div>
-      <div class="analysis-tab" onclick="switchAnalysis('seriesanal')">📋 シリーズ分析</div>
     </div>
     <!-- 勝率推移 -->
     <div id="trendPanel">
@@ -3527,7 +3527,7 @@ function switchAnalysis(tab){
   navId++; // ナビゲーションガード
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
   document.querySelectorAll('.analysis-tab').forEach((t,i)=>t.classList.toggle('active',
-    (i===0&&tab==='trend')||(i===1&&tab==='compare')||(i===2&&tab==='total')||(i===3&&tab==='pokedetail')||(i===4&&tab==='seriesanal')));
+    (i===0&&tab==='trend')||(i===1&&tab==='seriesanal')||(i===2&&tab==='compare')||(i===3&&tab==='total')||(i===4&&tab==='pokedetail')));
   document.getElementById('trendPanel').style.display=tab==='trend'?'block':'none';
   document.getElementById('comparePanel').style.display=tab==='compare'?'block':'none';
   document.getElementById('totalPanel').style.display=tab==='total'?'block':'none';
