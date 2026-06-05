@@ -431,6 +431,14 @@
   .rank-wr-wrap{flex:1;min-width:70px;}
   .rank-wr-label{font-size:10px;color:var(--text3);margin-bottom:3px;}
   .rank-wr-val{font-size:16px;font-weight:700;color:var(--text);margin-bottom:3px;}
+  /* ランク別 モード内訳（折りたたみ） */
+  .rank-stat-block{background:var(--bg3);border-radius:var(--radius-sm);overflow:hidden;}
+  .rank-stat-head{display:flex;align-items:center;gap:12px;padding:8px 14px;cursor:pointer;user-select:none;}
+  .rank-stat-head .poke-mode-arrow{flex-shrink:0;}
+  .rank-mode-body{padding:0 14px 8px 14px;}
+  .rank-mode-line{display:flex;align-items:center;gap:8px;font-size:11px;padding:4px 0;border-top:1px solid var(--border);}
+  .rank-mode-rec{color:var(--text2);min-width:64px;}
+  .rank-mode-wr{font-weight:700;margin-left:auto;}
 
   /* ページネーション */
   .pagination{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 2px;}
@@ -2794,6 +2802,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v4.7',
+    date: '2026-06-06',
+    items: [
+      '統計のランク別成績を折りたたみ式にし、ランクごとのソロ/デュオ・トリオ/フルパ別勝率を表示',
+    ]
+  },
+  {
     version: 'v4.6',
     date: '2026-06-03',
     items: [
@@ -4742,17 +4757,30 @@ function renderStats(){
     const wr=calcWR(w,rl.length);
     const s=RANK_STYLE[rank]||{color:'var(--text2)',bg:'var(--bg3)'};
     const wrCol=wr?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
-    return `<div class="rank-stat-row">
-      <span class="rank-badge-inline" style="background:${s.bg};color:${s.color};">${rank}</span>
-      <div class="rank-nums">
-        <div class="rank-num"><div class="rank-num-label">勝利</div><div class="rank-num-val win">${w}</div></div>
-        <div class="rank-num"><div class="rank-num-label">敗北</div><div class="rank-num-val loss">${lo}</div></div>
+    // モード内訳（ソロ/デュオ/フルパ）
+    const modeLine=(label,cls,arr)=>{
+      const mw=arr.filter(b=>b.result==='win').length, ml=arr.length-mw, mwr=calcWR(mw,arr.length);
+      const mcol=mwr?(parseFloat(mwr)>=50?'var(--win)':'var(--loss)'):'var(--text3)';
+      return `<div class="rank-mode-line"><span class="badge ${cls}" style="font-size:9px;padding:2px 7px;">${label}</span><span class="rank-mode-rec">${arr.length?`${mw}勝 ${ml}敗`:'—'}</span><span class="rank-mode-wr" style="color:${mcol};">${mwr?mwr+'%':'—'}</span></div>`;
+    };
+    const modeBody=modeLine('ソロ','badge-solo',rl.filter(b=>b.match_type==='solo'))
+      +modeLine('デュオ/トリオ','badge-duo',rl.filter(b=>b.match_type==='duo'))
+      +modeLine('フルパ','badge-full',rl.filter(b=>b.match_type==='full'));
+    return `<div class="rank-stat-block">
+      <div class="rank-stat-head" onclick="toggleStatSection(this)">
+        <span class="rank-badge-inline" style="background:${s.bg};color:${s.color};">${rank}</span>
+        <div class="rank-nums">
+          <div class="rank-num"><div class="rank-num-label">勝利</div><div class="rank-num-val win">${w}</div></div>
+          <div class="rank-num"><div class="rank-num-label">敗北</div><div class="rank-num-val loss">${lo}</div></div>
+        </div>
+        <div class="rank-wr-wrap">
+          <div class="rank-wr-label">勝率</div>
+          <div class="rank-wr-val" style="color:${wrCol};">${wr?wr+'%':'—'}</div>
+          <div class="wr-bar"><div class="wr-fill" style="width:${wr||0}%"></div></div>
+        </div>
+        <span class="poke-mode-arrow">▼</span>
       </div>
-      <div class="rank-wr-wrap">
-        <div class="rank-wr-label">勝率</div>
-        <div class="rank-wr-val" style="color:${wrCol};">${wr?wr+'%':'—'}</div>
-        <div class="wr-bar"><div class="wr-fill" style="width:${wr||0}%"></div></div>
-      </div>
+      <div class="stat-section-body rank-mode-body">${modeBody}</div>
     </div>`;
   }).filter(Boolean);
   const rankSec=document.getElementById('rankSection');
