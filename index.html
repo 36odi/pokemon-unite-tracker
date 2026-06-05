@@ -2781,6 +2781,13 @@ function showPage(page){
     document.getElementById('guestProfileCard').style.display=g?'block':'none';
     document.getElementById('normalProfileCards').style.display=g?'none':'block';
   }
+  // アクセス解析: 主要3画面の仮想ページビュー（方式A＝セッション単位。count既定で同一セッションの重複は集約）
+  try{
+    const gc={tracker:['/tracker','トラッカー'],analysis:['/analysis','分析'],lab:['/lab','ラボ']}[page];
+    if(gc && window.goatcounter && typeof window.goatcounter.count==='function'){
+      window.goatcounter.count({path:gc[0], title:gc[1]});
+    }
+  }catch(e){}
 }
 
 // ---- 更新履歴 ----
