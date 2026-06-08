@@ -4245,9 +4245,11 @@ function openEditModal(id){
   if(s2&&battle.skill2)s2.value=battle.skill2;
   const dedicated=DEDICATED_ITEMS[pokemon];
   const itemArr=battle.items?battle.items.split(','):[];
+  // items は [スロット1, スロット2, スロット3]。専用もちものの場合は [0] が専用（固定表示）。
+  // editItem2/3 は専用有無に関わらず常に [1]/[2] に対応する（旧コードはここがオフバイワンで欠落していた）
   if(!dedicated){const i1=document.getElementById('editItem1');if(i1)i1.value=itemArr[0]||'';}
-  const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[dedicated?0:1]||'';
-  const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[dedicated?1:2]||'';
+  const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[1]||'';
+  const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[2]||'';
   const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
   setTimeout(()=>{
     ['editItem1','editItem2','editItem3','editBattleItem'].forEach(sid=>updateItemIcon(sid,sid+'Img'));
