@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ポケモンユナイト 対戦トラッカー</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="vendor/supabase.min.js"></script>
+<script src="vendor/chart.umd.min.js"></script>
 <script src="lab_data.js"></script>
 <style>
   :root {
@@ -2802,6 +2802,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v4.9',
+    date: '2026-06-12',
+    items: [
+      'オフラインでも起動・利用できるように対応（グラフ・ダメージ計算をネット接続なしで表示）',
+    ]
+  },
+  {
     version: 'v4.8',
     date: '2026-06-08',
     items: [
@@ -3793,7 +3800,7 @@ function renderTotalStats(){
     ? top5.map(([name,s])=>{
         const t=s.w+s.l,wr=((s.w/t)*100).toFixed(1);
         const col=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
-        return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${name}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
+        return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${escapeHtml(name)}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
 }
@@ -3805,7 +3812,7 @@ function initPokeDetailSelect(){
   const all=allSeriesData.flatMap(s=>s.battles);
   const pokeSet=new Set(all.filter(b=>b.pokemon).map(b=>b.pokemon));
   const current=sel.value;
-  sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${p}">${p}</option>`).join('');
+  sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(current)sel.value=current;
   if(sel.value) renderPokeDetail();
 }
@@ -3852,7 +3859,7 @@ function renderPokeDetail(){
       <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
         const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
         const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
-        return `<tr><td style="font-size:11px;">${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+        return `<tr><td style="font-size:11px;">${escapeHtml(name)}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   };
@@ -3874,7 +3881,7 @@ function renderPokeDetail(){
       <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
         const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
         const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
-        return `<tr><td>${name}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+        return `<tr><td>${escapeHtml(name)}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   };
@@ -4866,13 +4873,13 @@ function renderHistory(){
 
     const pokeImgUrl=b.pokemon?getIconUrl(b.pokemon):null;
     const pokeImgHtml=pokeImgUrl
-      ?`<img src="${pokeImgUrl}" class="h-poke-img" alt="${b.pokemon}" onerror="this.style.opacity='0.15'" />`
+      ?`<img src="${pokeImgUrl}" class="h-poke-img" alt="${escapeHtml(b.pokemon)}" onerror="this.style.opacity='0.15'" />`
       :`<div class="h-no-poke-icon">🎮</div>`;
     const pokeNameHtml=b.pokemon
-      ?`<div class="h-poke-name">${b.pokemon}</div>`
+      ?`<div class="h-poke-name">${escapeHtml(b.pokemon)}</div>`
       :`<div class="h-poke-name-empty">—</div>`;
     const skillHtml=(b.skill1||b.skill2)
-      ?`<div class="h-skill">⚔ ${[b.skill1,b.skill2].filter(Boolean).join(' ＋ ')}</div>`
+      ?`<div class="h-skill">⚔ ${escapeHtml([b.skill1,b.skill2].filter(Boolean).join(' ＋ '))}</div>`
       :`<div class="h-skill" style="color:var(--text3);">—</div>`;
     // F1: メモ表示
     const noteHtml=b.note
@@ -4883,11 +4890,11 @@ function renderHistory(){
     const itemBoxes=[0,1,2].map(idx=>{
       const item=items[idx];
       return item
-        ?`<div class="h-item-box" title="${item}"><img src="${getItemImgSrc(item)}" alt="${item}" onerror="this.style.opacity='0'" /></div>`
+        ?`<div class="h-item-box" title="${escapeHtml(item)}"><img src="${escapeHtml(getItemImgSrc(item))}" alt="${escapeHtml(item)}" onerror="this.style.opacity='0'" /></div>`
         :`<div class="h-item-box empty-box"></div>`;
     }).join('');
     const biBox=b.battle_item
-      ?`<div class="h-item-box" title="${b.battle_item}"><img src="${getItemImgSrc(b.battle_item)}" alt="${b.battle_item}" onerror="this.style.opacity='0'" /></div>`
+      ?`<div class="h-item-box" title="${escapeHtml(b.battle_item)}"><img src="${escapeHtml(getItemImgSrc(b.battle_item))}" alt="${escapeHtml(b.battle_item)}" onerror="this.style.opacity='0'" /></div>`
       :`<div class="h-item-box empty-box"></div>`;
 
     return `<div class="h-card">
@@ -5031,7 +5038,7 @@ function refreshPokeFilterOptions(){
   if(!sel)return;
   const pokes=[...new Set(battles.filter(b=>b.pokemon).map(b=>b.pokemon))].sort((a,b)=>a.localeCompare(b,'ja'));
   const cur=sel.value;
-  sel.innerHTML='<option value="all">全ポケモン</option>'+pokes.map(p=>`<option value="${p}">${p}</option>`).join('');
+  sel.innerHTML='<option value="all">全ポケモン</option>'+pokes.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(pokes.includes(cur)){ sel.value=cur; } else { sel.value='all'; historyFilterPoke='all'; }
 }
 function getFilteredBattles(){
@@ -5332,7 +5339,7 @@ async function renderSeriesAnalysis(){
       const rwr=((rw/rt)*100).toFixed(1)+'%';
       const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
       return `<tr>
-        <td style="padding:4px 6px;"><div style="display:flex;align-items:center;gap:4px;">${iconImg(name,'',16)}<span>${name}</span></div></td>
+        <td style="padding:4px 6px;"><div style="display:flex;align-items:center;gap:4px;">${iconImg(name,'',16)}<span>${escapeHtml(name)}</span></div></td>
         <td style="padding:4px 6px;text-align:center;">${rt}</td>
         <td style="padding:4px 6px;text-align:center;">${rw}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td>
@@ -5519,7 +5526,7 @@ async function renderSeriesAnalysis(){
     ${pokeList.map(([name,ps])=>{
       const pt=ps.w+ps.l,pwr=pt>0?((ps.w/pt)*100).toFixed(1)+'%':'—';
       const pc=pt>0?(parseFloat(pwr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
-      return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'',20)} ${name}</div><div class="series-val">${pt}</div><div class="series-val">${ps.w}</div><div class="series-wr-cell" style="color:${pc}">${pwr}</div></div>`;
+      return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'',20)} ${escapeHtml(name)}</div><div class="series-val">${pt}</div><div class="series-val">${ps.w}</div><div class="series-wr-cell" style="color:${pc}">${pwr}</div></div>`;
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
     <div style="margin-top:4px;">
