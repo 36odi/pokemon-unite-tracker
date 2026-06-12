@@ -144,6 +144,22 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
 
+// ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
+section('app shell assets');
+const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+// index.html が参照するローカル資産（js/css/json）が実在し、SW のプリキャッシュにも載っていること
+const localRefs = [...indexSrc.matchAll(/(?:src|href)="(?!https?:|\/\/|data:|#)([^"]+)"/g)]
+  .map(m => m[1])
+  .filter(p => /\.(js|css|json)$/.test(p));
+ok(localRefs.length >= 4, `found local asset refs (got: ${localRefs.length})`);
+const missingFiles = localRefs.filter(p => !fs.existsSync(path.join(ROOT, p)));
+ok(missingFiles.length === 0, `all local asset refs exist (missing: ${missingFiles.join(', ')})`);
+const notCached = localRefs.filter(p => !swSrc.includes(p));
+ok(notCached.length === 0, `all local assets precached in sw.js (not cached: ${notCached.join(', ')})`);
+// CSS が抽出済みで index.html に巨大 <style> ブロックが残っていないこと
+ok(fs.existsSync(path.join(ROOT, 'styles.css')) && fs.statSync(path.join(ROOT, 'styles.css')).size > 10000, 'styles.css exists and non-trivial');
+ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html');
+
 // ---- 結果 ----
 console.log(`\n${fail === 0 ? 'ALL PASS' : 'FAILURES'} — ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
