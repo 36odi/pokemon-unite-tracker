@@ -48,9 +48,11 @@ function extractFn(src, name) {
   return src.slice(i, j);
 }
 
-// 純粋関数を取り出して評価
-const pureNames = ['escapeHtml', 'rankTier', 'rankRate', 'rankLabel', 'dcCalcActual', 'computeStats'];
-const pureSrc = pureNames.map(n => extractFn(indexSrc, n)).join('\n');
+// 分離済みファイル（js/constants.js, js/utils.js）はそのまま読み込んで評価。
+// ラボ系（dcCalcActual, computeStats）はまだ index.html 内なのでソース抽出（Phase 3 で分離予定）。
+const constantsSrc = fs.readFileSync(path.join(ROOT, 'js', 'constants.js'), 'utf8');
+const utilsSrc = fs.readFileSync(path.join(ROOT, 'js', 'utils.js'), 'utf8');
+const labFnSrc = ['dcCalcActual', 'computeStats'].map(n => extractFn(indexSrc, n)).join('\n');
 
 // computeStats が参照する可能性のあるグローバルのスタブ + lab_data
 // （items空・medal無しの呼び出しでは中身は実行されないが、参照安全のため定義）
@@ -63,8 +65,11 @@ const body = `
   const LAB_GOAL_ITEMS = {};
   const LAB_DMG_STACK_ITEMS = {};
   function labCalcMedalBonus(){ return {}; }
-  ${pureSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS};
+  ${constantsSrc}
+  ${utilsSrc}
+  ${labFnSrc}
+  return {escapeHtml, rankTier, rankRate, rankLabel, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+          POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
 
@@ -143,6 +148,16 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
+
+// ---- 定数データの整合性（js/constants.js） ----
+section('constants integrity');
+const allPoke = Object.values(F.POKEMON_DATA).flatMap(t => t.pokemon);
+ok(allPoke.length === new Set(allPoke).size, 'POKEMON_DATA has no duplicates');
+eq(Object.keys(F.RANK_STYLE).sort(), F.RANKS.slice().sort(), 'RANK_STYLE keys match RANKS');
+const dedicatedUnknown = Object.keys(F.DEDICATED_ITEMS).filter(p => !allPoke.includes(p));
+ok(dedicatedUnknown.length === 0, `DEDICATED_ITEMS pokemon all in POKEMON_DATA (bad: ${dedicatedUnknown.join(', ')})`);
+const skillsUnknown = Object.keys(F.SKILLS).filter(p => !allPoke.includes(p));
+ok(skillsUnknown.length === 0, `SKILLS pokemon all in POKEMON_DATA (bad: ${skillsUnknown.slice(0, 5).join(', ')})`);
 
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
