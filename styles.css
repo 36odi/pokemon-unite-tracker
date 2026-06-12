@@ -651,3 +651,16 @@
   .medal-preset-btn.load:hover{background:var(--accent);color:#fff;}
   .medal-preset-btn.del{color:var(--text3);}
   .medal-preset-btn.del:hover{border-color:var(--loss);color:var(--loss);}
+
+  /* ---- 更新通知トースト ---- */
+  .update-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;
+    display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);
+    background:var(--bg2);border:1px solid var(--accent);border-radius:var(--radius);
+    padding:10px 14px;font-size:13px;color:var(--text);
+    box-shadow:0 6px 24px rgba(0,0,0,.45);animation:toastIn .25s ease;}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,12px);}to{opacity:1;transform:translate(-50%,0);}}
+  .update-toast-btn{background:var(--accent);border:none;color:#fff;border-radius:var(--radius-sm);
+    padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;}
+  .update-toast-btn:hover{opacity:.85;}
+  .update-toast-close{background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:2px 4px;}
+  .update-toast-close:hover{color:var(--text);}

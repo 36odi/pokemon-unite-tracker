@@ -175,6 +175,30 @@ ok(notCached.length === 0, `all local assets precached in sw.js (not cached: ${n
 ok(fs.existsSync(path.join(ROOT, 'styles.css')) && fs.statSync(path.join(ROOT, 'styles.css')).size > 10000, 'styles.css exists and non-trivial');
 ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html');
 
+// ---- SWキャッシュ版数の上げ忘れ検知（git がある場合のみ） ----
+// ローカル資産が origin/main から変わっているのに sw.js の CACHE 版数が同じだと、
+// 配信後に既存ユーザーの端末で新旧ファイルが混在し得る。プッシュ前に機械的に検知する。
+section('sw cache version');
+try {
+  const { execSync } = require('child_process');
+  const opt = { cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] };
+  const changed = execSync('git diff origin/main --name-only', opt).split('\n').filter(Boolean);
+  const assetChanged = changed.filter(f =>
+    f === 'index.html' || f === 'styles.css' || f === 'lab_data.js' || f === 'manifest.json' ||
+    f.startsWith('js/') || f.startsWith('vendor/'));
+  if (assetChanged.length === 0) {
+    ok(true, 'no asset changes vs origin/main — version bump not required');
+  } else {
+    const curVer = (swSrc.match(/CACHE\s*=\s*'([^']+)'/) || [])[1];
+    const mainSw = execSync('git show origin/main:sw.js', opt);
+    const mainVer = (mainSw.match(/CACHE\s*=\s*'([^']+)'/) || [])[1];
+    ok(curVer && curVer !== mainVer,
+      `assets changed (${assetChanged.length} files) -> sw.js CACHE must be bumped (origin/main: ${mainVer}, local: ${curVer})`);
+  }
+} catch (e) {
+  ok(true, 'git unavailable — sw version check skipped');
+}
+
 // ---- 結果 ----
 console.log(`\n${fail === 0 ? 'ALL PASS' : 'FAILURES'} — ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

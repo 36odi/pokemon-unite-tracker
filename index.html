@@ -1960,6 +1960,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.0',
+    date: '2026-06-12',
+    items: [
+      '新しいバージョンが公開されたとき、画面下にお知らせを表示してワンタップで更新できるように',
+    ]
+  },
+  {
     version: 'v4.9',
     date: '2026-06-12',
     items: [
@@ -3499,7 +3506,26 @@ function pwaInstall(){
 }
 function pwaDismiss(){document.getElementById('pwaBar').classList.remove('show');}
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    // 新バージョン配信の検知：既存SWの制御下で新SWに入れ替わったら更新を案内する。
+    // （初回インストール時は controller が無いので発火させない）
+    let hadController=!!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(hadController) showUpdateToast();
+      hadController=true;
+    });
+  });
+}
+function showUpdateToast(){
+  if(document.getElementById('updateToast'))return;
+  const t=document.createElement('div');
+  t.id='updateToast';
+  t.className='update-toast';
+  t.innerHTML='✨ 新しいバージョンがあります'
+    +'<button class="update-toast-btn" onclick="location.reload()">更新</button>'
+    +'<button class="update-toast-close" onclick="this.parentNode.remove()" aria-label="閉じる">✕</button>';
+  document.body.appendChild(t);
 }
 
 // ---- シェア画像生成 ----
