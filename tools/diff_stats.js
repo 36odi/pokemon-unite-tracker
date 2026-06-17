@@ -43,7 +43,7 @@ function parseCSV(text){
   return rows;
 }
 
-const csvText=fs.readFileSync('C:/Users/ishgo/AppData/Local/Temp/unitedb_stats.csv','utf8');
+const csvText=fs.readFileSync(path.join(ROOT,'data','unitedb_stats.csv'),'utf8');
 const rows=parseCSV(csvText).filter(r=>r.length>=14 && r[0]!=='pokemon_id');
 // csv[en][level] = {hp,atk,def,spatk,spdef,ms}
 const csv={};

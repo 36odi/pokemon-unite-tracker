@@ -201,3 +201,22 @@ const prodPath = 'C:/Users/ishgo/Downloads/pokemon-unite-tracker/lab_data.js';
 fs.writeFileSync(outPath, out, 'utf-8');
 fs.writeFileSync(prodPath, out, 'utf-8');
 console.error(`生成完了: ${out.length} bytes → ${prodPath}`);
+
+// ========================
+// 案A: unite-db レシオでスキル数値(coeff/fixed/lvScale)を正本化
+// data/unitedb_ratios.csv があれば、スプレッドシート由来の誤り(多段わざのlvScale等)を
+// unite-db 準拠に上書きして確定する。詳細は tools/REGEN.md。
+// ========================
+const ROOT_DIR = 'C:/Users/ishgo/Downloads/pokemon-unite-tracker';
+const ratiosCsv = `${ROOT_DIR}/data/unitedb_ratios.csv`;
+if (fs.existsSync(ratiosCsv)) {
+  try {
+    require('child_process').execSync('node tools/build_skills_from_unitedb.js --apply',
+      { cwd: ROOT_DIR, stdio: 'inherit' });
+    console.error('unite-db レシオでスキル数値を正本化しました');
+  } catch (e) {
+    console.error('警告: unite-db 正本化に失敗（lab_data.js は生成済み）:', e.message);
+  }
+} else {
+  console.error('警告: data/unitedb_ratios.csv が無いため unite-db 正本化をスキップ（多段わざのlvScaleが誤る可能性）');
+}
