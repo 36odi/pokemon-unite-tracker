@@ -652,6 +652,12 @@
   .medal-preset-btn.del{color:var(--text3);}
   .medal-preset-btn.del:hover{border-color:var(--loss);color:var(--loss);}
 
+  /* ---- レーン選択ボタン ---- */
+  .lane-btn-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .lane-btn{padding:9px 6px;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:var(--radius-sm);cursor:pointer;transition:.15s;}
+  .lane-btn:hover{border-color:var(--accent);color:var(--text);}
+  .lane-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);font-weight:600;}
+
   /* ---- 更新通知トースト ---- */
   .update-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;
     display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);

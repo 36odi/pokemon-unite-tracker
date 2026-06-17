@@ -267,6 +267,14 @@
           </div>
           <button class="item-clear-btn" id="ipBclear" style="display:none;" onclick="clearItemPicker('ipB',0)">✕ 解除</button>
         </div>
+        <div>
+          <div class="detail-label">レーン（任意）</div>
+          <div class="lane-btn-row" id="laneBtnRow">
+            <button type="button" class="lane-btn" data-lane="上" onclick="selectLane('上')">上レーン</button>
+            <button type="button" class="lane-btn" data-lane="中央" onclick="selectLane('中央')">中央レーン</button>
+            <button type="button" class="lane-btn" data-lane="下" onclick="selectLane('下')">下レーン</button>
+          </div>
+        </div>
         <!-- F1: メモ折りたたみ -->
         <div class="sub-toggle" onclick="toggleMemo()">
           <span class="sub-arrow" id="memoArrow">▶</span>
@@ -1415,6 +1423,14 @@
         <select id="editBattleItem" onchange="updateItemIcon('editBattleItem','editBattleItemImg')"><option value="">— 選択 —</option></select>
       </div>
     </div>
+    <div class="modal-field">
+      <label>レーン</label>
+      <div class="lane-btn-row" id="editLaneBtnRow">
+        <button type="button" class="lane-btn" data-lane="上" onclick="editSelectLane('上')">上レーン</button>
+        <button type="button" class="lane-btn" data-lane="中央" onclick="editSelectLane('中央')">中央レーン</button>
+        <button type="button" class="lane-btn" data-lane="下" onclick="editSelectLane('下')">下レーン</button>
+      </div>
+    </div>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeModal('editModal')">キャンセル</button>
       <button class="btn-modal-ok" onclick="saveEdit()">保存する</button>
@@ -1438,6 +1454,8 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentTab='login', currentSeriesId=null, battles=[], selectedPoke='', activeTypeFilter='all';
 let detailMode='all';
+let selectedLane=null;       // 記録フォームのレーン選択（'上'/'中央'/'下' or null）
+let editSelectedLane=null;   // 編集モーダルのレーン選択
 
 // ===== 技・もちもの・バトルアイテムデータ =====
 
@@ -1835,7 +1853,7 @@ async function migrateGuestData(){
         user_id:user.id, series_id:newSeries.id,
         result:b.result, match_type:b.match_type, rank:b.rank||null,
         pokemon:b.pokemon||null, skill1:b.skill1||null, skill2:b.skill2||null,
-        items:b.items||null, battle_item:b.battle_item||null, note:b.note||null,
+        items:b.items||null, battle_item:b.battle_item||null, lane:b.lane||null, note:b.note||null,
         created_at:b.created_at||new Date().toISOString()
       }));
       const {error:be}=await db.from('battles').insert(rows);
@@ -1969,6 +1987,13 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.2',
+    date: '2026-06-18',
+    items: [
+      '対戦記録にレーン選択（上/中央/下）をボタンで追加。履歴・CSVにも反映',
+    ]
+  },
   {
     version: 'v5.1',
     date: '2026-06-18',
@@ -2416,7 +2441,7 @@ async function exportCsv(){
     return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   };
 
-  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム'];
+  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン'];
   const rows=allBattles.map(b=>[
     formatDate(b.created_at),
     selectedNames[b.series_id]||'',
@@ -2427,7 +2452,8 @@ async function exportCsv(){
     b.skill1||'',
     b.skill2||'',
     b.items||'',
-    b.battle_item||''
+    b.battle_item||'',
+    b.lane||''
   ]);
 
   const escape=v=>'"'+String(v).replace(/"/g,'""')+'"';
@@ -2527,6 +2553,7 @@ const HELP_CONTENT = {
         <div class="help-item"><span class="help-item-icon">⚔️</span><span><strong>わざ1・わざ2</strong>：使用した技セットを記録</span></div>
         <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>もちもの①②③</strong>：装備したもちものを記録。専用もちものがあるポケモンは①が自動固定。</span></div>
         <div class="help-item"><span class="help-item-icon">💊</span><span><strong>バトルアイテム</strong>：使用したバトルアイテムを記録</span></div>
+        <div class="help-item"><span class="help-item-icon">🛣️</span><span><strong>レーン</strong>：上/中央/下から選択（任意）。もう一度押すと解除</span></div>
         <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ランク帯</strong>：ビギナー〜エキスパートは<strong>クラス</strong>、マスター以上は試合後の<strong>レート</strong>を記録できます（レート1000以上は自動でレジェンド扱い）</span></div>
         <div class="help-item"><span class="help-item-icon">🤖</span><span><strong>BOT戦（CPU対戦）</strong>：チェックを入れて記録すると、<strong>統計の勝率から除外</strong>されます（履歴には🤖バッジで表示）</span></div>
         <div class="help-item"><span class="help-item-icon">📝</span><span><strong>メモ</strong>：対戦の気づきや反省点などを自由に記入できます</span></div>
@@ -2704,7 +2731,7 @@ async function loadAnalysis(){
     // P1: 必要列のみ取得
     const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
     const {data:allBattles,error:e2}=await db.from('battles')
-      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,is_bot,created_at,series_id');
+      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,created_at,series_id');
     if(e1||e2){ console.error(e1||e2); return; }
     normBattles(allBattles||[]);
     allSeriesData=(seriesList||[]).map(s=>({
@@ -3476,6 +3503,8 @@ function openEditModal(id){
   const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[1]||'';
   const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[2]||'';
   const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
+  editSelectedLane=battle.lane||null;
+  highlightLane('editLaneBtnRow', editSelectedLane);
   setTimeout(()=>{
     ['editItem1','editItem2','editItem3','editBattleItem'].forEach(sid=>updateItemIcon(sid,sid+'Img'));
   },50);
@@ -3498,7 +3527,8 @@ async function saveEdit(){
   const items=[i1,i2,i3].filter(Boolean).join(',')||null;
   const battle_item=document.getElementById('editBattleItem')?.value||null;
   const rank=getEditRankValue();
-  const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item};
+  const lane=editSelectedLane||null;
+  const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane};
   if(created_at)update.created_at=created_at;
   if(isGuest()){
     // ゲスト: localStorageの該当試合を更新（is_bot/メモ等の未編集項目は保持）
@@ -3852,7 +3882,7 @@ async function loadBattles(){
   }
   // P1: 必要列のみ取得
   const {data}=await db.from('battles')
-    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,note,is_bot,created_at,series_id')
+    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,created_at,series_id')
     .eq('series_id',currentSeriesId)
     .order('created_at',{ascending:false});
   battles=normBattles(data||[]);
@@ -3884,7 +3914,8 @@ async function record(result){
       const battle_item=getItemPickerValue('ipB');
       const note=document.getElementById('noteInput')?.value.trim()||null;
       const is_bot=document.getElementById('isBotCheck')?.checked||false;
-      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,note,is_bot,created_at:new Date().toISOString(),series_id:currentSeriesId};
+      const lane=selectedLane||null;
+      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,created_at:new Date().toISOString(),series_id:currentSeriesId};
       const list=guestGetBattles(currentSeriesId);list.unshift(battle);
       guestSaveBattles(currentSeriesId,list);
       if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item}));}catch{}}
@@ -3916,7 +3947,8 @@ async function record(result){
     // F1: メモ
     const note=document.getElementById('noteInput')?.value.trim()||null;
     const is_bot=document.getElementById('isBotCheck')?.checked||false;
-    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,note,is_bot});
+    const lane=selectedLane||null;
+    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot});
     if(error){showToast('記録の保存に失敗しました。通信状態を確認してください。','error');return;}
     // ポケモン別ロードアウトをlocalStorageに保存
     if(pokemon){
@@ -4107,6 +4139,7 @@ function renderHistory(){
     const tb=`<span class="badge ${cm[b.match_type]||'badge-solo'}">${lm[b.match_type]||b.match_type}</span>`;
     const rkb=rankBadge(b.rank);
     const botb=b.is_bot?`<span class="badge" style="background:#2a2440;color:#b794f6;">🤖 BOT</span>`:'';
+    const laneb=b.lane?`<span class="badge" style="background:#16324a;color:#7ec8ff;">${escapeHtml(b.lane)}</span>`:'';
 
     const pokeImgUrl=b.pokemon?getIconUrl(b.pokemon):null;
     const pokeImgHtml=pokeImgUrl
@@ -4137,7 +4170,7 @@ function renderHistory(){
     return `<div class="h-card">
       ${pokeImgHtml}
       <div class="h-left-info">
-        <div class="h-badges">${rb}${tb}${rkb}${botb}</div>
+        <div class="h-badges">${rb}${tb}${rkb}${laneb}${botb}</div>
         ${pokeNameHtml}
       </div>
       <div class="h-right-info">
@@ -4331,11 +4364,29 @@ function updateArchiveBtn(){
 }
 
 // ===== U4 フォーム入力持続 =====
+// レーン選択（記録フォーム）。同じレーンを再タップで解除（任意項目）。
+function selectLane(v){
+  selectedLane = (selectedLane===v) ? null : v;
+  highlightLane('laneBtnRow', selectedLane);
+  persistForm();
+}
+function highlightLane(rowId, val){
+  const row=document.getElementById(rowId);
+  if(!row) return;
+  row.querySelectorAll('.lane-btn').forEach(b=>b.classList.toggle('active', b.dataset.lane===val));
+}
+// 編集モーダルのレーン選択
+function editSelectLane(v){
+  editSelectedLane = (editSelectedLane===v) ? null : v;
+  highlightLane('editLaneBtnRow', editSelectedLane);
+}
+
 function persistForm(){
   const mt=document.getElementById('matchType')?.value;
   if(mt!==undefined)localStorage.setItem('form_matchType',mt);
   localStorage.setItem('form_rank',document.getElementById('rankSelect')?.value||'');
   localStorage.setItem('form_rankClass',document.getElementById('rankClass')?.value||'');
+  localStorage.setItem('form_lane',selectedLane||'');
 }
 function restoreForm(){
   const mt=localStorage.getItem('form_matchType');
@@ -4344,6 +4395,8 @@ function restoreForm(){
   if(rank!==null){const el=document.getElementById('rankSelect');if(el)el.value=rank;}
   const rc=localStorage.getItem('form_rankClass');
   if(rc!==null){const el=document.getElementById('rankClass');if(el)el.value=rc;}
+  selectedLane=localStorage.getItem('form_lane')||null;
+  highlightLane('laneBtnRow', selectedLane);
   onRankChange();
 }
 // ランク帯の選択に応じてクラス/レート入力を出し分け
