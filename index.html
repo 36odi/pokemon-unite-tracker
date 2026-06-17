@@ -2953,12 +2953,12 @@ function renderHourlyWinRate(battles){
   if(!el) return;
   if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
 
-  // 対戦した実時刻（端末ローカル時刻）を 4時間区切りの6バケットに集計
-  const labels=['深夜 0-4時','早朝 4-8時','午前 8-12時','昼 12-16時','夕方 16-20時','夜 20-24時'];
+  // 対戦した実時刻（端末ローカル時刻）を 2時間区切りの12バケットに集計
+  const labels=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
   const map={};
   for(const b of battles){
     if(!b.created_at) continue;
-    const bi=Math.floor(new Date(b.created_at).getHours()/4);
+    const bi=Math.floor(new Date(b.created_at).getHours()/2);
     if(!map[bi]) map[bi]={win:0,loss:0};
     if(b.result==='win') map[bi].win++;
     else map[bi].loss++;
@@ -2971,7 +2971,7 @@ function renderHourlyWinRate(battles){
     const total=win+loss;
     const wr=total>0?Math.round(win/total*100):0;
     const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
-    return `<div class="daily-wr-row" style="grid-template-columns:92px 1fr 70px;">
+    return `<div class="daily-wr-row" style="grid-template-columns:68px 1fr 70px;">
       <div class="daily-wr-date">${labels[bi]}</div>
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
