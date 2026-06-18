@@ -281,6 +281,12 @@
           <span>📝 メモ（任意）</span>
         </div>
         <div class="sub-section" id="memoSection">
+          <div class="memo-stats">
+            <label class="ms-field">KO<input type="number" id="statKills" min="0" inputmode="numeric" placeholder="—" /></label>
+            <label class="ms-field">アシスト<input type="number" id="statAssists" min="0" inputmode="numeric" placeholder="—" /></label>
+            <label class="ms-field">与ダメージ<input type="number" id="statDmgDealt" min="0" inputmode="numeric" placeholder="—" /></label>
+            <label class="ms-field">被ダメージ<input type="number" id="statDmgTaken" min="0" inputmode="numeric" placeholder="—" /></label>
+          </div>
           <textarea class="note-input" id="noteInput" placeholder="対戦のメモをフリーワードで入力できます" rows="2"></textarea>
         </div>
         <div style="height:8px;"></div>
@@ -1874,6 +1880,7 @@ async function migrateGuestData(){
         result:b.result, match_type:b.match_type, rank:b.rank||null,
         pokemon:b.pokemon||null, skill1:b.skill1||null, skill2:b.skill2||null,
         items:b.items||null, battle_item:b.battle_item||null, lane:b.lane||null, note:b.note||null,
+        kills:b.kills??null, assists:b.assists??null, dmg_dealt:b.dmg_dealt??null, dmg_taken:b.dmg_taken??null,
         created_at:b.created_at||new Date().toISOString()
       }));
       const {error:be}=await db.from('battles').insert(rows);
@@ -2007,6 +2014,13 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.4',
+    date: '2026-06-18',
+    items: [
+      'メモ欄にKO/アシスト/与ダメージ/被ダメージの参考記録を入力できるように（任意・履歴/CSVに反映）',
+    ]
+  },
   {
     version: 'v5.3',
     date: '2026-06-18',
@@ -2468,7 +2482,7 @@ async function exportCsv(){
     return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   };
 
-  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン'];
+  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン','KO','アシスト','与ダメージ','被ダメージ'];
   const rows=allBattles.map(b=>[
     formatDate(b.created_at),
     selectedNames[b.series_id]||'',
@@ -2480,7 +2494,11 @@ async function exportCsv(){
     b.skill2||'',
     b.items||'',
     b.battle_item||'',
-    b.lane||''
+    b.lane||'',
+    b.kills??'',
+    b.assists??'',
+    b.dmg_dealt??'',
+    b.dmg_taken??''
   ]);
 
   const escape=v=>'"'+String(v).replace(/"/g,'""')+'"';
@@ -2581,6 +2599,7 @@ const HELP_CONTENT = {
         <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>もちもの①②③</strong>：装備したもちものを記録。専用もちものがあるポケモンは①が自動固定。</span></div>
         <div class="help-item"><span class="help-item-icon">💊</span><span><strong>バトルアイテム</strong>：使用したバトルアイテムを記録</span></div>
         <div class="help-item"><span class="help-item-icon">🛣️</span><span><strong>レーン</strong>：上/中央/下から選択（任意）。もう一度押すと解除</span></div>
+        <div class="help-item"><span class="help-item-icon">📊</span><span><strong>KO/アシスト/与ダメージ/被ダメージ</strong>：メモ欄の中に参考記録として入力できます（任意）</span></div>
         <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ランク帯</strong>：ビギナー〜エキスパートは<strong>クラス</strong>、マスター以上は試合後の<strong>レート</strong>を記録できます（レート1000以上は自動でレジェンド扱い）</span></div>
         <div class="help-item"><span class="help-item-icon">🤖</span><span><strong>BOT戦（CPU対戦）</strong>：チェックを入れて記録すると、<strong>統計の勝率から除外</strong>されます（履歴には🤖バッジで表示）</span></div>
         <div class="help-item"><span class="help-item-icon">📝</span><span><strong>メモ</strong>：対戦の気づきや反省点などを自由に記入できます</span></div>
@@ -2758,7 +2777,7 @@ async function loadAnalysis(){
     // P1: 必要列のみ取得
     const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
     const {data:allBattles,error:e2}=await db.from('battles')
-      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,created_at,series_id');
+      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,created_at,series_id');
     if(e1||e2){ console.error(e1||e2); return; }
     normBattles(allBattles||[]);
     allSeriesData=(seriesList||[]).map(s=>({
@@ -3975,7 +3994,7 @@ async function loadBattles(){
   }
   // P1: 必要列のみ取得
   const {data}=await db.from('battles')
-    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,created_at,series_id')
+    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,created_at,series_id')
     .eq('series_id',currentSeriesId)
     .order('created_at',{ascending:false});
   battles=normBattles(data||[]);
@@ -4008,11 +4027,11 @@ async function record(result){
       const note=document.getElementById('noteInput')?.value.trim()||null;
       const is_bot=document.getElementById('isBotCheck')?.checked||false;
       const lane=selectedLane||null;
-      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,created_at:new Date().toISOString(),series_id:currentSeriesId};
+      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats(),created_at:new Date().toISOString(),series_id:currentSeriesId};
       const list=guestGetBattles(currentSeriesId);list.unshift(battle);
       guestSaveBattles(currentSeriesId,list);
       if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item}));}catch{}}
-      const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';
+      const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';clearBattleStats();
       persistForm();
       await loadBattles();
       showGuestRegPrompt();
@@ -4041,7 +4060,7 @@ async function record(result){
     const note=document.getElementById('noteInput')?.value.trim()||null;
     const is_bot=document.getElementById('isBotCheck')?.checked||false;
     const lane=selectedLane||null;
-    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot});
+    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats()});
     if(error){showToast('記録の保存に失敗しました。通信状態を確認してください。','error');return;}
     // ポケモン別ロードアウトをlocalStorageに保存
     if(pokemon){
@@ -4051,7 +4070,7 @@ async function record(result){
       }catch{}
     }
     // メモをリセット
-    const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';
+    const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';clearBattleStats();
     // U4: フォーム値を保存
     persistForm();
     await loadBattles();
@@ -4248,6 +4267,16 @@ function renderHistory(){
     const noteHtml=b.note
       ?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📝 ${escapeHtml(b.note)}</div>`
       :'';
+    // 参考記録（KO/アシスト/与ダメ/被ダメ）。いずれか入力されていれば表示。
+    const hasStats=b.kills!=null||b.assists!=null||b.dmg_dealt!=null||b.dmg_taken!=null;
+    const statsHtml=hasStats
+      ?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📊 ${[
+          b.kills!=null?`KO${b.kills}`:null,
+          b.assists!=null?`AS${b.assists}`:null,
+          b.dmg_dealt!=null?`与${Number(b.dmg_dealt).toLocaleString()}`:null,
+          b.dmg_taken!=null?`被${Number(b.dmg_taken).toLocaleString()}`:null
+        ].filter(Boolean).join(' / ')}</div>`
+      :'';
 
     const items=b.items?b.items.split(',').filter(Boolean):[];
     const itemBoxes=[0,1,2].map(idx=>{
@@ -4275,6 +4304,7 @@ function renderHistory(){
         <div class="h-mid">
           ${pokeNameHtml}
           ${skillHtml}
+          ${statsHtml}
           ${noteHtml}
         </div>
         <div class="h-items-row">${itemBoxes}<div class="h-item-sep"></div>${biBox}</div>
@@ -4337,6 +4367,15 @@ function toggleMemo(){
   if(!sec||!arr)return;
   const open=sec.classList.toggle('open');
   arr.classList.toggle('open',open);
+}
+
+// 参考記録（KO/アシスト/与ダメ/被ダメ）。未入力・不正は null。
+function readBattleStats(){
+  const gi=id=>{const v=document.getElementById(id)?.value; if(v==null||v==='')return null; const n=parseInt(v,10); return (isNaN(n)||n<0)?null:n;};
+  return {kills:gi('statKills'), assists:gi('statAssists'), dmg_dealt:gi('statDmgDealt'), dmg_taken:gi('statDmgTaken')};
+}
+function clearBattleStats(){
+  ['statKills','statAssists','statDmgDealt','statDmgTaken'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
 }
 
 // ===== A1 連勝連敗 =====

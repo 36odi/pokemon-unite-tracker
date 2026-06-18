@@ -488,6 +488,10 @@
   .sub-arrow.open{transform:rotate(90deg);}
   .sub-section{display:none;padding-top:6px;}
   .sub-section.open{display:block;}
+  .memo-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 8px;margin-bottom:8px;}
+  .ms-field{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--text2);}
+  .ms-field input{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box;}
+  .ms-field input:focus{border-color:var(--accent);}
   .note-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:12px;outline:none;resize:vertical;min-height:50px;font-family:inherit;line-height:1.5;}
   .note-input:focus{border-color:var(--accent);}
   /* ===== A1 連勝連敗 ===== */
