@@ -4168,25 +4168,23 @@ function renderHistory(){
       :`<div class="h-item-box empty-box"></div>`;
 
     return `<div class="h-card">
-      ${pokeImgHtml}
-      <div class="h-left-info">
+      <div class="h-row1">
         <div class="h-badges">${rb}${tb}${rkb}${laneb}${botb}</div>
-        ${pokeNameHtml}
-      </div>
-      <div class="h-right-info">
-        ${skillHtml}
-        ${noteHtml}
-        <div class="h-items-row">${itemBoxes}<div class="h-item-sep"></div>${biBox}</div>
-      </div>
-      <div class="h-meta">
-        <div class="h-date-num">
+        <div class="h-meta-r">
           <span class="h-num">#${num}</span>
           <span class="h-date">${ds}</span>
-        </div>
-        <div class="h-actions">
           <button class="btn-del" style="color:var(--accent);" onclick="openEditModal('${b.id}')">✏️</button>
           <button class="btn-del" onclick="deleteEntry('${b.id}')">✕</button>
         </div>
+      </div>
+      <div class="h-row2">
+        ${pokeImgHtml}
+        <div class="h-mid">
+          ${pokeNameHtml}
+          ${skillHtml}
+          ${noteHtml}
+        </div>
+        <div class="h-items-row">${itemBoxes}<div class="h-item-sep"></div>${biBox}</div>
       </div>
     </div>`;
   }).join('');

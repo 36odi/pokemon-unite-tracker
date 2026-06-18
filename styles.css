@@ -333,35 +333,30 @@
   .btn-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;}
   .btn-del:hover{color:var(--loss);}
 
-  /* カード型履歴 */
-  .h-card{background:var(--bg3);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;min-height:80px;}
+  /* カード型履歴（2段構成：上＝バッジ＋操作／下＝ポケモン・わざ・もちもの・日時） */
+  .h-card{background:var(--bg3);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px;}
   .h-card:last-child{margin-bottom:0;}
 
-  /* 左：ポケモン画像 */
-  .h-poke-img{width:64px;height:64px;object-fit:contain;flex-shrink:0;}
-  .h-no-poke-icon{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--text3);flex-shrink:0;}
+  /* 上段：バッジ（横並び）＋日時・編集/削除 */
+  .h-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .h-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;min-width:0;}
+  .h-meta-r{display:flex;align-items:center;gap:7px;flex-shrink:0;}
 
-  /* 中左：バッジ＋ポケモン名 */
-  .h-left-info{display:flex;flex-direction:column;justify-content:center;gap:5px;width:110px;min-width:110px;flex-shrink:0;}
-  .h-badges{display:flex;gap:4px;flex-wrap:wrap;}
-  .h-poke-name{font-size:16px;font-weight:800;color:var(--text);letter-spacing:0.02em;}
+  /* 下段 */
+  .h-row2{display:flex;align-items:center;gap:10px;}
+  .h-poke-img{width:52px;height:52px;object-fit:contain;flex-shrink:0;}
+  .h-no-poke-icon{width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--text3);flex-shrink:0;}
+  .h-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+  .h-poke-name{font-size:15px;font-weight:800;color:var(--text);letter-spacing:0.02em;line-height:1.2;}
   .h-poke-name-empty{font-size:13px;color:var(--text3);}
-
-  /* 中右：わざ＋もちもの */
-  .h-right-info{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;}
   .h-skill{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .h-items-row{display:flex;align-items:center;gap:5px;}
-  .h-item-box{width:36px;height:36px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
-  .h-item-box img{width:32px;height:32px;object-fit:contain;}
+  .h-items-row{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .h-item-box{width:40px;height:40px;background:var(--bg);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+  .h-item-box img{width:36px;height:36px;object-fit:contain;}
   .h-item-box.empty-box{opacity:0.15;}
-  .h-item-sep{width:1px;height:24px;background:var(--border);margin:0 2px;flex-shrink:0;}
-
-  /* 右端：番号・日時・操作 */
-  .h-meta{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;flex-shrink:0;gap:8px;align-self:stretch;padding:2px 0;}
-  .h-date-num{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+  .h-item-sep{width:1px;height:28px;background:var(--border);margin:0 3px;flex-shrink:0;}
   .h-num{font-size:10px;color:var(--text3);}
   .h-date{font-size:10px;color:var(--text3);}
-  .h-actions{display:flex;gap:0;}
 
   /* 日別勝率 */
   .daily-wr-row{display:grid;grid-template-columns:52px 1fr 70px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
@@ -382,15 +377,15 @@
   .today-stat .ts-empty{color:var(--text3);font-weight:500;font-size:12px;}
 
   @media(max-width:480px){
-    .h-card{padding:8px 10px;gap:6px;min-height:64px;}
-    .h-poke-img{width:44px;height:44px;}
-    .h-no-poke-icon{width:44px;height:44px;font-size:22px;}
-    .h-left-info{width:80px;min-width:80px;}
+    .h-card{padding:8px 10px;gap:5px;}
+    .h-poke-img{width:42px;height:42px;}
+    .h-no-poke-icon{width:42px;height:42px;font-size:20px;}
     .h-poke-name{font-size:13px;}
-    .h-item-box{width:24px;height:24px;border-radius:4px;}
-    .h-item-box img{width:20px;height:20px;}
-    .h-items-row{gap:3px;}
-    .h-item-sep{margin:0 1px;}
+    .h-item-box{width:32px;height:32px;border-radius:5px;}
+    .h-item-box img{width:28px;height:28px;}
+    .h-items-row{gap:4px;}
+    .h-item-sep{margin:0 2px;height:22px;}
+    .badge{font-size:10px;padding:2px 7px;}
   }
 
   .profile-field{margin-bottom:1rem;}
