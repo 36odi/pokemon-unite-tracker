@@ -369,6 +369,15 @@
   .daily-wr-bar.wr-even{background:#9399b2;}
   .daily-wr-stats{font-size:11px;color:var(--text2);text-align:right;white-space:nowrap;}
 
+  /* おまけ: 得意・苦手な曜日×時間帯 */
+  .bw-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+  .bw-head{font-size:12px;font-weight:700;margin-bottom:6px;}
+  .bw-row{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);}
+  .bw-row:last-child{border-bottom:none;}
+  .bw-slot{flex:1;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bw-wr{font-weight:700;white-space:nowrap;}
+  .bw-n{font-size:10px;color:var(--text3);white-space:nowrap;}
+
   /* 今日の成績 */
   .today-stat{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;font-size:13px;}
   .today-stat .ts-label{font-weight:600;color:var(--accent);white-space:nowrap;}

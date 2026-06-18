@@ -491,6 +491,26 @@
           <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 対戦した実時刻（端末の時刻）で集計</div>
         </div>
       </div>
+      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title" style="margin-bottom:0;">曜日別勝率</div>
+          <span class="poke-mode-arrow open">▼</span>
+        </div>
+        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+          <div id="weekdayWrList"><div class="empty">データなし</div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title" style="margin-bottom:0;">🎯 得意・苦手な曜日×時間帯</div>
+          <span class="poke-mode-arrow open">▼</span>
+        </div>
+        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+          <div id="bestWorstSlots" class="bw-wrap"><div class="empty">データなし</div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 3戦以上の「曜日×2時間帯」だけを対象に集計</div>
+        </div>
+      </div>
     </div>
     <!-- シリーズ比較 -->
     <div id="comparePanel" style="display:none;">
@@ -1988,6 +2008,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.3',
+    date: '2026-06-18',
+    items: [
+      '勝率推移タブに「曜日別勝率」と、得意・苦手な曜日×時間帯のTOP3/WORST3を追加',
+    ]
+  },
+  {
     version: 'v5.2',
     date: '2026-06-18',
     items: [
@@ -2804,6 +2831,8 @@ function renderTrendChart(){
     renderDailyWinRate([]);
     renderWeeklyWinRate([]);
     renderHourlyWinRate([]);
+    renderWeekdayWinRate([]);
+    renderBestWorstSlots([]);
     return;
   }
   const bs=s.battles;
@@ -2845,6 +2874,8 @@ function renderTrendChart(){
   renderDailyWinRate(bs);
   renderWeeklyWinRate(bs);
   renderHourlyWinRate(bs);
+  renderWeekdayWinRate(bs);
+  renderBestWorstSlots(bs);
 }
 
 function renderDailyWinRate(battles){
@@ -2979,6 +3010,68 @@ function renderHourlyWinRate(battles){
       <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
     </div>`;
   }).join('');
+}
+
+// 曜日別勝率（1日の切り替わりAM9:00で曜日を判定）
+function renderWeekdayWinRate(battles){
+  const el=document.getElementById('weekdayWrList');
+  if(!el) return;
+  if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
+  const OFFSET_MS=9*60*60*1000;
+  const wd=['日','月','火','水','木','金','土'];
+  const map={};
+  for(const b of battles){
+    if(!b.created_at) continue;
+    const d=new Date(new Date(b.created_at).getTime()-OFFSET_MS).getDay();
+    if(!map[d]) map[d]={win:0,loss:0};
+    if(b.result==='win') map[d].win++;
+    else map[d].loss++;
+  }
+  // 月→日の順で表示
+  const order=[1,2,3,4,5,6,0];
+  el.innerHTML=order.filter(d=>map[d]).map(d=>{
+    const {win,loss}=map[d];
+    const total=win+loss;
+    const wr=total>0?Math.round(win/total*100):0;
+    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
+    return `<div class="daily-wr-row" style="grid-template-columns:52px 1fr 70px;">
+      <div class="daily-wr-date">${wd[d]}曜</div>
+      <div class="daily-wr-bar-wrap">
+        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
+      </div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+    </div>`;
+  }).join('');
+}
+
+// おまけ: 得意・苦手な「曜日×2時間帯」TOP3 / WORST3（3戦以上のみ対象）
+function renderBestWorstSlots(battles){
+  const el=document.getElementById('bestWorstSlots');
+  if(!el) return;
+  const MIN=3;
+  const OFFSET_MS=9*60*60*1000;
+  const wd=['日','月','火','水','木','金','土'];
+  const tl=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
+  const map={};
+  for(const b of (battles||[])){
+    if(!b.created_at) continue;
+    const dt=new Date(b.created_at);
+    const day=new Date(dt.getTime()-OFFSET_MS).getDay();
+    const tb=Math.floor(dt.getHours()/2);
+    const key=day+'|'+tb;
+    if(!map[key]) map[key]={win:0,loss:0,day,tb};
+    if(b.result==='win') map[key].win++;
+    else map[key].loss++;
+  }
+  const arr=Object.values(map).map(m=>{const total=m.win+m.loss;return {...m,total,wr:m.win/total};}).filter(m=>m.total>=MIN);
+  if(!arr.length){ el.innerHTML='<div class="empty" style="font-size:12px;padding:1rem 0;">3戦以上の「曜日×時間帯」がまだありません</div>'; return; }
+  const fmt=m=>`${wd[m.day]}曜 ${tl[m.tb]}`;
+  const best=[...arr].sort((a,b)=>b.wr-a.wr||b.total-a.total).slice(0,3);
+  const worst=[...arr].sort((a,b)=>a.wr-b.wr||b.total-a.total).slice(0,3);
+  const row=(m,good)=>`<div class="bw-row"><span class="bw-slot">${fmt(m)}</span><span class="bw-wr" style="color:${good?'var(--win)':'var(--loss)'}">${Math.round(m.wr*100)}%</span><span class="bw-n">${m.win}勝${m.total-m.win}敗</span></div>`;
+  el.innerHTML=
+    `<div class="bw-col"><div class="bw-head" style="color:var(--win)">🏆 得意 TOP3</div>${best.map(m=>row(m,true)).join('')}</div>`+
+    `<div class="bw-col"><div class="bw-head" style="color:var(--loss)">⚠️ 苦手 WORST3</div>${worst.map(m=>row(m,false)).join('')}</div>`;
 }
 
 function renderCompareChart(){
