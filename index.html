@@ -2016,9 +2016,9 @@ function showPage(page){
 const CHANGELOG = [
   {
     version: 'v5.7',
-    date: '2026-06-20',
+    date: '2026-06-21',
     items: [
-      'ラボのスキルダメージ比較の表記を見直し。わざ内訳のラベルを日本語に整理（例「背水の陣」）し、計算式を「攻撃264 x 170% + 10 x (レベル - 1) + 200」形式に変更',
+      'ラボのスキルダメージ比較の表記を見直し。わざ内訳のラベルをゲーム内の正式名称（例「はいすいのじん」「ヘイ」）に整理し、計算式を「攻撃264 x 170% + 10 x (レベル - 1) + 200」形式に変更',
     ]
   },
   {
@@ -5521,10 +5521,13 @@ function _renderDmgOut(outId, r, calc){
 // dmgType の機械翻訳まじりラベルを表示時に可読化（wikiwiki寄せ・部分的）
 const DC_LABEL_FIXES=[
   // ---- 連語（ゲーム用語）----
-  [/No\s*後退\s*(フォーメーション|formation)/g,'背水の陣'],
-  [/派遣\s*formation\s*per\s*トルーパー/g,'派兵の陣（トルーパーごと）'],
-  [/派遣\s*formation\s*トルーパー/g,'派兵の陣（トルーパー）'],
-  [/派遣\s*formation/g,'派兵の陣'],
+  // タイレーツ: 陣形はゲーム内正式名のひらがな。隊長=ヘイチョー/隊員=ヘイ（wikiwiki準拠）
+  [/No\s*後退\s*(フォーメーション|formation)/g,'はいすいのじん'],
+  [/派遣\s*formation\s*per\s*トルーパー/g,'はへいのじん（ヘイごと）'],
+  [/派遣\s*formation\s*トルーパー/g,'はへいのじん（ヘイ）'],
+  [/派遣\s*formation/g,'はへいのじん'],
+  [/ブラス(?=\s)/g,'ヘイチョー'],
+  [/トルーパー/g,'ヘイ'],
   [/鉄\s*Head\s*バフ/g,'アイアンヘッドバフ'],
   [/鉄\s*Head/g,'アイアンヘッド'],
   [/No\s*光\s*スクリーン\s*Boost/gi,'ひかりのかべ強化なし'],
@@ -5557,6 +5560,15 @@ const DC_LABEL_FIXES=[
   [/when\s*target\s*is\s*<\s*50%\s*HP/gi,'対象HP50%未満時'],
   [/A\s*Pokémon\s*has\s*Bad\s*夢s?/gi,'相手が悪夢状態'],
   [/Mysterious\s*パワー/gi,'ふしぎなパワー'],
+  // 語順/読みやすさの整形（具体フレーズを汎用語ルールより前に）
+  [/ティックごと\s*of\s*flamethrower/gi,'かえんほうしゃのティックごと'],
+  [/自動\s*return\s*first\s*Leaf\s*or\s*手動\s*return\s*first\s*Leaf\s*if\s*after\s*1s/gi,'自動／手動で最初の葉に戻る（手動は1秒後）'],
+  [/ヒット\s*during\s*追撃/g,'追撃中のヒット'],
+  [/During\s*連続\s*回転/gi,'連続回転中'],
+  [/最大y?\s*Evolved/gi,'最終進化'],
+  [/up\s*to\s*(\d+)\s*total/gi,'合計最大$1'],
+  [/中\s*range/gi,'中距離'],
+  [/増加d\s*爆発/gi,'増幅爆発'],
   [/No\s*ゲージ/g,'ゲージなし'],
   [/最大\s*ゲージ/g,'ゲージ最大'],
   [/of\s*flamethrower/gi,'のかえんほうしゃ'],
@@ -5621,6 +5633,7 @@ const DC_LABEL_FIXES=[
   [/\blast\b/gi,'最後'],
   [/([^\x00-\x7F])s(?=[\s,)\]、）]|$)/g,'$1'],
   [/\s*\bgroup\b/gi,''],
+  [/\s*・\s*/g,'・'],
   [/\s{2,}/g,' '],
 ];
 function dcCleanLabel(s){
