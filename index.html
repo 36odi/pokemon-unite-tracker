@@ -2015,6 +2015,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.7',
+    date: '2026-06-20',
+    items: [
+      'ラボのスキルダメージ比較の表記を見直し。わざ内訳のラベルを日本語に整理（例「背水の陣」）し、計算式を「攻撃264 x 170% + 10 x (レベル - 1) + 200」形式に変更',
+    ]
+  },
+  {
     version: 'v5.6',
     date: '2026-06-20',
     items: [
@@ -5511,6 +5518,118 @@ function _renderDmgOut(outId, r, calc){
   labCalcResult=tmp;
 }
 
+// dmgType の機械翻訳まじりラベルを表示時に可読化（wikiwiki寄せ・部分的）
+const DC_LABEL_FIXES=[
+  // ---- 連語（ゲーム用語）----
+  [/No\s*後退\s*(フォーメーション|formation)/g,'背水の陣'],
+  [/派遣\s*formation\s*per\s*トルーパー/g,'派兵の陣（トルーパーごと）'],
+  [/派遣\s*formation\s*トルーパー/g,'派兵の陣（トルーパー）'],
+  [/派遣\s*formation/g,'派兵の陣'],
+  [/鉄\s*Head\s*バフ/g,'アイアンヘッドバフ'],
+  [/鉄\s*Head/g,'アイアンヘッド'],
+  [/No\s*光\s*スクリーン\s*Boost/gi,'ひかりのかべ強化なし'],
+  [/光\s*スクリーン\s*Boost/gi,'ひかりのかべ強化'],
+  [/光\s*スクリーン/g,'ひかりのかべ'],
+  [/女王\s*威厳\s*buff/g,'女王の威厳バフ'],
+  [/女王\s*威厳/g,'女王の威厳'],
+  [/ダーク\s*波動/g,'ダークウェーブ'],
+  [/シャドー\s*Ball/gi,'シャドーボール'],
+  [/basic\s*attacks?/gi,'通常攻撃'],
+  [/boosted\s*attacks?/gi,'強化攻撃'],
+  [/follow-?up\s*attack/gi,'追撃'],
+  [/Medium\s*Distance/gi,'中距離'],
+  [/最大y?\s*Distance/g,'最大距離'],
+  [/Less\s*Than\s*5\s*コインマーク/gi,'コインマーク5未満'],
+  [/Per\s*コイン/gi,'コインごと'],
+  [/per\s*Pokémon\s*hit(\s*-\s*up\s*to\s*\d+)?/gi,'命中ポケモンごと'],
+  [/per\s*charge\s*stack/gi,'チャージスタックごと'],
+  [/per\s*stack/gi,'スタックごと'],
+  [/per\s*Stealth\s*岩/gi,'ステルスロックごと'],
+  [/per\s*固有\s*Enemy/gi,'敵ごと'],
+  [/Per\s*Enemy/gi,'敵ごと'],
+  [/per\s*クリーム/gi,'クリームごと'],
+  [/per\s*Diagonal/gi,'斜めごと'],
+  [/Per\s*ヒット/gi,'ヒットごと'],
+  [/Against\s*Players/gi,'対プレイヤー'],
+  [/Against\s*Wilds/gi,'対野生'],
+  [/Below\s*33%\s*HP/gi,'HP33%未満'],
+  [/Between\s*66%\s*and\s*33%\s*HP/gi,'HP33〜66%'],
+  [/when\s*target\s*is\s*<\s*50%\s*HP/gi,'対象HP50%未満時'],
+  [/A\s*Pokémon\s*has\s*Bad\s*夢s?/gi,'相手が悪夢状態'],
+  [/Mysterious\s*パワー/gi,'ふしぎなパワー'],
+  [/No\s*ゲージ/g,'ゲージなし'],
+  [/最大\s*ゲージ/g,'ゲージ最大'],
+  [/of\s*flamethrower/gi,'のかえんほうしゃ'],
+  [/return\s*first\s*Leaf/gi,'最初の葉に戻る'],
+  [/if\s*after\s*1s/gi,'（1秒後）'],
+  [/塊\s*of\s*Snow/gi,'雪の塊'],
+  [/円形\s*Draw/gi,'円形展開'],
+  [/最終ヒット\s*and\s*shove/gi,'最終ヒット・押し出し'],
+  [/発動\s*by\s*Thunderbolt/gi,'10まんボルトで発動'],
+  [/If\s*(永遠|霧)\s*Blast\s*hit\s*last/gi,'$1ブラストが最後に命中時'],
+  // ---- 単語 ----
+  [/Pokémon|Pokemon/g,'ポケモン'],
+  [/formation/gi,'陣'],
+  [/attacks?/gi,'攻撃'],
+  [/\bbuff\b/gi,'バフ'],
+  [/\bBoost\b/gi,'強化'],
+  [/\bTargets?\b/gi,'対象'],
+  [/\bEnem(?:y|ies)\b/gi,'敵'],
+  [/\bPlayers?\b/gi,'プレイヤー'],
+  [/\bWilds?\b/gi,'野生'],
+  [/\bDistance\b/gi,'距離'],
+  [/\brange\b/gi,'距離'],
+  [/\bClosest\b/gi,'最近'],
+  [/\btotal\b/gi,'合計'],
+  [/\bCreation\b/gi,'生成'],
+  [/De-?Spawn/gi,'消滅'],
+  [/\bSpawn\b/gi,'生成'],
+  [/\bMega\b/gi,'メガ'],
+  [/\bAoE\b/gi,'範囲'],
+  [/\bup\s*to\b/gi,'最大'],
+  [/\bshove\b/gi,'押し出し'],
+  [/\bEnd\b/gi,'終了'],
+  [/\bReplacement\b/gi,'差し替え'],
+  [/\bProc\b/gi,'発動'],
+  [/\bEvolved\b/gi,'進化'],
+  [/\bBlast\b/gi,'ブラスト'],
+  [/\bSnow\b/gi,'雪'],
+  [/\bLeaf\b/gi,'葉'],
+  [/\breposition\b/gi,'再配置'],
+  [/\bbreak\b/gi,'破壊'],
+  [/\bDiagonal\b/gi,'斜め'],
+  [/\breturn\b/gi,'戻り'],
+  [/\bHoT\b/g,'継続回復'],
+  [/\bDraw\b/gi,'展開'],
+  [/\bcharge\b/gi,'チャージ'],
+  [/連続\s*回転/g,'連続回転'],
+  // ---- 壊れ綴り ----
+  [/最大y/g,'最大'],
+  [/中dle/g,'中間'],
+  [/増加d/g,'増加'],
+  // ---- 接続詞・整形（最後）----
+  [/\bunder\b/gi,''],
+  [/\bin\b/gi,''],
+  [/\bof\b/gi,'の'],
+  [/\band\b/gi,'・'],
+  [/\bor\b/gi,'・'],
+  [/\bby\b/gi,''],
+  [/\bif\b/gi,''],
+  [/\bafter\b/gi,''],
+  [/\bduring\b/gi,'中'],
+  [/\bhit\b/gi,'命中'],
+  [/\blast\b/gi,'最後'],
+  [/([^\x00-\x7F])s(?=[\s,)\]、）]|$)/g,'$1'],
+  [/\s*\bgroup\b/gi,''],
+  [/\s{2,}/g,' '],
+];
+function dcCleanLabel(s){
+  if(!s) return s;
+  let o=s;
+  for(const [re,rep] of DC_LABEL_FIXES) o=o.replace(re,rep);
+  return o.replace(/\s+([,)\]）、])/g,'$1').replace(/([(（\[])\s+/g,'$1').replace(/\s{2,}/g,' ').trim();
+}
+
 function _calcDmgHtml(r){
   if(!labCalcResult) return '';
   const st=r.stat||'';
@@ -5530,13 +5649,13 @@ function _calcDmgHtml(r){
   const perHit = pct>0 ? Math.round(baseVal * mult) : baseVal;
   const hits = r.hits || 1;
   const hitsVar = r.hitsVar || false;
-  // 式の表示
-  const parts = [`${coeff}% × ${base}`];
-  if(lvScale) parts.push(`${lvScale} × (Lv${lv}-1)`);
+  // 式の表示（wikiwiki寄せ: 「攻撃264 x 170% + 10 x (レベル - 1) + 200」）
+  const parts = [`${statLabel}${base} x ${coeff}%`];
+  if(lvScale) parts.push(`${lvScale} x (レベル - 1)`);
   parts.push(`${fixed}`);
-  if(pct>0) parts.push(`× ${mult.toFixed(2)} (レスキューフード +${pct}%)`);
+  if(pct>0) parts.push(`x ${mult.toFixed(2)} (レスキューフード +${pct}%)`);
   const formula = parts.join(' + ');
-  const label = r.dmgType || (statLabel+'ダメージ');
+  const label = dcCleanLabel(r.dmgType) || (statLabel+'ダメージ');
   // ヒット数が複数の場合は合計も表示
   if(hits > 1){
     const total = perHit * hits;
@@ -5725,7 +5844,7 @@ function _dcDmgHtml(r,atkStats,defStats,atkLv){
   const isHealShield=/回復|シールド/.test(r.dmgType||'');
   const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat);
   const hits=r.hits||1;
-  const label=r.dmgType||'ダメージ';
+  const label=dcCleanLabel(r.dmgType)||'ダメージ';
   const upgTag=r.upg?`<span style="font-size:10px;color:var(--accent);margin-left:3px;">[${r.upg}]</span>`:'';
   if(isHealShield){
     return `<div class="lab-dmg-row">
