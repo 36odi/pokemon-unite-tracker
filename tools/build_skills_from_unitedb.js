@@ -22,6 +22,9 @@ const ALIAS={'ミュウツー(X)':'ミュウツーX','ミュウツー(Y)':'ミ�
 const norm=p=>ALIAS[p]||p;
 const SLOT_T2U={'通常攻撃':'Basic','わざ1':'Move 1','わざ2':'Move 2','ユナイトわざ':'Unite Move'};
 const KEEP_ENH=new Set(['メガニウム|はなふぶき']); // 強化成分は現行保持
+// 分類(ダメージ/回復/シールド)の正本判定。unite-dbのeffect_labelを正とする。
+const udbCat=l=>/Heal/i.test(l)?'回復':(/Shield/i.test(l)?'シールド':(/Damage/i.test(l)?'ダメージ':null));
+const labCat=dt=>{dt=dt||'';return /回復/.test(dt)?'回復':(/シールド/.test(dt)?'シールド':(/ダメージ/.test(dt)?'ダメージ':null));};
 
 // --- unite-db: udb[p][skill_slot] = [ {move,normal[],enhanced[]} ... ]（出現順）---
 const csv=parseCSV(fs.readFileSync(path.join(ROOT,'data','unitedb_ratios.csv'),'utf8'));
@@ -36,7 +39,7 @@ for(let r=1;r<csv.length;r++){
   udb[p]=udb[p]||{}; udb[p][slot]=udb[p][slot]||[];
   let arr=udb[p][slot]; let mv=arr.length?arr[arr.length-1]:null;
   if(!mv || mv.move!==move){ mv={move, normal:[], enhanced:[]}; arr.push(mv); }
-  (comp.startsWith('enhanced')?mv.enhanced:mv.normal).push({coeff:num(rp), lv:num(ls), fix:num(bv)});
+  (comp.startsWith('enhanced')?mv.enhanced:mv.normal).push({coeff:num(rp), lv:num(ls), fix:num(bv), label:row[col['effect_label']]||''});
 }
 // ユナイトわざ: 平坦化（全わざの normal/enhanced を1つに連結）
 for(const p of Object.keys(udb)){
@@ -67,8 +70,8 @@ function toolMoves(rows){
 }
 
 // --- 対応づけ：各ツール行 -> 採用値(udb or 現行保持) ---
-let fromUdb=0, kept=0, diffN=0;
-const diffs=[];
+let fromUdb=0, kept=0, diffN=0, catFix=0;
+const diffs=[]; const catFixes=[];
 const newVals={}; // p -> idx -> {coeff,lv,fix}
 for(const p of Object.keys(SK)){
   newVals[p]={};
@@ -87,6 +90,11 @@ for(const p of Object.keys(SK)){
           }
           const chosen = comp ? {coeff:comp.coeff,lv:comp.lv,fix:comp.fix} : {coeff:num(row.coeff),lv:num(row.lvScale),fix:num(row.fixed)};
           if(comp) fromUdb++; else kept++;
+          // 分類(回復/シールド)の是正: unite-db効果ラベルがHealing/Shieldなのにlabがダメージのものだけ直す
+          let dt=row.dmgType;
+          if(comp){ const uc=udbCat(comp.label), lc=labCat(row.dmgType);
+            if(uc && lc==='ダメージ' && uc!==lc){ dt=row.dmgType.replace(/ダメージ/, uc); if(dt!==row.dmgType){ catFix++; catFixes.push(`${p}/${row.name}: ${row.dmgType} → ${dt}`); } } }
+          chosen.dt=dt;
           newVals[p][ri]=chosen;
           // オラクル比較
           if(!(num(row.coeff)===chosen.coeff && num(row.fixed)===chosen.fix && num(row.lvScale)===chosen.lv)){
@@ -100,8 +108,9 @@ for(const p of Object.keys(SK)){
 }
 
 console.log('=== 変換器検証（現行=オラクルと比較）===');
-console.log('udb採用: '+fromUdb+' / 現行保持: '+kept+' / オラクルとの不一致: '+diffN);
+console.log('udb採用: '+fromUdb+' / 現行保持: '+kept+' / オラクルとの不一致: '+diffN+' / 分類是正: '+catFix);
 if(diffs.length){ console.log('\n--- 不一致（要確認）---'); diffs.slice(0,60).forEach(d=>console.log(`  ${d.p}/${d.slot}/${d.name}  現=${d.tool.join(',')}  新=${d.new.join(',')}`)); }
+if(catFixes.length){ console.log('\n--- 分類是正(回復/シールド) ---'); catFixes.forEach(x=>console.log('  '+x)); }
 
 if(!APPLY){
   // ドライラン＝検証用途: 現行データ(=既知の正)を再現できるか。再生成前後の整合チェックに使う。
@@ -114,7 +123,7 @@ if(kept>10){ console.error('\nABORT: 対応先なしが多すぎ('+kept+')。わ
 console.log('（値差分 '+diffN+' 件を unite-db 値で上書きします）');
 
 // === 適用: coeff/fixed/lvScale を newVals で上書き ===
-for(const p of Object.keys(SK)) for(const ri of Object.keys(newVals[p])){ const v=newVals[p][ri]; const row=SK[p][ri]; row.coeff=v.coeff; row.fixed=v.fix; row.lvScale=v.lv; }
+for(const p of Object.keys(SK)) for(const ri of Object.keys(newVals[p])){ const v=newVals[p][ri]; const row=SK[p][ri]; row.coeff=v.coeff; row.fixed=v.fix; row.lvScale=v.lv; if(v.dt!=null) row.dmgType=v.dt; }
 // LAB_SKILLS 範囲を置換
 const decl='const LAB_SKILLS='; const start=labSrc.indexOf(decl);
 let i=labSrc.indexOf('{',start), depth=0, qq=null, end=-1;
@@ -124,7 +133,7 @@ const updated=labSrc.slice(0,labSrc.indexOf('{',start))+JSON.stringify(SK)+labSr
 const g2={};(function(){const globalThis=g2;eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));})();
 const g3={};(function(){const globalThis=g3;eval(updated.replace(/const LAB_/g,'globalThis.LAB_'));})();
 let bad=0;
-for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale'].includes(key))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
+for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType'].includes(key))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
 if(bad){ console.error('ABORT: 数値以外が変化'); process.exit(1); }
 fs.writeFileSync(path.join(ROOT,'lab_data.js'), updated);
 console.log('\nOK 適用完了（冪等チェック: 現行と同値を書き戻し。差分があればgitで確認可）');
