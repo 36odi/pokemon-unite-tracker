@@ -33,6 +33,9 @@ function iconImg(n,cls,sz=28){
 
 function getItemImgSrc(name){ return name ? `${ITEM_IMG_PATH}${name}.png` : ''; }
 
+// もちものグレード → 効果ティア（0/1/2）。Lv10・Lv20 で段階が上がる。
+function gradeTier(grade){ return grade>=20?2:grade>=10?1:0; }
+
 // 旧表記のポケモン名をラボ準拠の現行表記に正規化する。
 // 保存済みデータ（Supabase / ゲストlocalStorage）の読み込み境界で適用し、
 // 編集・保存されたレコードから自然に新表記へ移行していく。

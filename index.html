@@ -1716,11 +1716,6 @@ function updateItemIcon(selectId, imgId){
   else{img.src='';img.style.display='none';}
   if(selectId.startsWith('edit')) refreshEditItemSelects(selectId);
 }
-function refreshAllItemIcons(){
-  [['editItem1','editItem1Img'],['editItem2','editItem2Img'],['editItem3','editItem3Img'],['editBattleItem','editBattleItemImg']
-  ].forEach(([sid,iid])=>updateItemIcon(sid,iid));
-}
-
 // ---- パスワードリセット ----
 function toggleForgot(){
   const panel=document.getElementById('forgotPanel');
@@ -5145,7 +5140,7 @@ function labGetHealShieldMult(){
     if(!name||!LAB_SUPPORT_ITEMS[name]) continue;
     const info=LAB_SUPPORT_ITEMS[name];
     if(info.type!=='healShield') continue;
-    const tier=grade>=20?2:grade>=10?1:0;
+    const tier=gradeTier(grade);
     pct+=info.tiers[tier];
   }
   return pct>0?{mult:1+pct/100,pct}:{mult:1,pct:0};
@@ -5325,7 +5320,7 @@ function calcLabStats(scroll=false){
     const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
     if(!name||!LAB_PCT_ITEMS[name]) continue;
     const info=LAB_PCT_ITEMS[name];
-    const tier=grade>=20?2:grade>=10?1:0;
+    const tier=gradeTier(grade);
     const mapped=LAB_STAT_MAP[info.stat]||info.stat;
     const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]/100);
     itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
@@ -5339,7 +5334,7 @@ function calcLabStats(scroll=false){
       const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
       if(!name||!LAB_DMG_STACK_ITEMS[name]) continue;
       const info=LAB_DMG_STACK_ITEMS[name];
-      const tier=grade>=20?2:grade>=10?1:0;
+      const tier=gradeTier(grade);
       const mapped=LAB_STAT_MAP[info.stat]||info.stat;
       const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]*dmgStackCount/100);
       itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
@@ -5354,7 +5349,7 @@ function calcLabStats(scroll=false){
       const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
       if(!name||!LAB_STACK_ITEMS[name]) continue;
       const info=LAB_STACK_ITEMS[name];
-      const tier=grade>=20?2:grade>=10?1:0;
+      const tier=gradeTier(grade);
       const mapped=LAB_STAT_MAP[info.stat]||info.stat;
       const bonus=Math.round((baseStats[mapped]||0)*info.tiers[tier]*stackCount/100);
       itemBonus[mapped]=(itemBonus[mapped]||0)+bonus;
@@ -5369,7 +5364,7 @@ function calcLabStats(scroll=false){
       const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
       if(!name||!LAB_GOAL_ITEMS[name]) continue;
       const info=LAB_GOAL_ITEMS[name];
-      const tier=grade>=20?2:grade>=10?1:0;
+      const tier=gradeTier(grade);
       const mapped=LAB_STAT_MAP[info.stat]||info.stat;
       itemBonus[mapped]=(itemBonus[mapped]||0)+info.tiers[tier]*goalCount;
     }
@@ -5541,11 +5536,6 @@ function _renderDmgRows(outId, rows){
   if(!out.innerHTML) out.innerHTML='<div style="font-size:11px;color:var(--text3);padding:4px;">計算不可</div>';
 }
 
-function _renderDmgOut(outId, r, calc){
-  const tmp=labCalcResult; labCalcResult=calc||labCalcResult;
-  _renderDmgRows(outId,[r]);
-  labCalcResult=tmp;
-}
 
 // dmgType の機械翻訳まじりラベルを表示時に可読化（wikiwiki寄せ・部分的）
 const DC_LABEL_FIXES=[
@@ -6433,11 +6423,6 @@ function labDeleteMedalPreset(idx){
 }
 
 // ---- レアリティ切替（per-slot / 一括） ----
-function labSetSlotRarity(r){
-  labMedalRarities[labActiveMedalSlot] = r;
-  labRenderMedalSlots();
-  labUpdateMedalResult();
-}
 function labSetAllRarity(r){
   labMedalRarities = labMedalRarities.map((_,i)=> labMedalSlots[i] ? r : 'gold');
   labRenderMedalSlots();

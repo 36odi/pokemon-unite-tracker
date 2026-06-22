@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -93,6 +93,15 @@ eq(F.rankRate('エキスパート・C1'), null, 'non-rate -> null');
 eq(F.rankLabel('エキスパート・C1'), 'エキスパート クラス1', 'label class');
 eq(F.rankLabel('レート 1530'), 'レジェンド 1,530', 'label legend rate');
 eq(F.rankLabel('レート 320'), 'マスター 320', 'label master rate');
+
+// ---- gradeTier（もちものグレード→効果ティア） ----
+section('gradeTier');
+eq(F.gradeTier(1), 0, 'grade 1 -> tier 0');
+eq(F.gradeTier(9), 0, 'grade 9 -> tier 0');
+eq(F.gradeTier(10), 1, 'grade 10 -> tier 1');
+eq(F.gradeTier(19), 1, 'grade 19 -> tier 1');
+eq(F.gradeTier(20), 2, 'grade 20 -> tier 2');
+eq(F.gradeTier(30), 2, 'grade 30 -> tier 2');
 
 // ---- dcCalcActual（実ダメージ式） ----
 section('dcCalcActual');
