@@ -2015,6 +2015,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.9',
+    date: '2026-06-21',
+    items: [
+      'ラボでわざの「アップグレード後」を選んだとき、上昇しない成分（ダメージ等）が表示から消えていた問題を修正。アップグレード後も全成分を表示するように（例：ドレインキッス+でダメージと回復の両方を表示）',
+    ]
+  },
+  {
     version: 'v5.8',
     date: '2026-06-21',
     items: [
@@ -5469,6 +5476,22 @@ function labSkillChanged(slotNum){
   _fillUpgrades(poke, skillName, 'labSkill'+slotNum+'Upg', 'labDmgOut'+slotNum);
 }
 
+// アップグレード後(+)の内訳表示用: +で変化しない据え置き成分をベースから補完する。
+// （unite-dbの+は「変化した成分」だけを持つため、ダメージ等が表示から消えるのを防ぐ）
+// dmgType文字列ごとの件数で、+が持たない/不足分のベース行だけ繰り越す（重複・取り違え防止）。
+function labUpgradeRows(poke, name, upg){
+  const all=LAB_SKILLS?.[poke]||[];
+  const plus=all.filter(r=>r.name===name&&r.upg===upg&&r.coeff!=null);
+  if(!/[+＋]$/.test(name||'')) return plus;
+  const baseName=name.replace(/[+＋]$/,'');
+  const base=all.filter(r=>r.name===baseName&&r.coeff!=null);
+  if(!base.length) return plus;
+  const plusByDt={}; plus.forEach(r=>{plusByDt[r.dmgType]=(plusByDt[r.dmgType]||0)+1;});
+  const seen={}; const carried=[];
+  for(const r of base){ seen[r.dmgType]=(seen[r.dmgType]||0)+1; if(seen[r.dmgType]>(plusByDt[r.dmgType]||0)) carried.push(r); }
+  return [...carried,...plus];
+}
+
 function _fillUpgrades(poke, skillName, upgId, outId){
   const upg=document.getElementById(upgId);
   const out=document.getElementById(outId);
@@ -5485,7 +5508,7 @@ function _fillUpgrades(poke, skillName, upgId, outId){
     upg.appendChild(o);
   });
   // 最初のアップグレード選択肢のダメージを表示
-  if(rows.length) _renderDmgRows(outId, rows.filter(r=>r.upg===(upgs[0]||'')));
+  if(rows.length) _renderDmgRows(outId, labUpgradeRows(poke, skillName, upgs[0]||''));
 }
 
 function calcLabDamageSlot(slotNum){
@@ -5494,8 +5517,7 @@ function calcLabDamageSlot(slotNum){
   const upgVal=document.getElementById('labSkill'+slotNum+'Upg')?.value;
   const outId='labDmgOut'+slotNum;
   if(!skillName||!labCalcResult){ document.getElementById(outId).innerHTML=''; return; }
-  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&r.upg===upgVal&&r.coeff!=null);
-  _renderDmgRows(outId, rows);
+  _renderDmgRows(outId, labUpgradeRows(poke, skillName, upgVal));
 }
 
 function calcLabDamageAll(){
@@ -6031,8 +6053,8 @@ function dcUpdateDmgOutput(){
     const out=document.getElementById(`dcDmgOut${slot}`);
     if(!out) continue;
     if(!name){ out.innerHTML=''; continue; }
-    let rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
-    if(rows.some(r=>r.upg===upgVal)) rows=rows.filter(r=>r.upg===upgVal);
+    let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
+    if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
     const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
     out.innerHTML=html||'<div class="empty" style="font-size:12px;">ダメージなし</div>';
   }
