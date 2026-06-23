@@ -456,6 +456,8 @@
     </div>
     <!-- マイピックアップ（要約カード） -->
     <div id="myPickupPanel">
+      <div class="mp-toolbar"><button class="mp-edit-btn" onclick="toggleMyPickupEdit()">⚙ 表示カードを編集</button></div>
+      <div id="myPickupEdit" class="card" style="display:none;"></div>
       <div id="myPickupContent"><div class="empty" style="padding:1.5rem 0;">読み込み中…</div></div>
     </div>
     <!-- 勝率推移 -->
@@ -2012,6 +2014,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.14',
+    date: '2026-06-23',
+    items: [
+      'マイピックアップを自分好みにカスタマイズできるように。「⚙ 表示カードを編集」から表示するカードを選べます（勝率・レート・ポケモン別勝率・モード別勝率・直近20戦）。選択は端末に保存されます',
+    ]
+  },
+  {
     version: 'v5.13',
     date: '2026-06-23',
     items: [
@@ -3225,7 +3234,7 @@ function renderTotalStats(){
 // 各カードは{ render(all) }で要約HTMLを返す。detailで対応する既存タブへジャンプ。
 // フェーズ3でユーザーが表示カードを選べるようにする（getMyPickupSelectionを差し替え）。
 const MY_PICKUP_CARDS = [
-  { id:'winrate', title:'📈 勝率', detail:'trend',
+  { id:'winrate', name:'勝率', title:'📈 勝率', detail:'trend',
     render(all){
       const t=all.length, w=all.filter(b=>b.result==='win').length;
       const wr=t>0?((w/t)*100).toFixed(1):'—';
@@ -3236,7 +3245,7 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
     }
   },
-  { id:'rate', title:'🏅 レート', detail:'seriesanal',
+  { id:'rate', name:'レート', title:'🏅 レート', detail:'seriesanal',
     render(all){
       const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
       if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">マスター以上のレート記録がありません</div>`;
@@ -3247,7 +3256,7 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">最新レート（記録${rates.length}件・直近からの増減）</div>`;
     }
   },
-  { id:'pokewr', title:'🔍 ポケモン別勝率（3戦以上の上位）', detail:'pokedetail',
+  { id:'pokewr', name:'ポケモン別勝率', title:'🔍 ポケモン別勝率（3戦以上の上位）', detail:'pokedetail',
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
@@ -3257,15 +3266,56 @@ const MY_PICKUP_CARDS = [
       }).join('');
     }
   },
+  { id:'modewr', name:'モード別勝率', title:'🎮 モード別勝率', detail:'total',
+    render(all){
+      return [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].map(([k,lbl])=>{
+        const m=all.filter(b=>b.match_type===k), w=m.filter(b=>b.result==='win').length, t=m.length;
+        const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text3)';
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}/${t}</span></div>`;
+      }).join('');
+    }
+  },
+  { id:'recent', name:'直近20戦', title:'🕐 直近20戦の成績', detail:'trend',
+    render(all){
+      const r=all.slice(-20), w=r.filter(b=>b.result==='win').length, t=r.length;
+      const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+      return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
+    }
+  },
 ];
-function getMyPickupSelection(){ return MY_PICKUP_CARDS.map(c=>c.id); } // フェーズ3でユーザー選択に差し替え
+const MP_DEFAULT=['winrate','rate','pokewr']; // 既定表示（コア3）
+function getMyPickupSelection(){
+  try{ const v=JSON.parse(localStorage.getItem('mp_cards')); if(Array.isArray(v)) return v; }catch(e){}
+  return MP_DEFAULT.slice();
+}
+function toggleMyPickupCard(id){
+  const cur=new Set(getMyPickupSelection());
+  cur.has(id)?cur.delete(id):cur.add(id);
+  const sel=MY_PICKUP_CARDS.map(c=>c.id).filter(x=>cur.has(x)); // 定義順に正規化
+  localStorage.setItem('mp_cards', JSON.stringify(sel));
+  renderMyPickup(); renderMyPickupEdit();
+}
+function renderMyPickupEdit(){
+  const e=document.getElementById('myPickupEdit'); if(!e) return;
+  const sel=new Set(getMyPickupSelection());
+  e.innerHTML='<div class="mp-edit-hint">表示するカードを選択（並び順は固定）</div>'+
+    MY_PICKUP_CARDS.map(c=>`<label class="mp-edit-row"><input type="checkbox" ${sel.has(c.id)?'checked':''} onchange="toggleMyPickupCard('${c.id}')"><span>${c.name}</span></label>`).join('');
+}
+function toggleMyPickupEdit(){
+  const e=document.getElementById('myPickupEdit'); if(!e) return;
+  const show=e.style.display==='none';
+  e.style.display=show?'block':'none';
+  if(show) renderMyPickupEdit();
+}
 function renderMyPickup(){
   const cont=document.getElementById('myPickupContent');
   if(!cont) return;
   const all=allSeriesData.flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">まだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
   const sel=getMyPickupSelection();
-  cont.innerHTML=MY_PICKUP_CARDS.filter(c=>sel.includes(c.id)).map(c=>
+  const cards=MY_PICKUP_CARDS.filter(c=>sel.includes(c.id));
+  if(!cards.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">表示するカードがありません。「⚙ 表示カードを編集」から選んでください。</div>'; return; }
+  cont.innerHTML=cards.map(c=>
     `<div class="card mp-card">
       <div class="mp-card-head">
         <div class="card-title" style="margin-bottom:0;">${c.title}</div>

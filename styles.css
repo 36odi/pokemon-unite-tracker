@@ -209,6 +209,12 @@
   .mp-poke-name{flex:1;font-size:13px;font-weight:600;}
   .mp-poke-wr{font-size:15px;font-weight:700;}
   .mp-poke-gt{font-size:11px;color:var(--text3);min-width:38px;text-align:right;}
+  .mp-toolbar{display:flex;justify-content:flex-end;margin-bottom:8px;}
+  .mp-edit-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;}
+  .mp-edit-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .mp-edit-hint{font-size:11px;color:var(--text3);margin-bottom:8px;}
+  .mp-edit-row{display:flex;align-items:center;gap:8px;padding:7px 2px;font-size:13px;cursor:pointer;}
+  .mp-edit-row input{width:16px;height:16px;cursor:pointer;}
   .chart-wrap{position:relative;width:100%;height:220px;}
   .series-compare-row{display:grid;grid-template-columns:1fr 52px 52px 64px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:5px;font-size:12px;}
   .series-compare-row.header{background:transparent;font-size:11px;color:var(--text3);padding:4px 10px;margin-bottom:2px;}
