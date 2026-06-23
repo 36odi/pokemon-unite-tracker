@@ -2010,6 +2010,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.11',
+    date: '2026-06-23',
+    items: [
+      'ラボのもちもの効果計算に「おおきなねっこ（自己回復+10/15/20%）」と「すりぬけスプーン（特防貫通9/12/15%）」を追加。回復量や特攻ダメージの計算に反映',
+    ]
+  },
+  {
     version: 'v5.10',
     date: '2026-06-21',
     items: [
@@ -5136,21 +5143,33 @@ function labUpdateStackRow(){
 }
 
 const LAB_SUPPORT_ITEMS = {
-  'レスキューフード': { type:'healShield', tiers:[11,14,17] },
+  'レスキューフード': { type:'healShield', tiers:[11,14,17] }, // 回復・シールド両方
+  'おおきなねっこ':   { type:'healOnly',   tiers:[10,15,20] }, // 自己回復のみ（シールドには乗らない）
 };
 
-function labGetHealShieldMult(){
+// 特防/防御 貫通系（攻守比較の与ダメージに反映）
+const LAB_PEN_ITEMS = {
+  'すりぬけスプーン': { stat:'特防', tiers:[9,12,15] }, // 特攻ダメージが相手の特防を%無視
+};
+function dcGetSpDefPenPct(atkItems){
   let pct=0;
+  for(const it of atkItems||[]){ const info=LAB_PEN_ITEMS[it.name]; if(!info||info.stat!=='特防') continue; pct+=info.tiers[gradeTier(it.grade)]; }
+  return pct;
+}
+
+// isHeal=true: 回復行（おおきなねっこも加算）/ false: シールド行（レスキューフードのみ）
+function labGetHealShieldMult(isHeal){
+  let pct=0; const items=[];
   for(let s=1;s<=3;s++){
     const name=document.getElementById('labItem'+s)?.value;
     const grade=parseInt(document.getElementById('labGrade'+s)?.value||'1');
-    if(!name||!LAB_SUPPORT_ITEMS[name]) continue;
-    const info=LAB_SUPPORT_ITEMS[name];
-    if(info.type!=='healShield') continue;
-    const tier=gradeTier(grade);
-    pct+=info.tiers[tier];
+    const info=name?LAB_SUPPORT_ITEMS[name]:null;
+    if(!info) continue;
+    if(info.type==='healOnly' && !isHeal) continue; // 自己回復系はシールドに乗らない
+    const v=info.tiers[gradeTier(grade)];
+    pct+=v; items.push(`${name} +${v}%`);
   }
-  return pct>0?{mult:1+pct/100,pct}:{mult:1,pct:0};
+  return pct>0?{mult:1+pct/100,pct,items}:{mult:1,pct:0,items:[]};
 }
 
 const LAB_GOAL_ITEMS = {
@@ -5684,7 +5703,7 @@ function _calcDmgHtml(r){
   const baseVal = Math.round((coeff/100)*base + lvBonus + fixed);
   // 回復・シールド行にレスキューフード倍率を適用
   const isHealShield = /回復|シールド/.test(r.dmgType||'');
-  const {mult, pct} = isHealShield ? labGetHealShieldMult() : {mult:1, pct:0};
+  const {mult, pct, items:hsItems} = isHealShield ? labGetHealShieldMult(/回復/.test(r.dmgType||'')) : {mult:1, pct:0, items:[]};
   const perHit = pct>0 ? Math.round(baseVal * mult) : baseVal;
   const hits = r.hits || 1;
   const hitsVar = r.hitsVar || false;
@@ -5692,7 +5711,7 @@ function _calcDmgHtml(r){
   const parts = [`${statLabel}${base} x ${coeff}%`];
   if(lvScale) parts.push(`${lvScale} x (レベル - 1)`);
   parts.push(`${fixed}`);
-  if(pct>0) parts.push(`x ${mult.toFixed(2)} (レスキューフード +${pct}%)`);
+  if(pct>0) parts.push(`x ${mult.toFixed(2)} (${hsItems.join(', ')})`);
   const formula = parts.join(' + ');
   const label = dcCleanLabel(r.dmgType) || (statLabel+'ダメージ');
   // ヒット数が複数の場合は合計も表示
@@ -5870,18 +5889,21 @@ function dcCalcActual(raw,def,pen=0,pctIgnore=0,dmgReduce=0){
 }
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
-function _dcDmgHtml(r,atkStats,defStats,atkLv){
+function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
   if(!r||r.coeff==null||r.coeff<=0) return null;
   const st=r.stat||'攻撃';
+  const isSpecial=/特攻|sp_?atk/i.test(st);
   let atkStat=0;
-  if(/特攻|sp_?atk/i.test(st))      atkStat=atkStats['特攻']||0;
-  else if(/HP/i.test(st))            atkStat=atkStats['HP']||0;
-  else                               atkStat=atkStats['攻撃']||0;
-  const defStat=/特攻|sp_?atk/i.test(st)?(defStats['特防']||0):(defStats['防御']||0);
+  if(isSpecial)            atkStat=atkStats['特攻']||0;
+  else if(/HP/i.test(st))  atkStat=atkStats['HP']||0;
+  else                     atkStat=atkStats['攻撃']||0;
+  const defStat=isSpecial?(defStats['特防']||0):(defStats['防御']||0);
   const rawPerHit=Math.round(r.coeff/100*atkStat+(r.lvScale||0)*(atkLv-1)+(r.fixed||0));
   if(rawPerHit<=0) return null;
   const isHealShield=/回復|シールド/.test(r.dmgType||'');
-  const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat);
+  // すりぬけスプーン: 特攻ダメージのみ相手の特防を%無視
+  const pctIgnore=(isSpecial && !isHealShield)?(spdefPen/100):0;
+  const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat,0,pctIgnore);
   const hits=r.hits||1;
   const label=dcCleanLabel(r.dmgType)||'ダメージ';
   const upgTag=r.upg?`<span style="font-size:10px;color:var(--accent);margin-left:3px;">[${r.upg}]</span>`:'';
@@ -6043,6 +6065,9 @@ function dcUpdateDmgOutput(){
   const poke=document.getElementById('dcAtkPoke')?.value;
   const atkLv=parseInt(document.getElementById('dcAtkLv')?.value||9);
   const skills=LAB_SKILLS?.[poke]||[];
+  // 攻撃側もちものの特防貫通（すりぬけスプーン）を算出
+  const atkItems=[1,2,3].map(i=>({name:document.getElementById('dcAtkItem'+i)?.value||'',grade:parseInt(document.getElementById('dcAtkGrade'+i)?.value||30)}));
+  const spdefPen=dcGetSpDefPenPct(atkItems);
   // わざ1/2
   for(let slot=1;slot<=2;slot++){
     const name=document.getElementById(`dcSkill${slot}Sel`)?.value;
@@ -6052,7 +6077,7 @@ function dcUpdateDmgOutput(){
     if(!name){ out.innerHTML=''; continue; }
     let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
     if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
-    const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+    const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
     out.innerHTML=html||'<div class="empty" style="font-size:12px;">ダメージなし</div>';
   }
   // 通常攻撃
@@ -6061,7 +6086,7 @@ function dcUpdateDmgOutput(){
   const no=document.getElementById('dcDmgOutNormal');
   if(ns&&no){
     ns.style.display=normalRows.length?'block':'none';
-    no.innerHTML=normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+    no.innerHTML=normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
   // ユナイトわざ
   const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null&&r.coeff>0);
@@ -6069,7 +6094,7 @@ function dcUpdateDmgOutput(){
   const uo=document.getElementById('dcDmgOutUnite');
   if(us&&uo){
     us.style.display=uniteRows.length?'block':'none';
-    uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv)).filter(Boolean).join('');
+    uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
 }
 
