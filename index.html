@@ -450,7 +450,6 @@
     <div class="analysis-tabs">
       <div class="analysis-tab active" onclick="switchAnalysis('trend')">📈 勝率推移</div>
       <div class="analysis-tab" onclick="switchAnalysis('seriesanal')">📋 シリーズ分析</div>
-      <div class="analysis-tab" onclick="switchAnalysis('compare')">📊 シリーズ比較</div>
       <div class="analysis-tab" onclick="switchAnalysis('total')">🏆 通算成績</div>
       <div class="analysis-tab" onclick="switchAnalysis('pokedetail')">🔍 ポケモン別詳細</div>
     </div>
@@ -518,20 +517,6 @@
         </div>
       </div>
     </div>
-    <!-- シリーズ比較 -->
-    <div id="comparePanel" style="display:none;">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">シリーズ比較</div>
-          <button class="btn-help" onclick="openHelp('compare')">？</button>
-        </div>
-        <div class="chart-wrap" style="height:180px;margin-bottom:12px;"><canvas id="compareChart"></canvas></div>
-        <div class="series-compare-row header">
-          <div>シリーズ</div><div class="series-val">試合</div><div class="series-val">勝利</div><div class="series-wr-cell">勝率</div>
-        </div>
-        <div id="compareList"></div>
-      </div>
-    </div>
     <!-- 通算成績 -->
     <div id="totalPanel" style="display:none;">
       <div class="card">
@@ -565,6 +550,18 @@
         </div>
         <select id="seriesanalSelect" onchange="renderSeriesAnalysis()" style="margin-top:0;"></select>
         <div id="seriesanalContent"><div class="empty" style="padding:1.5rem 0;">シリーズを選択してください</div></div>
+      </div>
+      <!-- シリーズ比較（旧・比較タブから統合） -->
+      <div class="card" style="margin-top:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-title" style="margin-bottom:0;">シリーズ比較</div>
+          <button class="btn-help" onclick="openHelp('compare')">？</button>
+        </div>
+        <div class="chart-wrap" style="height:180px;margin-bottom:12px;"><canvas id="compareChart"></canvas></div>
+        <div class="series-compare-row header">
+          <div>シリーズ</div><div class="series-val">試合</div><div class="series-val">勝利</div><div class="series-wr-cell">勝率</div>
+        </div>
+        <div id="compareList"></div>
       </div>
     </div>
     <!-- ポケモン別詳細 -->
@@ -2010,6 +2007,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.12',
+    date: '2026-06-23',
+    items: [
+      '分析タブを整理：「シリーズ比較」を「シリーズ分析」タブ内に統合し、タブ数をスリム化',
+    ]
+  },
+  {
     version: 'v5.11',
     date: '2026-06-23',
     items: [
@@ -2852,9 +2856,8 @@ async function loadAnalysis(){
     setTimeout(()=>{
       renderTrendChart(); renderTotalStats();
       // 編集等での再構築時、表示中のサブパネルも新しいデータで再描画（反映漏れ防止）
-      if(document.getElementById('comparePanel')?.style.display!=='none') renderCompareChart();
       if(document.getElementById('pokedetailPanel')?.style.display!=='none') initPokeDetailSelect();
-      if(document.getElementById('seriesanalPanel')?.style.display!=='none') renderSeriesAnalysis();
+      if(document.getElementById('seriesanalPanel')?.style.display!=='none'){ renderSeriesAnalysis(); renderCompareChart(); }
     }, 50);
   } catch(err){ console.error('loadAnalysis error:',err); }
 }
@@ -2863,18 +2866,16 @@ function switchAnalysis(tab){
   navId++; // ナビゲーションガード
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
   document.querySelectorAll('.analysis-tab').forEach((t,i)=>t.classList.toggle('active',
-    (i===0&&tab==='trend')||(i===1&&tab==='seriesanal')||(i===2&&tab==='compare')||(i===3&&tab==='total')||(i===4&&tab==='pokedetail')));
+    (i===0&&tab==='trend')||(i===1&&tab==='seriesanal')||(i===2&&tab==='total')||(i===3&&tab==='pokedetail')));
   document.getElementById('trendPanel').style.display=tab==='trend'?'block':'none';
-  document.getElementById('comparePanel').style.display=tab==='compare'?'block':'none';
   document.getElementById('totalPanel').style.display=tab==='total'?'block':'none';
   document.getElementById('pokedetailPanel').style.display=tab==='pokedetail'?'block':'none';
   document.getElementById('seriesanalPanel').style.display=tab==='seriesanal'?'block':'none';
   if(tab==='seriesanal'){
-    loadAnalysis().then(()=>renderSeriesAnalysis());
+    loadAnalysis().then(()=>{ renderSeriesAnalysis(); renderCompareChart(); });
   } else {
     setTimeout(()=>{
       if(tab==='trend') renderTrendChart();
-      if(tab==='compare') renderCompareChart();
       if(tab==='total') renderTotalStats();
       if(tab==='pokedetail') initPokeDetailSelect();
     }, 50);
