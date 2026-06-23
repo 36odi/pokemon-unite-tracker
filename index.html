@@ -448,13 +448,18 @@
   <!-- 分析ページ -->
   <div id="analysisPage" style="display:none;">
     <div class="analysis-tabs">
-      <div class="analysis-tab active" onclick="switchAnalysis('trend')">📈 勝率推移</div>
+      <div class="analysis-tab active" onclick="switchAnalysis('mypickup')">🏠 マイピックアップ</div>
+      <div class="analysis-tab" onclick="switchAnalysis('trend')">📈 勝率推移</div>
       <div class="analysis-tab" onclick="switchAnalysis('seriesanal')">📋 シリーズ分析</div>
       <div class="analysis-tab" onclick="switchAnalysis('total')">🏆 通算成績</div>
       <div class="analysis-tab" onclick="switchAnalysis('pokedetail')">🔍 ポケモン別詳細</div>
     </div>
+    <!-- マイピックアップ（要約カード） -->
+    <div id="myPickupPanel">
+      <div id="myPickupContent"><div class="empty" style="padding:1.5rem 0;">読み込み中…</div></div>
+    </div>
     <!-- 勝率推移 -->
-    <div id="trendPanel">
+    <div id="trendPanel" style="display:none;">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">シリーズ別 勝率推移</div>
@@ -2007,6 +2012,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.13',
+    date: '2026-06-23',
+    items: [
+      '分析タブの先頭に「🏠 マイピックアップ」を追加。勝率・レート・ポケモン別勝率の要約を一目で確認でき、各カードの「詳細→」から従来の詳細タブへ移動できます',
+    ]
+  },
+  {
     version: 'v5.12',
     date: '2026-06-23',
     items: [
@@ -2811,7 +2823,7 @@ let analysisNeedsRefresh=true; // P2: キャッシュ制御
 async function loadAnalysis(){
   // P2: キャッシュが有効なら再描画のみ
   if(analysisLoaded&&!analysisNeedsRefresh){
-    setTimeout(()=>{ renderTrendChart(); renderTotalStats(); }, 50);
+    setTimeout(()=>{ renderMyPickup(); renderTrendChart(); renderTotalStats(); }, 50);
     return;
   }
   try {
@@ -2854,7 +2866,7 @@ async function loadAnalysis(){
     analysisLoaded=true;
     analysisNeedsRefresh=false;
     setTimeout(()=>{
-      renderTrendChart(); renderTotalStats();
+      renderMyPickup(); renderTrendChart(); renderTotalStats();
       // 編集等での再構築時、表示中のサブパネルも新しいデータで再描画（反映漏れ防止）
       if(document.getElementById('pokedetailPanel')?.style.display!=='none') initPokeDetailSelect();
       if(document.getElementById('seriesanalPanel')?.style.display!=='none'){ renderSeriesAnalysis(); renderCompareChart(); }
@@ -2866,7 +2878,8 @@ function switchAnalysis(tab){
   navId++; // ナビゲーションガード
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
   document.querySelectorAll('.analysis-tab').forEach((t,i)=>t.classList.toggle('active',
-    (i===0&&tab==='trend')||(i===1&&tab==='seriesanal')||(i===2&&tab==='total')||(i===3&&tab==='pokedetail')));
+    (i===0&&tab==='mypickup')||(i===1&&tab==='trend')||(i===2&&tab==='seriesanal')||(i===3&&tab==='total')||(i===4&&tab==='pokedetail')));
+  document.getElementById('myPickupPanel').style.display=tab==='mypickup'?'block':'none';
   document.getElementById('trendPanel').style.display=tab==='trend'?'block':'none';
   document.getElementById('totalPanel').style.display=tab==='total'?'block':'none';
   document.getElementById('pokedetailPanel').style.display=tab==='pokedetail'?'block':'none';
@@ -2875,6 +2888,7 @@ function switchAnalysis(tab){
     loadAnalysis().then(()=>{ renderSeriesAnalysis(); renderCompareChart(); });
   } else {
     setTimeout(()=>{
+      if(tab==='mypickup') renderMyPickup();
       if(tab==='trend') renderTrendChart();
       if(tab==='total') renderTotalStats();
       if(tab==='pokedetail') initPokeDetailSelect();
@@ -3205,6 +3219,60 @@ function renderTotalStats(){
         return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${escapeHtml(name)}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
+}
+
+// ---- マイピックアップ（要約カード）----
+// 各カードは{ render(all) }で要約HTMLを返す。detailで対応する既存タブへジャンプ。
+// フェーズ3でユーザーが表示カードを選べるようにする（getMyPickupSelectionを差し替え）。
+const MY_PICKUP_CARDS = [
+  { id:'winrate', title:'📈 勝率', detail:'trend',
+    render(all){
+      const t=all.length, w=all.filter(b=>b.result==='win').length;
+      const wr=t>0?((w/t)*100).toFixed(1):'—';
+      const recent=all.slice(-10), rw=recent.filter(b=>b.result==='win').length, rt=recent.length;
+      const col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+      return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div>
+        <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>
+        <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
+    }
+  },
+  { id:'rate', title:'🏅 レート', detail:'seriesanal',
+    render(all){
+      const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
+      if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">マスター以上のレート記録がありません</div>`;
+      const latest=rates[rates.length-1], prev=rates.length>1?rates[rates.length-2]:null;
+      const ch=prev!=null?latest-prev:null;
+      const chStr=ch==null?'':` <span style="font-size:14px;color:${ch>=0?'var(--win)':'var(--loss)'}">(${ch>=0?'+':''}${ch})</span>`;
+      return `<div class="mp-big">${latest.toLocaleString()}${chStr}</div>
+        <div class="mp-sub">最新レート（記録${rates.length}件・直近からの増減）</div>`;
+    }
+  },
+  { id:'pokewr', title:'🔍 ポケモン別勝率（3戦以上の上位）', detail:'pokedetail',
+    render(all){
+      const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
+      const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
+      if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
+      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
+      }).join('');
+    }
+  },
+];
+function getMyPickupSelection(){ return MY_PICKUP_CARDS.map(c=>c.id); } // フェーズ3でユーザー選択に差し替え
+function renderMyPickup(){
+  const cont=document.getElementById('myPickupContent');
+  if(!cont) return;
+  const all=allSeriesData.flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">まだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
+  const sel=getMyPickupSelection();
+  cont.innerHTML=MY_PICKUP_CARDS.filter(c=>sel.includes(c.id)).map(c=>
+    `<div class="card mp-card">
+      <div class="mp-card-head">
+        <div class="card-title" style="margin-bottom:0;">${c.title}</div>
+        <button class="mp-detail-link" onclick="switchAnalysis('${c.detail}')">詳細 →</button>
+      </div>
+      <div class="mp-card-body">${c.render(all)}</div>
+    </div>`).join('');
 }
 
 // ---- ポケモン別詳細 ----

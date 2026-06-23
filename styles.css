@@ -199,6 +199,16 @@
   .analysis-tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;}
   .analysis-tab{flex:1;padding:7px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border-radius:5px;color:var(--text2);}
   .analysis-tab.active{background:var(--accent-bg);color:var(--accent);}
+  /* マイピックアップ 要約カード */
+  .mp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .mp-detail-link{background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+  .mp-detail-link:hover{background:var(--accent-bg);}
+  .mp-big{font-size:32px;font-weight:800;line-height:1.1;margin:2px 0 6px;}
+  .mp-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+  .mp-poke-row{display:flex;align-items:center;gap:8px;padding:5px 0;}
+  .mp-poke-name{flex:1;font-size:13px;font-weight:600;}
+  .mp-poke-wr{font-size:15px;font-weight:700;}
+  .mp-poke-gt{font-size:11px;color:var(--text3);min-width:38px;text-align:right;}
   .chart-wrap{position:relative;width:100%;height:220px;}
   .series-compare-row{display:grid;grid-template-columns:1fr 52px 52px 64px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:5px;font-size:12px;}
   .series-compare-row.header{background:transparent;font-size:11px;color:var(--text3);padding:4px 10px;margin-bottom:2px;}
