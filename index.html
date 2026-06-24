@@ -471,7 +471,7 @@
           <select id="trendSeriesSelect" onchange="renderTrendChart()" style="margin-top:0;"></select>
         </div>
         <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">直近10試合ごとの勝率推移</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">青＝累積勝率／橙＝直近10戦の移動平均（最近の調子）</div>
       </div>
       <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
@@ -2014,6 +2014,14 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.15',
+    date: '2026-06-24',
+    items: [
+      'シリーズ分析に新セクションを追加：「🏆 勝ちパターン（勝てる条件/負けやすい条件）」「🛣️ レーン別勝率」「🎭 型（ロール）別勝率」',
+      '勝率推移グラフに「直近10戦の移動平均」ラインを追加（最近の調子が分かりやすく）',
+    ]
+  },
+  {
     version: 'v5.14',
     date: '2026-06-23',
     items: [
@@ -2923,37 +2931,39 @@ function renderTrendChart(){
     return;
   }
   const bs=s.battles;
-  const labels=[],wrs=[];
-  // 1試合ずつの累積勝率をプロット（最大20点）
+  const labels=[],wrs=[],mv=[];
+  // 累積勝率（青）と直近10戦の移動平均（橙）をプロット（最大20点）
   const total=bs.length;
   const step=Math.max(1,Math.ceil(total/20));
-  for(let i=step;i<=total;i+=step){
-    const chunk=bs.slice(0,i);
-    const w=chunk.filter(b=>b.result==='win').length;
-    wrs.push(((w/chunk.length)*100).toFixed(1));
+  const MVW=10; // 移動平均の窓（直近10戦）
+  const pushPt=(i)=>{
+    const cum=bs.slice(0,i), cw=cum.filter(b=>b.result==='win').length;
+    wrs.push(((cw/cum.length)*100).toFixed(1));
+    const win=bs.slice(Math.max(0,i-MVW),i), ww=win.filter(b=>b.result==='win').length;
+    mv.push(((ww/win.length)*100).toFixed(1));
     labels.push(i+'戦');
-  }
-  // 最終点を必ず含める
-  if(labels[labels.length-1]!==total+'戦'){
-    const w=bs.filter(b=>b.result==='win').length;
-    wrs.push(((w/total)*100).toFixed(1));
-    labels.push(total+'戦');
-  }
+  };
+  for(let i=step;i<=total;i+=step) pushPt(i);
+  if(labels[labels.length-1]!==total+'戦') pushPt(total); // 最終点を必ず含める
   trendChartInst=new Chart(canvas,{
     type:'line',
     data:{labels,datasets:[{
-      label:'勝率(%)',data:wrs,
+      label:'累積勝率',data:wrs,
       borderColor:'#7c83f5',backgroundColor:'#7c83f522',
-      tension:0.3,pointBackgroundColor:'#7c83f5',pointRadius:4,fill:true
+      tension:0.3,pointBackgroundColor:'#7c83f5',pointRadius:3,fill:true
+    },{
+      label:'直近10戦',data:mv,
+      borderColor:'#ffa726',backgroundColor:'transparent',
+      tension:0.3,pointBackgroundColor:'#ffa726',pointRadius:2,fill:false
     },{
       label:'50%ライン',data:labels.map(()=>50),
       borderColor:'#5c6080',borderDash:[4,4],pointRadius:0,fill:false
     }]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='50%ライン'?null:ctx.parsed.y+'%'}}},
+      plugins:{legend:{display:true,labels:{color:'#9399b2',boxWidth:12,font:{size:11},filter:i=>i.text!=='50%ライン'}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label==='50%ライン'?null:ctx.dataset.label+' '+ctx.parsed.y+'%'}}},
       scales:{
-        y:{min:20,max:80,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
+        y:{min:0,max:100,ticks:{color:'#9399b2',callback:v=>v+'%'},grid:{color:'#2e3250'}},
         x:{ticks:{color:'#9399b2',maxTicksLimit:8},grid:{color:'#2e3250'}}
       }
     }
@@ -5089,6 +5099,59 @@ async function renderSeriesAnalysis(){
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalDayChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">データが2日以上必要です</div>';
 
+  // ── 新B8: レーン別勝率 ＋ レーン×ポケモン ──
+  const LANES=['上','中央','下'];
+  const laneMap={};
+  bs.forEach(b=>{ if(!b.lane)return; (laneMap[b.lane]=laneMap[b.lane]||[]).push(b); });
+  const laneCols=[{label:'レーン',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}];
+  const laneRows=LANES.filter(l=>laneMap[l]).map(l=>{
+    const arr=laneMap[l], lw=arr.filter(b=>b.result==='win').length, lt=arr.length, lwr=((lw/lt)*100).toFixed(1)+'%';
+    const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
+    return `<tr><td style="padding:4px 6px;">${l}</td><td style="padding:4px 6px;text-align:center;">${lt}</td><td style="padding:4px 6px;text-align:center;">${lw}</td><td style="padding:4px 6px;text-align:center;">${lt-lw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(lwr)}">${lwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
+  }).join('');
+  const lanePokeSections=LANES.filter(l=>laneMap[l]).map(l=>{
+    const pm={}; laneMap[l].filter(b=>b.pokemon).forEach(b=>{(pm[b.pokemon]=pm[b.pokemon]||{w:0,l:0});b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
+    const rows=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,sv])=>{const pt=sv.w+sv.l,pwr=((sv.w/pt)*100).toFixed(1)+'%';return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(n,'',18)} ${escapeHtml(n)}</div><div class="series-val">${pt}</div><div class="series-val">${sv.w}</div><div class="series-wr-cell" style="color:${wrColor(pwr)}">${pwr}</div></div>`;}).join('');
+    return `<div style="margin-bottom:8px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${l}レーン</div>${rows||'<div class="empty" style="padding:0.4rem 0;">記録なし</div>'}</div>`;
+  }).join('');
+  const laneHTML=laneRows
+    ?tblWrap(tblHead(laneCols)+`<tbody>${laneRows}</tbody>`)+`<div style="font-size:11px;font-weight:600;color:var(--text2);margin:10px 0 6px;">🛣️ レーン×ポケモン別</div>${lanePokeSections}`
+    :'<div class="empty" style="padding:0.8rem 0;">レーンの記録がありません</div>';
+
+  // ── 新B9: 型（ロール）別勝率 ──
+  const pokeRole={}; Object.values(POKEMON_DATA).forEach(d=>d.pokemon.forEach(p=>pokeRole[p]=d.label));
+  const ROLE_ORDER=['アタック型','バランス型','スピード型','ディフェンス型','サポート型'];
+  const roleMap={}; bs.filter(b=>b.pokemon&&pokeRole[b.pokemon]).forEach(b=>{const r=pokeRole[b.pokemon];(roleMap[r]=roleMap[r]||[]).push(b);});
+  const roleRows=ROLE_ORDER.filter(r=>roleMap[r]).map(r=>{
+    const arr=roleMap[r], rw=arr.filter(b=>b.result==='win').length, rt=arr.length, rwr=((rw/rt)*100).toFixed(1)+'%';
+    const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
+    return `<tr><td style="padding:4px 6px;">${r}</td><td style="padding:4px 6px;text-align:center;">${rt}</td><td style="padding:4px 6px;text-align:center;">${rw}</td><td style="padding:4px 6px;text-align:center;">${rt-rw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
+  }).join('');
+  const roleHTML=roleRows?tblWrap(tblHead([{label:'型',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}])+`<tbody>${roleRows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">記録なし</div>';
+
+  // ── 新B10: 勝ちパターン抽出（勝てる条件 / 負けやすい条件）──
+  const baseWR=t>0?w/t:0, MINP=4, wpEntries=[];
+  const wpAdd=(dim,label,arr)=>{ if(arr.length<MINP)return; const aw=arr.filter(b=>b.result==='win').length; wpEntries.push({label:`${dim}: ${label}`,t:arr.length,w:aw,wr:aw/arr.length}); };
+  Object.keys(pokeMap).forEach(n=>wpAdd('ポケ',n,bs.filter(b=>b.pokemon===n)));
+  LANES.forEach(l=>{ if(laneMap[l]) wpAdd('レーン',l,laneMap[l]); });
+  ROLE_ORDER.forEach(r=>{ if(roleMap[r]) wpAdd('型',r,roleMap[r]); });
+  [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].forEach(([k,lbl])=>wpAdd('モード',lbl,bs.filter(b=>b.match_type===k)));
+  const WD=['日','月','火','水','木','金','土'], WPOFF=9*3600*1000, byWd={}, byHr={};
+  bs.forEach(b=>{ if(!b.created_at)return; const d=new Date(new Date(b.created_at).getTime()-WPOFF); (byWd[WD[d.getDay()]]=byWd[WD[d.getDay()]]||[]).push(b); const hb=Math.floor(d.getHours()/2)*2; (byHr[hb]=byHr[hb]||[]).push(b); });
+  Object.entries(byWd).forEach(([k,arr])=>wpAdd('曜日',k+'曜',arr));
+  Object.entries(byHr).forEach(([hb,arr])=>wpAdd('時間帯',`${hb}-${(+hb)+2}時`,arr));
+  wpEntries.sort((a,b)=>b.wr-a.wr);
+  const wpFmt=(e)=>{const wr=(e.wr*100).toFixed(0);const delta=Math.round((e.wr-baseWR)*100);const dcol=delta>=0?'var(--win)':'var(--loss)';return `<div class="series-compare-row"><div class="series-name-cell" style="font-size:12px;">${e.label}</div><div class="series-val">${e.w}/${e.t}</div><div class="series-wr-cell" style="color:${wrColor(wr+'%')}">${wr}%</div><div class="series-val" style="color:${dcol};font-size:11px;">${delta>=0?'+':''}${delta}</div></div>`;};
+  const wpBest=wpEntries.filter(e=>e.wr>baseWR).slice(0,5);
+  const wpWorst=wpEntries.filter(e=>e.wr<baseWR).slice(-5).reverse();
+  const winPatternHTML=wpEntries.length
+    ?`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">全体勝率 ${(baseWR*100).toFixed(1)}% を基準に、${MINP}戦以上の条件で比較（右端は基準との差）</div>
+      <div style="font-size:12px;font-weight:600;color:var(--win);margin:6px 0 2px;">😊 勝てる条件</div>
+      ${wpBest.length?wpBest.map(wpFmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}
+      <div style="font-size:12px;font-weight:600;color:var(--loss);margin:10px 0 2px;">😣 負けやすい条件</div>
+      ${wpWorst.length?wpWorst.map(wpFmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}`
+    :`<div class="empty" style="padding:0.8rem 0;">${MINP}戦以上の条件がまだありません</div>`;
+
   // ── HTML組み立て ──
   if(myNav!==navId){return;} // 描画前に再チェック
   content.innerHTML=`
@@ -5113,6 +5176,9 @@ async function renderSeriesAnalysis(){
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
     <div style="margin-top:4px;">
+      ${makeAccordion('🏆 勝ちパターン（勝てる条件 / 負けやすい条件）',winPatternHTML)}
+      ${makeAccordion('🛣️ レーン別勝率',laneHTML)}
+      ${makeAccordion('🎭 型（ロール）別勝率',roleHTML)}
       ${makeAccordion('🏅 ランク帯別勝率（モード内訳付き）',b1HTML)}
       ${makeAccordion('🔍 ランク帯×ポケモン別勝率',b2HTML)}
       ${makeAccordion('✨ 技セット別勝率',b3HTML)}
