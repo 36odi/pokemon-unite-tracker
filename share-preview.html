@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>body{background:#111;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif;}
+#out{max-width:100%;border:1px solid #333;}</style>
+</head><body>
+<canvas id="out"></canvas>
+<script>
+const SPRITE='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+const ICON_ID={フリーザー:144,ファイヤー:146,オーダイル:160};
+function getIconUrl(n){const id=ICON_ID[n];return id?`${SPRITE}${id}.png`:null;}
+
+const battles=[
+  ...Array(40).fill({result:'win',match_type:'solo',pokemon:'フリーザー'}),
+  ...Array(25).fill({result:'loss',match_type:'solo',pokemon:'ファイヤー'}),
+  ...Array(103).fill({result:'win',match_type:'duo',pokemon:'ファイヤー'}),
+  ...Array(92).fill({result:'loss',match_type:'duo',pokemon:'オーダイル'}),
+];
+
+(async function(){
+  const seriesName='第35シリーズ';
+  const solo=battles.filter(b=>b.match_type==='solo');
+  const duo=battles.filter(b=>b.match_type==='duo');
+  const full=battles.filter(b=>b.match_type==='full');
+  const cs=list=>{const w=list.filter(b=>b.result==='win').length,t=list.length;return{w,l:t-w,t,wr:t>0?w/t*100:null};};
+  const tS=cs(battles);
+  const modes=[
+    {label:'ソロ',emoji:'🎮',color:'#7c83f5',badgeBg:'#1e2040',...cs(solo)},
+    {label:'デュオ/トリオ',emoji:'👥',color:'#ffa726',badgeBg:'#2e2010',...cs(duo)},
+    {label:'フルパ',emoji:'🏆',color:'#26a69a',badgeBg:'#0a2020',...cs(full)},
+  ];
+  const getTop3=list=>{
+    const map={};
+    list.filter(b=>b.pokemon).forEach(b=>{if(!map[b.pokemon])map[b.pokemon]={w:0,l:0};b.result==='win'?map[b.pokemon].w++:map[b.pokemon].l++;});
+    return Object.entries(map).map(([name,s])=>({name,w:s.w,t:s.w+s.l,wr:s.w/(s.w+s.l)*100})).sort((a,b)=>b.wr-a.wr).slice(0,3);
+  };
+  const top3=getTop3(battles);
+  const loadImg=url=>new Promise(res=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;setTimeout(()=>res(null),4000);});
+  const pokeImgs={};
+  await Promise.all(top3.map(async p=>{const url=getIconUrl(p.name);if(url)pokeImgs[p.name]=await loadImg(url);}));
+
+  const W=1200,H=560,HALF=600;
+  const canvas=document.getElementById('out');
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();};
+  const fitText=(text,maxW,font)=>{ctx.font=font;let t=text;while(ctx.measureText(t).width>maxW&&t.length>1)t=t.slice(0,-1);return t===text?text:t+'…';};
+
+  ctx.fillStyle='#0f1117';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#ffffff04';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  const HDR=54,FOOT_H=40,PAD=22;
+  ctx.fillStyle='#1a1d27';ctx.fillRect(0,0,W,HDR);
+  const aG=ctx.createLinearGradient(0,0,W,0);aG.addColorStop(0,'#7c83f5');aG.addColorStop(0.5,'#26a69a');aG.addColorStop(1,'#ffa726');
+  ctx.fillStyle=aG;ctx.fillRect(0,0,W,4);
+  ctx.strokeStyle='#2e3250';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,HDR);ctx.lineTo(W,HDR);ctx.stroke();
+  ctx.font='bold 15px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#7c83f5';ctx.textAlign='left';ctx.fillText('⚡ ユナイト 対戦トラッカー',24,34);
+  const now=new Date();
+  ctx.font='11px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#4a4e6a';ctx.textAlign='right';
+  ctx.fillText(`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,W-24,34);ctx.textAlign='left';
+
+  const CONTENT_TOP=HDR+14,CONTENT_BOT=H-FOOT_H-6;
+  ctx.strokeStyle='#2e3250';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(HALF,CONTENT_TOP);ctx.lineTo(HALF,CONTENT_BOT);ctx.stroke();
+
+  const LW=HALF-PAD*2;
+  ctx.font='13px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#9399b2';ctx.textAlign='left';ctx.fillText('統計',PAD,CONTENT_TOP+14);
+  const snFont='bold 16px "Segoe UI",system-ui,sans-serif';ctx.font=snFont;ctx.fillStyle='#e8eaf6';
+  ctx.fillText('— '+fitText(seriesName,LW-52,snFont),PAD+34,CONTENT_TOP+14);
+
+  const STAT_TOP=CONTENT_TOP+24,STAT_H=80;
+  const sg=8,sw=Math.floor((LW-sg*3)/4);
+  const stats4=[{label:'試合数',val:String(tS.t),color:'#e8eaf6'},{label:'勝利',val:String(tS.w),color:'#4caf50'},{label:'敗北',val:String(tS.l),color:'#ef5350'},{label:'勝率',val:tS.wr!==null?tS.wr.toFixed(1)+'%':'—',color:tS.wr===null?'#4a4e6a':tS.wr>=50?'#4caf50':'#ef5350'}];
+  stats4.forEach((s,i)=>{
+    const bx=PAD+i*(sw+sg);
+    rr(bx,STAT_TOP,sw,STAT_H,8);ctx.fillStyle='#1a1d27';ctx.fill();ctx.strokeStyle='#2e3250';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#5c6080';ctx.textAlign='center';ctx.fillText(s.label,bx+sw/2,STAT_TOP+17);
+    ctx.font='bold 28px "Segoe UI",system-ui,sans-serif';ctx.fillStyle=s.color;ctx.fillText(s.val,bx+sw/2,STAT_TOP+52);ctx.textAlign='left';
+    if(s.label==='勝率'&&tS.wr!==null){const bX=bx+8,bY=STAT_TOP+STAT_H-10,bW=sw-16,bH=4;rr(bX,bY,bW,bH,2);ctx.fillStyle='#2e3250';ctx.fill();rr(bX,bY,Math.max(bW*(tS.wr/100),4),bH,2);ctx.fillStyle='#4caf50';ctx.fill();}
+  });
+
+  const DIV_Y=STAT_TOP+STAT_H+10;
+  ctx.strokeStyle='#2e3250';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,DIV_Y);ctx.lineTo(HALF-PAD,DIV_Y);ctx.stroke();
+
+  const MODE_TOP=DIV_Y+8,MODE_AVAIL=CONTENT_BOT-MODE_TOP,MRH=Math.floor(MODE_AVAIL/3);
+  modes.forEach((mode,mi)=>{
+    const ry=MODE_TOP+mi*MRH,RH=MRH-5;
+    rr(PAD,ry,LW,RH,8);ctx.fillStyle='#1a1d27';ctx.fill();ctx.strokeStyle='#2e3250';ctx.lineWidth=1;ctx.stroke();
+    const midY=ry+RH/2;
+    const BADGE_W=108,BADGE_H=30;
+    rr(PAD+8,midY-BADGE_H/2,BADGE_W,BADGE_H,15);ctx.fillStyle=mode.badgeBg;ctx.fill();ctx.strokeStyle=mode.color+'66';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='bold 13px "Segoe UI",system-ui,sans-serif';ctx.fillStyle=mode.color;ctx.textAlign='center';ctx.fillText(mode.emoji+' '+mode.label,PAD+8+BADGE_W/2,midY+5);ctx.textAlign='left';
+    const COL_START=PAD+8+BADGE_W+8,RIGHT_EDGE=HALF-PAD-8,COL_W=Math.floor((RIGHT_EDGE-COL_START)/3);
+    const C1=COL_START+Math.floor(COL_W/2),C2=C1+COL_W,C3=C2+COL_W;
+    ctx.textAlign='center';
+    ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#5c6080';
+    ctx.fillText('勝利',C1,midY-12);ctx.fillText('敗北',C2,midY-12);ctx.fillText('勝率',C3,midY-12);
+    ctx.font='bold 26px "Segoe UI",system-ui,sans-serif';
+    ctx.fillStyle='#4caf50';ctx.fillText(String(mode.w),C1,midY+13);
+    ctx.fillStyle='#ef5350';ctx.fillText(String(mode.l),C2,midY+13);
+    ctx.font='bold 30px "Segoe UI",system-ui,sans-serif';
+    ctx.fillStyle=mode.wr===null?'#4a4e6a':mode.wr>=50?'#4caf50':'#ef5350';
+    ctx.fillText(mode.wr!==null?mode.wr.toFixed(1)+'%':'—',C3,midY+15);
+    ctx.textAlign='left';
+    if(mode.wr!==null){
+      const bX=COL_START+COL_W*2,bY=ry+RH-8,bW=RIGHT_EDGE-bX,bH=4;
+      rr(bX,bY,bW,bH,2);ctx.fillStyle='#2e3250';ctx.fill();
+      const g=ctx.createLinearGradient(bX,0,bX+bW,0);g.addColorStop(0,mode.wr>=50?'#4caf50':'#ef5350');g.addColorStop(1,mode.wr>=50?'#81c784':'#e57373');
+      rr(bX,bY,Math.max(bW*(mode.wr/100),4),bH,2);ctx.fillStyle=g;ctx.fill();
+    }
+  });
+
+  const MEDALS=['🥇','🥈','🥉'],MEDAL_COLORS=['#ffd700','#c0c0c0','#cd7c3a'];
+  const RX=HALF+PAD,RW=HALF-PAD*2;
+  ctx.font='bold 14px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#9399b2';ctx.textAlign='left';ctx.fillText('🏅 使用ポケモン TOP3（勝率順）',RX,CONTENT_TOP+14);
+  const POKE_TOP=STAT_TOP,POKE_AVAIL=CONTENT_BOT-POKE_TOP,POKE_GAP=10,PCH=Math.floor((POKE_AVAIL-POKE_GAP*2)/3);
+  top3.forEach((poke,pi)=>{
+    const cy=POKE_TOP+pi*(PCH+POKE_GAP);
+    rr(RX,cy,RW,PCH,10);ctx.fillStyle='#1a1d27';ctx.fill();ctx.strokeStyle=MEDAL_COLORS[pi]+'40';ctx.lineWidth=1;ctx.stroke();
+    rr(RX,cy,4,PCH,2);ctx.fillStyle=MEDAL_COLORS[pi];ctx.fill();
+    const midY=cy+PCH/2;
+    ctx.font='24px sans-serif';ctx.textAlign='left';ctx.fillText(MEDALS[pi],RX+12,cy+28);
+    const ISZ=Math.min(PCH-20,52),IX=RX+10,IY=midY-ISZ/2;
+    const img=pokeImgs[poke.name];
+    if(img){ctx.save();rr(IX,IY,ISZ,ISZ,8);ctx.fillStyle='#ffffff0a';ctx.fill();ctx.restore();ctx.drawImage(img,IX,IY,ISZ,ISZ);}
+    const TX=RX+ISZ+22,nameMaxW=RW-ISZ-90;
+    ctx.font='bold 20px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#e8eaf6';ctx.textAlign='left';ctx.fillText(fitText(poke.name,nameMaxW,'bold 20px "Segoe UI",system-ui,sans-serif'),TX,midY-5);
+    ctx.font='15px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#7c83b5';ctx.fillText(`${poke.t}試合  ${poke.w}勝  ${poke.t-poke.w}敗`,TX,midY+16);
+    ctx.font='bold 26px "Segoe UI",system-ui,sans-serif';ctx.fillStyle=poke.wr>=50?'#4caf50':'#ef5350';ctx.textAlign='right';ctx.fillText(poke.wr.toFixed(1)+'%',RX+RW-12,midY+9);ctx.textAlign='left';
+    const bX=TX,bY=cy+PCH-8,bW=RW-ISZ-30,bH=3;rr(bX,bY,bW,bH,1);ctx.fillStyle='#2e3250';ctx.fill();rr(bX,bY,Math.max(bW*(poke.wr/100),3),bH,1);ctx.fillStyle=poke.wr>=50?'#4caf50':'#ef5350';ctx.fill();
+  });
+
+  const footY=H-FOOT_H;ctx.fillStyle='#13151f';ctx.fillRect(0,footY,W,FOOT_H);
+  ctx.strokeStyle='#2e325050';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,footY);ctx.lineTo(W,footY);ctx.stroke();
+  ctx.font='12px "Segoe UI",system-ui,sans-serif';ctx.fillStyle='#4a4e6a';ctx.textAlign='left';ctx.fillText('#ポケモンユナイト  #ユナイト対戦記録  #PokémonUNITE',32,footY+26);
+  ctx.fillStyle='#3a3e60';ctx.textAlign='right';ctx.fillText('by 36無職おぢ @36musyokuodi',W-32,footY+26);ctx.textAlign='left';
+})();
+</script></body></html>

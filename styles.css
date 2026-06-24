@@ -215,6 +215,10 @@
   .mp-edit-hint{font-size:11px;color:var(--text3);margin-bottom:8px;}
   .mp-edit-row{display:flex;align-items:center;gap:8px;padding:7px 2px;font-size:13px;cursor:pointer;}
   .mp-edit-row input{width:16px;height:16px;cursor:pointer;}
+  /* 勝率推移グラフの 累積/直近10戦 切替 */
+  .trend-mode-tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .trend-mode-btn{flex:1;padding:6px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg2);color:var(--text2);border-radius:6px;cursor:pointer;}
+  .trend-mode-btn.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
   .chart-wrap{position:relative;width:100%;height:220px;}
   .series-compare-row{display:grid;grid-template-columns:1fr 52px 52px 64px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:5px;font-size:12px;}
   .series-compare-row.header{background:transparent;font-size:11px;color:var(--text3);padding:4px 10px;margin-bottom:2px;}
