@@ -403,6 +403,7 @@
   .today-stat .ts-label{font-weight:600;color:var(--accent);white-space:nowrap;}
   .today-stat .ts-body{flex:1;color:var(--text);font-weight:600;}
   .today-stat .ts-wr{font-weight:700;}
+  .today-stat .ts-rate{font-weight:700;white-space:nowrap;}
   .today-stat .ts-empty{color:var(--text3);font-weight:500;font-size:12px;}
 
   @media(max-width:480px){

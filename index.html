@@ -2018,6 +2018,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.17',
+    date: '2026-06-27',
+    items: [
+      '「今日の成績」に、マスター以上のときその日のスタートからの<strong>レート増減</strong>を表示（例：レート +24）',
+    ]
+  },
+  {
     version: 'v5.16',
     date: '2026-06-24',
     items: [
@@ -4404,7 +4411,8 @@ function renderToday(){
   const OFFSET_MS=9*60*60*1000;
   const dayKey=ts=>{const d=new Date(new Date(ts).getTime()-OFFSET_MS);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
   const todayKey=dayKey(Date.now());
-  const todays=statBattles().filter(b=>b.created_at&&dayKey(b.created_at)===todayKey);
+  const allChrono=statBattles().filter(b=>b.created_at).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const todays=allChrono.filter(b=>dayKey(b.created_at)===todayKey);
   el.style.display='';
   if(!todays.length){
     el.innerHTML='<span class="ts-label">📅 今日の成績</span><span class="ts-empty">まだ記録がありません</span>';
@@ -4414,7 +4422,26 @@ function renderToday(){
   const l=todays.length-w;
   const wr=Math.round(w/todays.length*100);
   const col=wr>=50?'var(--win)':'var(--loss)';
-  el.innerHTML=`<span class="ts-label">📅 今日の成績</span><span class="ts-body">${w}勝 ${l}敗　<span class="ts-wr" style="color:${col};">勝率${wr}%</span></span>`;
+  // マスター以上（レート記録あり）の場合のみ、その日のスタートのレートからの増減を表示
+  let rateHTML='';
+  const todaysRated=todays.filter(b=>rankRate(b.rank)!=null);
+  if(todaysRated.length){
+    const latest=rankRate(todaysRated[todaysRated.length-1].rank);
+    // 「その日のスタートのレート」＝今日より前で最後にレートを記録した試合の値（前日からの持ち越し）。
+    // 持ち越しが無い場合（新シリーズ初日など）は今日の最初のレート記録を基準にフォールバック。
+    let base=null;
+    for(let i=allChrono.length-1;i>=0;i--){
+      const b=allChrono[i];
+      if(dayKey(b.created_at)===todayKey) continue;
+      const r=rankRate(b.rank);
+      if(r!=null){ base=r; break; }
+    }
+    if(base==null) base=rankRate(todaysRated[0].rank);
+    const diff=latest-base;
+    const dcol=diff>0?'var(--win)':diff<0?'var(--loss)':'var(--text2)';
+    rateHTML=`　<span class="ts-rate" style="color:${dcol};">レート ${diff>0?'+':''}${diff}</span>`;
+  }
+  el.innerHTML=`<span class="ts-label">📅 今日の成績</span><span class="ts-body">${w}勝 ${l}敗　<span class="ts-wr" style="color:${col};">勝率${wr}%</span>${rateHTML}</span>`;
 }
 function renderHistory(){
   const list=document.getElementById('historyList');
