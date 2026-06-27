@@ -2034,6 +2034,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.19',
+    date: '2026-06-27',
+    items: [
+      'マイピックアップで選べる表示カードを追加：「🛣️ レーン別勝率」「🎭 型（ロール）別勝率」「🔥 現在の連勝・連敗」「⚠️ 苦手ポケモン」（⚙ 表示カードを編集 から選択）',
+    ]
+  },
+  {
     version: 'v5.18',
     date: '2026-06-27',
     items: [
@@ -3337,6 +3344,46 @@ const MY_PICKUP_CARDS = [
       const r=all.slice(-20), w=r.filter(b=>b.result==='win').length, t=r.length;
       const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
+    }
+  },
+  { id:'lane', name:'レーン別勝率', title:'🛣️ レーン別勝率', detail:'seriesanal',
+    render(all){
+      const LANES=['上','中央','下'];
+      const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
+      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
+      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=w/t>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
+    }
+  },
+  { id:'role', name:'型（ロール）別勝率', title:'🎭 型（ロール）別勝率', detail:'seriesanal',
+    render(all){
+      const pokeRole={}; Object.values(POKEMON_DATA).forEach(d=>d.pokemon.forEach(p=>pokeRole[p]=d.label));
+      const ROLE_ORDER=['アタック型','バランス型','スピード型','ディフェンス型','サポート型'];
+      const map={}; all.forEach(b=>{const r=b.pokemon&&pokeRole[b.pokemon]; if(!r)return; (map[r]=map[r]||[]).push(b);});
+      const rows=ROLE_ORDER.filter(r=>map[r]);
+      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
+      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=w/t>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
+    }
+  },
+  { id:'streak', name:'現在の連勝/連敗', title:'🔥 現在の連勝・連敗', detail:'trend',
+    render(all){
+      if(!all.length) return `<div class="mp-sub" style="padding:6px 0;">記録がありません</div>`;
+      const last=all[all.length-1].result; let n=0;
+      for(let i=all.length-1;i>=0;i--){ if(all[i].result===last) n++; else break; }
+      const win=last==='win', col=win?'var(--win)':'var(--loss)';
+      return `<div class="mp-big" style="color:${col}">${win?'🔥':'❄️'} ${n}${win?'連勝中':'連敗中'}</div>
+        <div class="mp-sub">直近の連続${win?'勝利':'敗北'}数</div>`;
+    }
+  },
+  { id:'worstpoke', name:'苦手ポケモン', title:'⚠️ 苦手ポケモン（3戦以上の下位）', detail:'pokedetail',
+    render(all){
+      const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
+      const low=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>a.wr-b.wr).slice(0,3);
+      if(!low.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
+      return low.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
+      }).join('');
     }
   },
 ];
