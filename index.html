@@ -197,7 +197,15 @@
             <option value="2">クラス2</option>
             <option value="1">クラス1</option>
           </select>
-          <input id="rankRate" type="number" inputmode="numeric" min="0" max="99999" placeholder="試合後のレート（例: 320）" oninput="onRankRateInput()" style="display:none;margin-top:6px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;" />
+          <div id="rankRateWrap" style="display:none;margin-top:6px;">
+            <input id="rankRate" class="rate-input" type="number" inputmode="numeric" min="0" max="99999" placeholder="例: 320" oninput="onRankRateInput()" />
+            <div class="rate-steprow">
+              <button type="button" class="rate-step" onclick="stepRate('rankRate',-10)">−10</button>
+              <button type="button" class="rate-step" onclick="stepRate('rankRate',-1)">−1</button>
+              <button type="button" class="rate-step" onclick="stepRate('rankRate',1)">+1</button>
+              <button type="button" class="rate-step" onclick="stepRate('rankRate',10)">+10</button>
+            </div>
+          </div>
           <div id="rankRateHint" style="display:none;font-size:10px;color:var(--text3);margin-top:4px;"></div>
         </div>
       </div>
@@ -1396,7 +1404,15 @@
         <option value="2">クラス2</option>
         <option value="1">クラス1</option>
       </select>
-      <input id="editRankRate" type="number" inputmode="numeric" min="0" max="99999" placeholder="試合後のレート（例: 320）" style="display:none;margin-top:6px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:14px;outline:none;" />
+      <div id="editRankRateWrap" style="display:none;margin-top:6px;">
+        <input id="editRankRate" class="rate-input" type="number" inputmode="numeric" min="0" max="99999" placeholder="例: 320" />
+        <div class="rate-steprow">
+          <button type="button" class="rate-step" onclick="stepRate('editRankRate',-10)">−10</button>
+          <button type="button" class="rate-step" onclick="stepRate('editRankRate',-1)">−1</button>
+          <button type="button" class="rate-step" onclick="stepRate('editRankRate',1)">+1</button>
+          <button type="button" class="rate-step" onclick="stepRate('editRankRate',10)">+10</button>
+        </div>
+      </div>
     </div>
     <div class="modal-field">
       <label>マッチ種別</label>
@@ -2017,6 +2033,13 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.18',
+    date: '2026-06-27',
+    items: [
+      'レート入力を手入力＋「−10／−1／+1／+10」ボタン式に変更（記録時・編集時とも）',
+    ]
+  },
   {
     version: 'v5.17',
     date: '2026-06-27',
@@ -4758,11 +4781,12 @@ function onRankChange(){
   const tier=document.getElementById('rankSelect')?.value||'';
   const clsEl=document.getElementById('rankClass');
   const rateEl=document.getElementById('rankRate');
+  const rateWrap=document.getElementById('rankRateWrap');
   const hintEl=document.getElementById('rankRateHint');
   const isMaster=tier==='マスター以上';
   const isClassTier=!!tier&&!isMaster;
   if(clsEl) clsEl.style.display=isClassTier?'':'none';
-  if(rateEl) rateEl.style.display=isMaster?'':'none';
+  if(rateWrap) rateWrap.style.display=isMaster?'':'none';
   if(hintEl) hintEl.style.display=isMaster?'':'none';
   if(isMaster&&rateEl&&!rateEl.value){
     const last=getLastRate();
@@ -4781,6 +4805,14 @@ function onRankRateInput(){
   hintEl.textContent = n>=1000
     ? `レジェンド（${n.toLocaleString()}）として記録 ※1000以上でレジェンド`
     : `マスター（${n.toLocaleString()}）として記録`;
+}
+// レート入力の±ボタン（手入力と併用）。0〜99999でクランプ。
+function stepRate(id,delta){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const cur=parseInt(el.value)||0;
+  el.value=Math.max(0,Math.min(99999,cur+delta));
+  if(id==='rankRate') onRankRateInput();
 }
 function getLastRate(){
   for(const b of battles){ const r=rankRate(b.rank); if(r!=null) return r; }
@@ -4805,9 +4837,9 @@ function onEditRankChange(){
   const tier=document.getElementById('editRank')?.value||'';
   const isMaster=tier==='マスター以上';
   const cls=document.getElementById('editRankClass');
-  const rate=document.getElementById('editRankRate');
+  const rateWrap=document.getElementById('editRankRateWrap');
   if(cls) cls.style.display=(tier&&!isMaster)?'':'none';
-  if(rate) rate.style.display=isMaster?'':'none';
+  if(rateWrap) rateWrap.style.display=isMaster?'':'none';
 }
 function setEditRankFields(rank){
   const sel=document.getElementById('editRank');
