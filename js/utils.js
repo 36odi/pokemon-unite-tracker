@@ -45,3 +45,14 @@ function normBattles(arr){
   for(const b of arr || []){ if(b && b.pokemon) b.pokemon = normPokeName(b.pokemon); }
   return arr || [];
 }
+
+// ===== ゲーム日（AM9:00を1日の境目とする） =====
+// 深夜帯のプレイを前日扱いにするため、対戦時刻を9時間前へ補正した Date を返す。
+// 日別/週間/曜日別など複数の集計で共通利用し、同一基準を保証する。
+const GAME_DAY_OFFSET_MS = 9*60*60*1000;
+function gameDayDate(ts){ return new Date(new Date(ts).getTime() - GAME_DAY_OFFSET_MS); }
+// ゲーム日のキー "YYYY-MM-DD"（ゼロ埋め）
+function gameDayKey(ts){
+  const d = gameDayDate(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}

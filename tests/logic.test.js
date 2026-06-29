@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -102,6 +102,16 @@ eq(F.gradeTier(10), 1, 'grade 10 -> tier 1');
 eq(F.gradeTier(19), 1, 'grade 19 -> tier 1');
 eq(F.gradeTier(20), 2, 'grade 20 -> tier 2');
 eq(F.gradeTier(30), 2, 'grade 30 -> tier 2');
+
+// ---- gameDayKey / gameDayDate（AM9:00を1日の境目とするゲーム日） ----
+// ローカル時刻で構築・ローカル時刻で読むためタイムゾーン非依存。
+section('gameDay (AM9 cutoff)');
+const before9 = new Date(2026, 5, 2, 8, 0, 0).getTime(); // 6/2 08:00 ローカル
+const after9  = new Date(2026, 5, 2, 9, 0, 0).getTime(); // 6/2 09:00 ローカル
+eq(F.gameDayKey(before9), '2026-06-01', '08:00 は前日(ゲーム日)に属する');
+eq(F.gameDayKey(after9),  '2026-06-02', '09:00 から新しいゲーム日');
+eq(F.gameDayDate(before9).getDay(), new Date(2026, 5, 1).getDay(), '08:00 の曜日は前日扱い');
+eq(F.gameDayDate(after9).getDay(),  new Date(2026, 5, 2).getDay(), '09:00 の曜日は当日');
 
 // ---- dcCalcActual（実ダメージ式） ----
 section('dcCalcActual');

@@ -3069,12 +3069,8 @@ function renderDailyWinRate(battles){
   if(!el) return;
   if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
 
-  // AM9:00を日の切り替えとしてゲーム日付キーを生成
-  const OFFSET_MS=9*60*60*1000;
-  const toGameDay=ts=>{
-    const d=new Date(new Date(ts).getTime()-OFFSET_MS);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  };
+  // AM9:00を1日の境目とするゲーム日キー（utils.js の gameDayKey を共通利用）
+  const toGameDay=gameDayKey;
   const fmt=key=>{
     const [,m,d]=key.split('-');
     return `${parseInt(m)}/${parseInt(d)}`;
@@ -3112,12 +3108,8 @@ function renderWeeklyWinRate(battles){
   if(!el) return;
   if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
 
-  // AM9:00を日の切り替えとして使用（日別と同じ基準）
-  const OFFSET_MS=9*60*60*1000;
-  const toGameDay=ts=>{
-    const d=new Date(new Date(ts).getTime()-OFFSET_MS);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  };
+  // AM9:00を1日の境目とするゲーム日キー（日別と同じ基準・utils.js の gameDayKey）
+  const toGameDay=gameDayKey;
   // ゲーム日付キーからその週の月曜日キーを返す
   const toWeekKey=dayKey=>{
     const [y,m,d]=dayKey.split('-').map(Number);
@@ -3203,12 +3195,11 @@ function renderWeekdayWinRate(battles){
   const el=document.getElementById('weekdayWrList');
   if(!el) return;
   if(!battles||!battles.length){ el.innerHTML='<div class="empty">データなし</div>'; return; }
-  const OFFSET_MS=9*60*60*1000;
   const wd=['日','月','火','水','木','金','土'];
   const map={};
   for(const b of battles){
     if(!b.created_at) continue;
-    const d=new Date(new Date(b.created_at).getTime()-OFFSET_MS).getDay();
+    const d=gameDayDate(b.created_at).getDay();
     if(!map[d]) map[d]={win:0,loss:0};
     if(b.result==='win') map[d].win++;
     else map[d].loss++;
@@ -3235,14 +3226,13 @@ function renderBestWorstSlots(battles){
   const el=document.getElementById('bestWorstSlots');
   if(!el) return;
   const MIN=3;
-  const OFFSET_MS=9*60*60*1000;
   const wd=['日','月','火','水','木','金','土'];
   const tl=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
   const map={};
   for(const b of (battles||[])){
     if(!b.created_at) continue;
     const dt=new Date(b.created_at);
-    const day=new Date(dt.getTime()-OFFSET_MS).getDay();
+    const day=gameDayDate(b.created_at).getDay();
     const tb=Math.floor(dt.getHours()/2);
     const key=day+'|'+tb;
     if(!map[key]) map[key]={win:0,loss:0,day,tb};
@@ -3506,10 +3496,9 @@ const MY_PICKUP_CARDS = [
   { id:'weekday', name:'曜日別', title:'📅 得意な曜日（3戦以上の上位）', detail:'trend',
     render(all){
       // 通算成績タブと同じ基準：AM9:00を日の切り替えとして曜日を判定
-      const OFFSET_MS=9*60*60*1000;
       const wd=['日','月','火','水','木','金','土'];
       const m={};
-      all.forEach(b=>{ if(!b.created_at)return; const d=new Date(new Date(b.created_at).getTime()-OFFSET_MS).getDay(); (m[d]=m[d]||{w:0,t:0}); if(b.result==='win')m[d].w++; m[d].t++; });
+      all.forEach(b=>{ if(!b.created_at)return; const d=gameDayDate(b.created_at).getDay(); (m[d]=m[d]||{w:0,t:0}); if(b.result==='win')m[d].w++; m[d].t++; });
       const rows=Object.entries(m).map(([d,s])=>({d:+d,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の曜日記録がありません</div>`;
       return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
@@ -4613,8 +4602,8 @@ function renderStats(){
 function renderToday(){
   const el=document.getElementById('todayStat');
   if(!el) return;
-  const OFFSET_MS=9*60*60*1000;
-  const dayKey=ts=>{const d=new Date(new Date(ts).getTime()-OFFSET_MS);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
+  // ゲーム日キー（utils.js の gameDayKey・AM9:00区切り）。表示せず内部比較のみに使用
+  const dayKey=gameDayKey;
   const todayKey=dayKey(Date.now());
   const allChrono=statBattles().filter(b=>b.created_at).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   const todays=allChrono.filter(b=>dayKey(b.created_at)===todayKey);
