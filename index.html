@@ -563,12 +563,6 @@
         <div class="card-title">⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）</div>
         <div id="ttStatsSummary"><div class="empty" style="padding:0.8rem 0;">記録がありません</div></div>
       </div>
-      <div class="card" style="margin-top:12px;">
-        <div class="card-title">🏅 レート推移（全記録通し）</div>
-        <div class="chart-wrap"><canvas id="rateTrendChart"></canvas></div>
-        <div id="rateTrendEmpty" class="empty" style="display:none;padding:0.8rem 0;">マスター以上のレート記録が2件以上になると表示されます</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 全シリーズを通したレート（マスター以上）の推移</div>
-      </div>
     </div>
     <!-- A5: シリーズ分析パネル -->
     <div id="seriesanalPanel" style="display:none;">
@@ -2044,6 +2038,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.23',
+    date: '2026-06-29',
+    items: [
+      'レートは「シリーズが変わるとリセットされる」ため、最新シリーズ内のみで表示するよう修正。「🏅 レート」カードの詳細→から、最新シリーズのレート推移を直接開けるようにしました',
+    ]
+  },
+  {
     version: 'v5.22',
     date: '2026-06-29',
     items: [
@@ -2917,7 +2918,7 @@ function openFeedbackModal(){document.getElementById('feedbackModal').classList.
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
 
 // ---- 分析 ----
-let trendChartInst=null, compareChartInst=null, rateTrendChartInst=null;
+let trendChartInst=null, compareChartInst=null;
 let allSeriesData=[];
 let analysisLoaded=false;
 let analysisNeedsRefresh=true; // P2: キャッシュ制御
@@ -3352,38 +3353,6 @@ function renderTotalStats(){
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
   const ssEl=document.getElementById('ttStatsSummary');
   if(ssEl) ssEl.innerHTML=statsSummaryHTML(all)||'<div class="empty" style="padding:0.8rem 0;">KO/アシスト/与ダメ/被ダメの記録がありません</div>';
-  renderRateTrend();
-}
-
-// 全シリーズを通したレート（マスター以上）の推移グラフ
-function renderRateTrend(){
-  const canvas=document.getElementById('rateTrendChart');
-  const empty=document.getElementById('rateTrendEmpty');
-  if(!canvas) return;
-  const all=allSeriesData.flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  const rated=all.filter(b=>rankRate(b.rank)!=null);
-  const data=rated.map(b=>rankRate(b.rank));
-  if(rateTrendChartInst){rateTrendChartInst.destroy();rateTrendChartInst=null;}
-  if(data.length<2){
-    canvas.style.display='none';
-    if(empty) empty.style.display='block';
-    return;
-  }
-  canvas.style.display='';
-  if(empty) empty.style.display='none';
-  const labels=rated.map((b,i)=>String(i+1));
-  rateTrendChartInst=new Chart(canvas,{
-    type:'line',
-    data:{labels,datasets:[{label:'レート',data,borderColor:'#ffca28',backgroundColor:'#ffca2822',tension:0.3,pointBackgroundColor:'#ffca28',pointRadius:2,fill:true}]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'レート '+ctx.parsed.y}}},
-      scales:{
-        y:{ticks:{color:'#9399b2'},grid:{color:'#2e3250'}},
-        x:{ticks:{color:'#9399b2',maxTicksLimit:8},grid:{color:'#2e3250'}}
-      }
-    }
-  });
 }
 
 // ---- マイピックアップ（要約カード）----
@@ -3401,18 +3370,16 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
     }
   },
-  { id:'rate', name:'レート', title:'🏅 レート', detail:'total',
+  { id:'rate', name:'レート', title:'🏅 レート', detail:'seriesanal', detailAction:'openRateDetail()',
     render(all){
-      // レートはシリーズをまたいで連続するため、最新シリーズ限定ではなく全記録から最新を取る
-      const src=(typeof allSeriesData!=='undefined'?allSeriesData:[]).flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-      const base=src.length?src:all;
-      const rates=base.map(b=>rankRate(b.rank)).filter(r=>r!=null);
-      if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">マスター以上のレート記録がありません</div>`;
+      // レートはシリーズが変わるとリセットされるため、最新シリーズ内のみで扱う（all=最新シリーズの battles・時系列昇順）
+      const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
+      if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">このシリーズにマスター以上のレート記録がありません</div>`;
       const latest=rates[rates.length-1], prev=rates.length>1?rates[rates.length-2]:null;
       const ch=prev!=null?latest-prev:null;
       const chStr=ch==null?'':` <span style="font-size:14px;color:${ch>=0?'var(--win)':'var(--loss)'}">(${ch>=0?'+':''}${ch})</span>`;
       return `<div class="mp-big">${latest.toLocaleString()}${chStr}</div>
-        <div class="mp-sub">最新レート（全シリーズ通算・記録${rates.length}件）</div>`;
+        <div class="mp-sub">最新レート（最新シリーズ内・記録${rates.length}件）</div>`;
     }
   },
   { id:'pokewr', name:'得意ポケモン', title:'🔍 得意ポケモン（3戦以上の上位）', detail:'pokedetail',
@@ -3545,10 +3512,23 @@ function renderMyPickup(){
     `<div class="card mp-card">
       <div class="mp-card-head">
         <div class="card-title" style="margin-bottom:0;">${c.title}</div>
-        <button class="mp-detail-link" onclick="switchAnalysis('${c.detail}')">詳細 →</button>
+        <button class="mp-detail-link" onclick="${c.detailAction ? c.detailAction : `switchAnalysis('${c.detail}')`}">詳細 →</button>
       </div>
       <div class="mp-card-body">${c.render(all)}</div>
     </div>`).join('');
+}
+
+// マイピックアップ「レート」カードの詳細→：シリーズ分析を開き、最新シリーズを明示選択して表示する
+// （レートはシリーズ内のみで連続するため、最新シリーズのレート推移を直接見せる）
+function openRateDetail(){
+  switchAnalysis('seriesanal');
+  // loadAnalysis 完了後（キャッシュ時も解決）にセレクトが整うので、最新シリーズを選び直して描画
+  loadAnalysis().then(()=>{
+    const sel=document.getElementById('seriesanalSelect');
+    if(!sel||!allSeriesData.length) return;
+    const latest=allSeriesData.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
+    if(latest && sel.querySelector(`option[value="${latest.id}"]`)){ sel.value=String(latest.id); renderSeriesAnalysis(); }
+  });
 }
 
 // ---- ポケモン別詳細 ----
