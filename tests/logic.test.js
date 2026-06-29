@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -112,6 +112,19 @@ eq(F.gameDayKey(before9), '2026-06-01', '08:00 は前日(ゲーム日)に属す�
 eq(F.gameDayKey(after9),  '2026-06-02', '09:00 から新しいゲーム日');
 eq(F.gameDayDate(before9).getDay(), new Date(2026, 5, 1).getDay(), '08:00 の曜日は前日扱い');
 eq(F.gameDayDate(after9).getDay(),  new Date(2026, 5, 2).getDay(), '09:00 の曜日は当日');
+
+// ---- wrColor（勝率→勝敗色・百分率ベース） ----
+section('wrColor');
+eq(F.wrColor(50), 'var(--win)', '50 -> win');
+eq(F.wrColor(49.9), 'var(--loss)', '49.9 -> loss');
+eq(F.wrColor(100), 'var(--win)', '100 -> win');
+eq(F.wrColor(0), 'var(--loss)', '0 -> loss');
+eq(F.wrColor('50.0%'), 'var(--win)', 'string "50.0%" -> win');
+eq(F.wrColor('33.3'), 'var(--loss)', 'string "33.3" -> loss');
+eq(F.wrColor(1), 'var(--loss)', '1 は1%扱い(比率ではない) -> loss');
+eq(F.wrColor('—'), 'var(--text3)', 'dash -> none(text3)');
+eq(F.wrColor(null), 'var(--text3)', 'null -> none(text3)');
+eq(F.wrColor('', 'var(--text2)'), 'var(--text2)', 'empty -> 指定noneColor');
 
 // ---- dcCalcActual（実ダメージ式） ----
 section('dcCalcActual');

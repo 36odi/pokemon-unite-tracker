@@ -3099,7 +3099,7 @@ function renderDailyWinRate(battles){
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
       </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
     </div>`;
   }).join('');
 }
@@ -3153,7 +3153,7 @@ function renderWeeklyWinRate(battles){
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
       </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
     </div>`;
   }).join('');
 }
@@ -3186,7 +3186,7 @@ function renderHourlyWinRate(battles){
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
       </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
     </div>`;
   }).join('');
 }
@@ -3217,7 +3217,7 @@ function renderWeekdayWinRate(battles){
       <div class="daily-wr-bar-wrap">
         <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
       </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wr>=50?'var(--win)':'var(--loss)'}">${wr}%</span></div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
     </div>`;
   }).join('');
 }
@@ -3285,7 +3285,7 @@ function renderCompareChart(){
         const w=s.battles.filter(b=>b.result==='win').length;
         const t=s.battles.length;
         const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
-        const col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+        const col=t>0?wrColor(wr):'var(--text2)';
         return `<div class="series-compare-row"><div class="series-name-cell">${escapeHtml(s.name)}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
       }).join('')
     : '<div class="empty" style="padding:1rem 0;">データなし</div>';
@@ -3338,7 +3338,7 @@ function renderTotalStats(){
     const mw=ml.filter(b=>b.result==='win').length;
     const mt=ml.length;
     const mwr=mt>0?((mw/mt)*100).toFixed(1)+'%':'—';
-    const col=mt>0?(parseFloat(mwr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+    const col=mt>0?wrColor(mwr):'var(--text2)';
     return `<div class="series-compare-row"><div class="series-name-cell">${label}</div><div class="series-val">${mt}</div><div class="series-val">${mw}</div><div class="series-wr-cell" style="color:${col}">${mwr}</div></div>`;
   }).join('');
   const pm={};
@@ -3347,7 +3347,7 @@ function renderTotalStats(){
   document.getElementById('ttPokeStats').innerHTML=top5.length
     ? top5.map(([name,s])=>{
         const t=s.w+s.l,wr=((s.w/t)*100).toFixed(1);
-        const col=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
+        const col=wrColor(wr);
         return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${escapeHtml(name)}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
@@ -3364,7 +3364,7 @@ const MY_PICKUP_CARDS = [
       const t=all.length, w=all.filter(b=>b.result==='win').length;
       const wr=t>0?((w/t)*100).toFixed(1):'—';
       const recent=all.slice(-10), rw=recent.filter(b=>b.result==='win').length, rt=recent.length;
-      const col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+      const col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div>
         <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>
         <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
@@ -3387,7 +3387,7 @@ const MY_PICKUP_CARDS = [
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
-      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
       }).join('');
     }
@@ -3396,7 +3396,7 @@ const MY_PICKUP_CARDS = [
     render(all){
       return [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].map(([k,lbl])=>{
         const m=all.filter(b=>b.match_type===k), w=m.filter(b=>b.result==='win').length, t=m.length;
-        const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text3)';
+        const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?wrColor(wr):'var(--text3)';
         return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}/${t}</span></div>`;
       }).join('');
     }
@@ -3404,7 +3404,7 @@ const MY_PICKUP_CARDS = [
   { id:'recent', name:'直近20戦', title:'🕐 直近20戦の成績', detail:'trend',
     render(all){
       const r=all.slice(-20), w=r.filter(b=>b.result==='win').length, t=r.length;
-      const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+      const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
     }
   },
@@ -3413,7 +3413,7 @@ const MY_PICKUP_CARDS = [
       const LANES=['上','中央','下'];
       const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
-      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=w/t>=0.5?'var(--win)':'var(--loss)';
+      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
@@ -3424,7 +3424,7 @@ const MY_PICKUP_CARDS = [
       const map={}; all.forEach(b=>{const r=b.pokemon&&pokeRole[b.pokemon]; if(!r)return; (map[r]=map[r]||[]).push(b);});
       const rows=ROLE_ORDER.filter(r=>map[r]);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
-      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=w/t>=0.5?'var(--win)':'var(--loss)';
+      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
@@ -3443,7 +3443,7 @@ const MY_PICKUP_CARDS = [
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const low=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>a.wr-b.wr).slice(0,3);
       if(!low.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
-      return low.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+      return low.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
       }).join('');
     }
@@ -3456,7 +3456,7 @@ const MY_PICKUP_CARDS = [
       all.forEach(b=>{ if(!b.created_at)return; const bi=Math.floor(new Date(b.created_at).getHours()/2); (m[bi]=m[bi]||{w:0,t:0}); if(b.result==='win')m[bi].w++; m[bi].t++; });
       const top=Object.entries(m).map(([bi,s])=>({bi:+bi,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の時間帯記録がありません</div>`;
-      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
     }
   },
@@ -3468,7 +3468,7 @@ const MY_PICKUP_CARDS = [
       all.forEach(b=>{ if(!b.created_at)return; const d=gameDayDate(b.created_at).getDay(); (m[d]=m[d]||{w:0,t:0}); if(b.result==='win')m[d].w++; m[d].t++; });
       const rows=Object.entries(m).map(([d,s])=>({d:+d,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の曜日記録がありません</div>`;
-      return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+      return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${wd[p.d]}曜</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
     }
   },
@@ -3564,7 +3564,7 @@ function renderPokeDetail(){
   const w=bs.filter(b=>b.result==='win').length;
   const t=bs.length;
   const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
-  const wrCol=parseFloat(wr)>=50?'var(--win)':'var(--loss)';
+  const wrCol=wrColor(wr);
 
   // ---- セット集計ヘルパー ----
   const makeSetMap=(keyFn)=>{
@@ -4531,11 +4531,11 @@ function renderStats(){
     const lo=rl.length-w;
     const wr=calcWR(w,rl.length);
     const s=RANK_STYLE[rank]||{color:'var(--text2)',bg:'var(--bg3)'};
-    const wrCol=wr?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+    const wrCol=wr?wrColor(wr):'var(--text2)';
     // モード内訳（ソロ/デュオ/フルパ）
     const modeLine=(label,cls,arr)=>{
       const mw=arr.filter(b=>b.result==='win').length, ml=arr.length-mw, mwr=calcWR(mw,arr.length);
-      const mcol=mwr?(parseFloat(mwr)>=50?'var(--win)':'var(--loss)'):'var(--text3)';
+      const mcol=mwr?wrColor(mwr):'var(--text3)';
       return `<div class="rank-mode-line"><span class="badge ${cls}" style="font-size:9px;padding:2px 7px;">${label}</span><span class="rank-mode-rec">${arr.length?`${mw}勝 ${ml}敗`:'—'}</span><span class="rank-mode-wr" style="color:${mcol};">${mwr?mwr+'%':'—'}</span></div>`;
     };
     const modeBody=modeLine('ソロ','badge-solo',rl.filter(b=>b.match_type==='solo'))
@@ -4595,7 +4595,7 @@ function renderToday(){
   const w=todays.filter(b=>b.result==='win').length;
   const l=todays.length-w;
   const wr=Math.round(w/todays.length*100);
-  const col=wr>=50?'var(--win)':'var(--loss)';
+  const col=wrColor(wr);
   // マスター以上（レート記録あり）の場合のみ、その日のスタートのレートからの増減を表示
   let rateHTML='';
   const todaysRated=todays.filter(b=>rankRate(b.rank)!=null);
@@ -5089,7 +5089,7 @@ async function renderSeriesAnalysis(){
   const w=bs.filter(b=>b.result==='win').length;
   const t=bs.length;
   const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
-  const wrCol=t>0?(parseFloat(wr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+  const wrCol=t>0?wrColor(wr):'var(--text2)';
 
   // ── ヘルパー ──
   const modeWR=(arr,mode)=>{
@@ -5098,10 +5098,7 @@ async function renderSeriesAnalysis(){
     const mw=m.filter(b=>b.result==='win').length;
     return ((mw/m.length)*100).toFixed(1)+'%';
   };
-  const wrColor=(str)=>{
-    if(str==='—')return'var(--text3)';
-    return parseFloat(str)>=50?'var(--win)':'var(--loss)';
-  };
+  // 勝敗色は js/utils.js の共通 wrColor を使用（'—'→var(--text3) も既定で一致）
   const makeAccordion=(title,bodyHTML)=>`
     <div class="poke-mode-block" style="margin-bottom:8px;">
       <div class="poke-mode-header" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
@@ -5416,7 +5413,7 @@ async function renderSeriesAnalysis(){
     <div class="series-compare-row header"><div>ポケモン</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
     ${pokeList.map(([name,ps])=>{
       const pt=ps.w+ps.l,pwr=pt>0?((ps.w/pt)*100).toFixed(1)+'%':'—';
-      const pc=pt>0?(parseFloat(pwr)>=50?'var(--win)':'var(--loss)'):'var(--text2)';
+      const pc=pt>0?wrColor(pwr):'var(--text2)';
       return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'',20)} ${escapeHtml(name)}</div><div class="series-val">${pt}</div><div class="series-val">${ps.w}</div><div class="series-wr-cell" style="color:${pc}">${pwr}</div></div>`;
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}

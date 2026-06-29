@@ -56,3 +56,14 @@ function gameDayKey(ts){
   const d = gameDayDate(ts);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+
+// ===== 勝率の勝敗色 =====
+// 引数は百分率（数値 0..100 か "50%"/"50.0" 文字列）。比率(0..1)を渡すときは *100 して百分率で渡すこと。
+// データ無し（null/''/'—'/NaN）は noneColor（既定 var(--text3)）。50%以上=勝色、未満=負色。
+function wrColor(pct, noneColor){
+  const none = noneColor || 'var(--text3)';
+  if(pct==null || pct==='' || pct==='—') return none;
+  const n = typeof pct==='string' ? parseFloat(pct) : pct;
+  if(!isFinite(n)) return none;
+  return n>=50 ? 'var(--win)' : 'var(--loss)';
+}
