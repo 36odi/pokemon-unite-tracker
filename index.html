@@ -3396,7 +3396,7 @@ const MY_PICKUP_CARDS = [
     render(all){
       return [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].map(([k,lbl])=>{
         const m=all.filter(b=>b.match_type===k), w=m.filter(b=>b.result==='win').length, t=m.length;
-        const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?wrColor(wr):'var(--text3)';
+        const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text3)';
         return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}/${t}</span></div>`;
       }).join('');
     }
@@ -3404,7 +3404,7 @@ const MY_PICKUP_CARDS = [
   { id:'recent', name:'直近20戦', title:'🕐 直近20戦の成績', detail:'trend',
     render(all){
       const r=all.slice(-20), w=r.filter(b=>b.result==='win').length, t=r.length;
-      const wr=t>0?(w/t*100).toFixed(1):'—', col=t>0?wrColor(wr):'var(--text2)';
+      const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
     }
   },
@@ -3413,7 +3413,7 @@ const MY_PICKUP_CARDS = [
       const LANES=['上','中央','下'];
       const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
-      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=wrColor(w/t*100);
+      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
@@ -3424,7 +3424,7 @@ const MY_PICKUP_CARDS = [
       const map={}; all.forEach(b=>{const r=b.pokemon&&pokeRole[b.pokemon]; if(!r)return; (map[r]=map[r]||[]).push(b);});
       const rows=ROLE_ORDER.filter(r=>map[r]);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
-      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=(w/t*100).toFixed(1),col=wrColor(w/t*100);
+      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
