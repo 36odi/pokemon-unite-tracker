@@ -559,6 +559,12 @@
         <div class="card-title">通算 ポケモン別TOP5</div>
         <div id="ttPokeStats"></div>
       </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="card-title">🏅 レート推移（全記録通し）</div>
+        <div class="chart-wrap"><canvas id="rateTrendChart"></canvas></div>
+        <div id="rateTrendEmpty" class="empty" style="display:none;padding:0.8rem 0;">マスター以上のレート記録が2件以上になると表示されます</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;">※ 全シリーズを通したレート（マスター以上）の推移</div>
+      </div>
     </div>
     <!-- A5: シリーズ分析パネル -->
     <div id="seriesanalPanel" style="display:none;">
@@ -2034,6 +2040,15 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.21',
+    date: '2026-06-29',
+    items: [
+      'マイピックアップの「🏅 レート」を、シリーズによらず<strong>全記録を通した最新レート</strong>で表示するよう変更',
+      '通算成績タブに「🏅 レート推移（全記録通し）」グラフを追加。「レート」カードの詳細→からも開けます',
+      'マイピックアップの「⏰ 得意な時間帯」「📅 得意な曜日」の詳細→を、時間帯別・曜日別勝率がある「📈 勝率推移」タブへ移動（飛び先の誤りを修正）',
+    ]
+  },
+  {
     version: 'v5.20',
     date: '2026-06-29',
     items: [
@@ -2891,7 +2906,7 @@ function openFeedbackModal(){document.getElementById('feedbackModal').classList.
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
 
 // ---- 分析 ----
-let trendChartInst=null, compareChartInst=null;
+let trendChartInst=null, compareChartInst=null, rateTrendChartInst=null;
 let allSeriesData=[];
 let analysisLoaded=false;
 let analysisNeedsRefresh=true; // P2: キャッシュ制御
@@ -3301,6 +3316,38 @@ function renderTotalStats(){
         return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${escapeHtml(name)}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
+  renderRateTrend();
+}
+
+// 全シリーズを通したレート（マスター以上）の推移グラフ
+function renderRateTrend(){
+  const canvas=document.getElementById('rateTrendChart');
+  const empty=document.getElementById('rateTrendEmpty');
+  if(!canvas) return;
+  const all=allSeriesData.flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const rated=all.filter(b=>rankRate(b.rank)!=null);
+  const data=rated.map(b=>rankRate(b.rank));
+  if(rateTrendChartInst){rateTrendChartInst.destroy();rateTrendChartInst=null;}
+  if(data.length<2){
+    canvas.style.display='none';
+    if(empty) empty.style.display='block';
+    return;
+  }
+  canvas.style.display='';
+  if(empty) empty.style.display='none';
+  const labels=rated.map((b,i)=>String(i+1));
+  rateTrendChartInst=new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets:[{label:'レート',data,borderColor:'#ffca28',backgroundColor:'#ffca2822',tension:0.3,pointBackgroundColor:'#ffca28',pointRadius:2,fill:true}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'レート '+ctx.parsed.y}}},
+      scales:{
+        y:{ticks:{color:'#9399b2'},grid:{color:'#2e3250'}},
+        x:{ticks:{color:'#9399b2',maxTicksLimit:8},grid:{color:'#2e3250'}}
+      }
+    }
+  });
 }
 
 // ---- マイピックアップ（要約カード）----
@@ -3318,15 +3365,18 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
     }
   },
-  { id:'rate', name:'レート', title:'🏅 レート', detail:'seriesanal',
+  { id:'rate', name:'レート', title:'🏅 レート', detail:'total',
     render(all){
-      const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
+      // レートはシリーズをまたいで連続するため、最新シリーズ限定ではなく全記録から最新を取る
+      const src=(typeof allSeriesData!=='undefined'?allSeriesData:[]).flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+      const base=src.length?src:all;
+      const rates=base.map(b=>rankRate(b.rank)).filter(r=>r!=null);
       if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">マスター以上のレート記録がありません</div>`;
       const latest=rates[rates.length-1], prev=rates.length>1?rates[rates.length-2]:null;
       const ch=prev!=null?latest-prev:null;
       const chStr=ch==null?'':` <span style="font-size:14px;color:${ch>=0?'var(--win)':'var(--loss)'}">(${ch>=0?'+':''}${ch})</span>`;
       return `<div class="mp-big">${latest.toLocaleString()}${chStr}</div>
-        <div class="mp-sub">最新レート（記録${rates.length}件・直近からの増減）</div>`;
+        <div class="mp-sub">最新レート（全シリーズ通算・記録${rates.length}件）</div>`;
     }
   },
   { id:'pokewr', name:'得意ポケモン', title:'🔍 得意ポケモン（3戦以上の上位）', detail:'pokedetail',
@@ -3395,7 +3445,7 @@ const MY_PICKUP_CARDS = [
       }).join('');
     }
   },
-  { id:'timeband', name:'時間帯別', title:'⏰ 得意な時間帯（3戦以上の上位）', detail:'total',
+  { id:'timeband', name:'時間帯別', title:'⏰ 得意な時間帯（3戦以上の上位）', detail:'trend',
     render(all){
       // 通算成績タブと同じ基準：端末ローカル時刻を2時間刻みのバケットに集計
       const labels=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
@@ -3407,7 +3457,7 @@ const MY_PICKUP_CARDS = [
         return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
     }
   },
-  { id:'weekday', name:'曜日別', title:'📅 得意な曜日（3戦以上の上位）', detail:'total',
+  { id:'weekday', name:'曜日別', title:'📅 得意な曜日（3戦以上の上位）', detail:'trend',
     render(all){
       // 通算成績タブと同じ基準：AM9:00を日の切り替えとして曜日を判定
       const OFFSET_MS=9*60*60*1000;
