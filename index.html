@@ -2034,6 +2034,15 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.20',
+    date: '2026-06-29',
+    items: [
+      'マイピックアップで選べる表示カードを追加：「⏰ 得意な時間帯」「📅 得意な曜日」（ともに勝率の高い順に最大3つを表示・⚙ 表示カードを編集 から選択）',
+      '「ポケモン別勝率」カードの名称を「🔍 得意ポケモン」に変更',
+      'マイピックアップの各カードを<strong>最新シリーズのみ</strong>を対象に集計するよう変更（対象シリーズ名を上部に表示）',
+    ]
+  },
+  {
     version: 'v5.19',
     date: '2026-06-27',
     items: [
@@ -3320,7 +3329,7 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">最新レート（記録${rates.length}件・直近からの増減）</div>`;
     }
   },
-  { id:'pokewr', name:'ポケモン別勝率', title:'🔍 ポケモン別勝率（3戦以上の上位）', detail:'pokedetail',
+  { id:'pokewr', name:'得意ポケモン', title:'🔍 得意ポケモン（3戦以上の上位）', detail:'pokedetail',
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
@@ -3386,6 +3395,31 @@ const MY_PICKUP_CARDS = [
       }).join('');
     }
   },
+  { id:'timeband', name:'時間帯別', title:'⏰ 得意な時間帯（3戦以上の上位）', detail:'total',
+    render(all){
+      // 通算成績タブと同じ基準：端末ローカル時刻を2時間刻みのバケットに集計
+      const labels=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
+      const m={};
+      all.forEach(b=>{ if(!b.created_at)return; const bi=Math.floor(new Date(b.created_at).getHours()/2); (m[bi]=m[bi]||{w:0,t:0}); if(b.result==='win')m[bi].w++; m[bi].t++; });
+      const top=Object.entries(m).map(([bi,s])=>({bi:+bi,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
+      if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の時間帯記録がありません</div>`;
+      return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
+    }
+  },
+  { id:'weekday', name:'曜日別', title:'📅 得意な曜日（3戦以上の上位）', detail:'total',
+    render(all){
+      // 通算成績タブと同じ基準：AM9:00を日の切り替えとして曜日を判定
+      const OFFSET_MS=9*60*60*1000;
+      const wd=['日','月','火','水','木','金','土'];
+      const m={};
+      all.forEach(b=>{ if(!b.created_at)return; const d=new Date(new Date(b.created_at).getTime()-OFFSET_MS).getDay(); (m[d]=m[d]||{w:0,t:0}); if(b.result==='win')m[d].w++; m[d].t++; });
+      const rows=Object.entries(m).map(([d,s])=>({d:+d,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
+      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の曜日記録がありません</div>`;
+      return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=p.wr>=0.5?'var(--win)':'var(--loss)';
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${wd[p.d]}曜</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
+    }
+  },
 ];
 const MP_DEFAULT=['winrate','rate','pokewr']; // 既定表示（コア3）
 function getMyPickupSelection(){
@@ -3414,12 +3448,15 @@ function toggleMyPickupEdit(){
 function renderMyPickup(){
   const cont=document.getElementById('myPickupContent');
   if(!cont) return;
-  const all=allSeriesData.flatMap(s=>s.battles).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">まだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
+  // マイピックアップは最新シリーズ（created_atが最大のシリーズ）のみを対象にする
+  const latest=allSeriesData.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
+  const all=(latest?latest.battles:[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">最新シリーズにまだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
   const sel=getMyPickupSelection();
   const cards=MY_PICKUP_CARDS.filter(c=>sel.includes(c.id));
   if(!cards.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">表示するカードがありません。「⚙ 表示カードを編集」から選んでください。</div>'; return; }
-  cont.innerHTML=cards.map(c=>
+  const scope=`<div class="mp-sub" style="margin:-2px 0 8px;font-size:12px;color:var(--text2);">対象シリーズ：${escapeHtml(latest.name||'最新')}</div>`;
+  cont.innerHTML=scope+cards.map(c=>
     `<div class="card mp-card">
       <div class="mp-card-head">
         <div class="card-title" style="margin-bottom:0;">${c.title}</div>
