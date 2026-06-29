@@ -560,6 +560,10 @@
         <div id="ttPokeStats"></div>
       </div>
       <div class="card" style="margin-top:12px;">
+        <div class="card-title">⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）</div>
+        <div id="ttStatsSummary"><div class="empty" style="padding:0.8rem 0;">記録がありません</div></div>
+      </div>
+      <div class="card" style="margin-top:12px;">
         <div class="card-title">🏅 レート推移（全記録通し）</div>
         <div class="chart-wrap"><canvas id="rateTrendChart"></canvas></div>
         <div id="rateTrendEmpty" class="empty" style="display:none;padding:0.8rem 0;">マスター以上のレート記録が2件以上になると表示されます</div>
@@ -2040,6 +2044,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.22',
+    date: '2026-06-29',
+    items: [
+      '通算成績・ポケモン別詳細・シリーズ分析に「⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）」を追加。全体／勝ち試合／負け試合の平均を並べて、自分の勝ちパターンを数値で確認できます',
+    ]
+  },
+  {
     version: 'v5.21',
     date: '2026-06-29',
     items: [
@@ -3289,6 +3300,39 @@ function renderCompareChart(){
     : '<div class="empty" style="padding:1rem 0;">データなし</div>';
 }
 
+// KO/アシスト/与ダメ/被ダメ の集計（記録のある試合のみ・項目ごとに非nullで平均）
+const STAT_FIELDS=[['kills','KO','num'],['assists','アシスト','num'],['dmg_dealt','与ダメ','dmg'],['dmg_taken','被ダメ','dmg']];
+function aggBattleStats(battles){
+  const anyStat=b=>b.kills!=null||b.assists!=null||b.dmg_dealt!=null||b.dmg_taken!=null;
+  const wins=battles.filter(b=>b.result==='win'), losses=battles.filter(b=>b.result==='loss');
+  const avg=(arr,key)=>{
+    const v=arr.map(b=>b[key]).filter(x=>x!=null&&x!=='').map(Number).filter(x=>!isNaN(x));
+    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+  };
+  return {
+    n:battles.filter(anyStat).length,
+    winN:wins.filter(anyStat).length,
+    lossN:losses.filter(anyStat).length,
+    rows:STAT_FIELDS.map(([key,label,type])=>({label,type,all:avg(battles,key),win:avg(wins,key),loss:avg(losses,key)}))
+  };
+}
+// 集計テーブルHTML。記録が無ければ空文字を返す（呼び出し側で出し分け）
+function statsSummaryHTML(battles){
+  const a=aggBattleStats(battles);
+  if(!a.n) return '';
+  const fmt=(v,type)=> v==null?'—':(type==='dmg'?Math.round(v).toLocaleString():v.toFixed(1));
+  const th=(label,col)=>`<th style="padding:4px 6px;text-align:center;${col?'color:'+col+';':'color:var(--text3);'}">${label}</th>`;
+  const head=`<thead><tr style="border-bottom:1px solid var(--border);">${th('項目')}${th('全体('+a.n+')')}${th('勝ち('+a.winN+')','var(--win)')}${th('負け('+a.lossN+')','var(--loss)')}</tr></thead>`;
+  const body=a.rows.map(r=>`<tr>
+    <td style="padding:4px 6px;color:var(--text2);">${r.label}</td>
+    <td style="padding:4px 6px;text-align:center;">${fmt(r.all,r.type)}</td>
+    <td style="padding:4px 6px;text-align:center;color:var(--win);">${fmt(r.win,r.type)}</td>
+    <td style="padding:4px 6px;text-align:center;color:var(--loss);">${fmt(r.loss,r.type)}</td>
+  </tr>`).join('');
+  return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">${head}<tbody>${body}</tbody></table></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:6px;">※ KO/アシスト/与ダメ/被ダメを記録した試合のみで平均（項目ごとに記録数が異なる場合あり）</div>`;
+}
+
 function renderTotalStats(){
   const all=allSeriesData.flatMap(s=>s.battles);
   const w=all.filter(b=>b.result==='win').length;
@@ -3316,6 +3360,8 @@ function renderTotalStats(){
         return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'poke-mode-icon',20)} ${escapeHtml(name)}</div><div class="series-val">${t}</div><div class="series-val">${s.w}</div><div class="series-wr-cell" style="color:${col}">${wr}%</div></div>`;
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
+  const ssEl=document.getElementById('ttStatsSummary');
+  if(ssEl) ssEl.innerHTML=statsSummaryHTML(all)||'<div class="empty" style="padding:0.8rem 0;">KO/アシスト/与ダメ/被ダメの記録がありません</div>';
   renderRateTrend();
 }
 
@@ -3622,6 +3668,8 @@ function renderPokeDetail(){
       <div class="stat-box" style="flex:1;"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
       <div class="stat-box" style="flex:1;"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:16px;color:${wrCol}">${wr}</div></div>
     </div>
+
+    ${(()=>{const h=statsSummaryHTML(bs);return h?`<div class="detail-subsection"><div class="detail-subsection-title">⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）</div>${h}</div>`:'';})()}
 
     ${!hasSet?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
 
@@ -5404,6 +5452,7 @@ async function renderSeriesAnalysis(){
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
     <div style="margin-top:4px;">
+      ${makeAccordion('⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）',statsSummaryHTML(bs)||'<div class="poke-mode-empty">KO/アシスト/与ダメ/被ダメの記録がありません</div>')}
       ${makeAccordion('🏆 勝ちパターン（組み合わせ別）',winPatternHTML)}
       ${makeAccordion('🛣️ レーン別勝率',laneHTML)}
       ${makeAccordion('🎭 型（ロール）別勝率',roleHTML)}
