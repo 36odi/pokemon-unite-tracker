@@ -2038,6 +2038,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.24',
+    date: '2026-06-30',
+    items: [
+      'ランク別成績で、昇格・降格をまたいだ試合を「その試合をプレイしていたランク帯」で集計するよう修正。記録するレートは試合後の値のため、例えばマスターからレジェンドに上がった試合は<strong>マスターの成績</strong>に計上されます（直前に記録したレートで判定）',
+    ]
+  },
+  {
     version: 'v5.23',
     date: '2026-06-29',
     items: [
@@ -3686,10 +3693,13 @@ function renderPokeDetail(){
     </div>
 
     ${(()=>{
-      // A8: ランク帯別クロス集計
+      // A8: ランク帯別クロス集計（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け。
+      //  レートはシリーズ内のみ連続するためシリーズごとにマップを作り統合する。bs は全シリーズ横断）
+      const playedTierMap=new Map();
+      allSeriesData.forEach(s=>buildPlayedTierMap(s.battles).forEach((v,k)=>playedTierMap.set(k,v)));
       const rankMap={};
       bs.forEach(b=>{
-        const rt=rankTier(b.rank); if(!rt)return;
+        const rt=aggRankTier(b,playedTierMap); if(!rt)return;
         if(!rankMap[rt])rankMap[rt]={w:0,l:0};
         b.result==='win'?rankMap[rt].w++:rankMap[rt].l++;
       });
@@ -4523,9 +4533,10 @@ function renderStats(){
   sT(bs);sM('solo',solo);sM('duo',duo);sM('full',full);
   renderToday();
 
-  // ランク別成績
+  // ランク別成績（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け）
+  const playedTierMap=buildPlayedTierMap(bs);
   const rankRows=RANKS.map(rank=>{
-    const rl=bs.filter(b=>rankTier(b.rank)===rank);
+    const rl=bs.filter(b=>aggRankTier(b,playedTierMap)===rank);
     if(!rl.length)return null;
     const w=rl.filter(b=>b.result==='win').length;
     const lo=rl.length-w;
@@ -5118,10 +5129,11 @@ async function renderSeriesAnalysis(){
   });
   const pokeList=Object.entries(pokeMap).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).slice(0,12);
 
-  // ── B1: ランク帯別勝率 ──
+  // ── B1: ランク帯別勝率 ──（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け）
+  const playedTierMap=buildPlayedTierMap(bs);
   const rankMap={};
   bs.forEach(b=>{
-    const rt=rankTier(b.rank); if(!rt)return;
+    const rt=aggRankTier(b,playedTierMap); if(!rt)return;
     if(!rankMap[rt])rankMap[rt]=[];
     rankMap[rt].push(b);
   });

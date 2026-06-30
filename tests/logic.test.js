@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, buildPlayedTierMap, aggRankTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -125,6 +125,31 @@ eq(F.wrColor(1), 'var(--loss)', '1 は1%扱い(比率ではない) -> loss');
 eq(F.wrColor('—'), 'var(--text3)', 'dash -> none(text3)');
 eq(F.wrColor(null), 'var(--text3)', 'null -> none(text3)');
 eq(F.wrColor('', 'var(--text2)'), 'var(--text2)', 'empty -> 指定noneColor');
+
+// ---- buildPlayedTierMap / aggRankTier（プレイ時のランク帯＝直前レートで帯分け） ----
+section('playedTier (rank by pre-match rate)');
+{
+  // 昇格した試合: 990(勝) -> 1010。1010 の試合は直前 990 でプレイ＝マスター扱い。
+  const b1={rank:'レート 990', created_at:'2026-06-01T01:00:00Z'};
+  const b2={rank:'レート 1010',created_at:'2026-06-01T02:00:00Z'};
+  const b3={rank:'レート 1030',created_at:'2026-06-01T03:00:00Z'};
+  const m=F.buildPlayedTierMap([b3,b1,b2]); // 順不同で渡しても内部で時系列ソート
+  eq(m.get(b1), 'マスター', 'シリーズ最初のレート試合は自身(990)で判定=マスター');
+  eq(m.get(b2), 'マスター', '1010だが直前990でプレイ=マスター(昇格試合)');
+  eq(m.get(b3), 'レジェンド', '1030は直前1010でプレイ=レジェンド');
+  eq(F.aggRankTier(b2, m), 'マスター', 'aggRankTier はmap優先');
+  // 降格した試合: 1005(負) -> 995。995 の試合は直前 1005 でプレイ＝レジェンド扱い。
+  const d1={rank:'レート 1005',created_at:'2026-06-02T01:00:00Z'};
+  const d2={rank:'レート 995', created_at:'2026-06-02T02:00:00Z'};
+  const dm=F.buildPlayedTierMap([d1,d2]);
+  eq(dm.get(d2), 'レジェンド', '995だが直前1005でプレイ=レジェンド(降格試合)');
+  // 非レート記録(クラス)は map に載らず、aggRankTier は従来 rankTier
+  const c1={rank:'エキスパート・C1', created_at:'2026-06-03T01:00:00Z'};
+  const cm=F.buildPlayedTierMap([c1]);
+  eq(cm.has(c1), false, 'クラス記録は playedMap に含めない');
+  eq(F.aggRankTier(c1, cm), 'エキスパート', 'クラス記録は従来通り rankTier');
+  eq(F.aggRankTier(b2, null), 'レジェンド', 'map不在時は記録どおり rankTier(1010=レジェンド)');
+}
 
 // ---- dcCalcActual（実ダメージ式） ----
 section('dcCalcActual');
