@@ -2051,6 +2051,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.26',
+    date: '2026-07-01',
+    items: [
+      'シリーズ分析の「⚔️ 平均スタッツ」を、型（アタック/バランス/スピード/ディフェンス/サポート）別の表示に変更しました。型ごとに役割が違うため、5つの型それぞれで平均を確認できます（記録のない型は「記録なし」と表示）',
+    ]
+  },
+  {
     version: 'v5.25',
     date: '2026-07-01',
     items: [
@@ -5393,6 +5400,12 @@ async function renderSeriesAnalysis(){
   const pokeRole={}; Object.values(POKEMON_DATA).forEach(d=>d.pokemon.forEach(p=>pokeRole[p]=d.label));
   const ROLE_ORDER=['アタック型','バランス型','スピード型','ディフェンス型','サポート型'];
   const roleMap={}; bs.filter(b=>b.pokemon&&pokeRole[b.pokemon]).forEach(b=>{const r=pokeRole[b.pokemon];(roleMap[r]=roleMap[r]||[]).push(b);});
+  // 平均スタッツ（型別）: 型で役割が違うため総合は出さず、型ごとに平均を表示。
+  // 5型すべて常に表示し、記録の無い型は「記録なし」と明示する。
+  const roleStatsHTML=ROLE_ORDER.map(r=>{
+    const h=roleMap[r]?statsSummaryHTML(roleMap[r]):'';
+    return `<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${r}</div>${h||'<div class="poke-mode-empty" style="padding:4px 0;">記録なし</div>'}</div>`;
+  }).join('');
   const roleRows=ROLE_ORDER.filter(r=>roleMap[r]).map(r=>{
     const arr=roleMap[r], rw=arr.filter(b=>b.result==='win').length, rt=arr.length, rwr=((rw/rt)*100).toFixed(1)+'%';
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
@@ -5458,7 +5471,7 @@ async function renderSeriesAnalysis(){
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
     <div style="margin-top:4px;">
-      ${makeAccordion('⚔️ 平均スタッツ',statsSummaryHTML(bs)||'<div class="poke-mode-empty">スタッツの記録がありません</div>')}
+      ${makeAccordion('⚔️ 平均スタッツ（型別）',roleStatsHTML)}
       ${makeAccordion('🏆 勝ちパターン（組み合わせ別）',winPatternHTML)}
       ${makeAccordion('🛣️ レーン別勝率',laneHTML)}
       ${makeAccordion('🎭 型（ロール）別勝率',roleHTML)}
