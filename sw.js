@@ -1,4 +1,4 @@
-const CACHE = 'unite-tracker-v40';
+const CACHE = 'unite-tracker-v41';
 
 // オフラインで動作させるために必要なアプリシェル一式（ローカル資産）。
 // Supabase / Chart.js は CDN から vendor/ に同梱済みなのでここでキャッシュする。
