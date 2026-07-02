@@ -22,7 +22,7 @@ function rankLabel(r){
 function rankBadge(rank){
   if(!rank) return '';
   const s=RANK_STYLE[rankTier(rank)]||{color:'var(--text2)',bg:'var(--bg3)'};
-  return `<span class="badge" style="background:${s.bg};color:${s.color};">${rankLabel(rank)}</span>`;
+  return `<span class="badge" style="background:${s.bg};color:${s.color};">${escapeHtml(rankLabel(rank))}</span>`;
 }
 
 function getIconUrl(n){ const id=ICON_ID[n]; return id?`${SPRITE}${id}.png`:null; }

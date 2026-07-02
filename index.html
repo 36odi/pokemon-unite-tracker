@@ -1701,7 +1701,7 @@ function selectItemPicker(pid, pickerIdx, item){
   // ボタン表示更新
   const btn=document.getElementById(pid+'btn');
   const src=getItemImgSrc(item);
-  btn.innerHTML=`<img class="item-picker-img" src="${src}" alt="${item}" onerror="this.style.opacity='0'" /><span style="font-size:12px;">${item}</span>`;
+  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(item)}" onerror="this.style.opacity='0'" /><span style="font-size:12px;">${escapeHtml(item)}</span>`;
   const clearBtn=document.getElementById(pid+'clear');
   if(clearBtn)clearBtn.style.display='';
   document.getElementById(pid+'drop')?.classList.remove('open');
@@ -1734,7 +1734,7 @@ function setItemPickerValue(pid, value){
   const btn=document.getElementById(pid+'btn');
   if(!btn)return;
   const src=getItemImgSrc(value);
-  btn.innerHTML=`<img class="item-picker-img" src="${src}" alt="${value}" onerror="this.style.opacity='0'" /><span style="font-size:12px;">${value}</span>`;
+  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(value)}" onerror="this.style.opacity='0'" /><span style="font-size:12px;">${escapeHtml(value)}</span>`;
   const clearBtn=document.getElementById(pid+'clear');
   if(clearBtn)clearBtn.style.display='';
 }
@@ -2701,7 +2701,8 @@ async function exportCsv(){
     b.goals??''
   ]);
 
-  const escape=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  // CSVインジェクション対策: 数式として解釈されうる先頭文字(= + - @ タブ)は ' を前置して無害化（メモ・シリーズ名などの自由入力向け）
+  const escape=v=>{let s=String(v); if(/^[=+\-@\t\r]/.test(s)) s="'"+s; return '"'+s.replace(/"/g,'""')+'"';};
   const csvContent=[header,...rows].map(r=>r.map(escape).join(',')).join('\n');
   const bom='\uFEFF';
   const blob=new Blob([bom+csvContent],{type:'text/csv;charset=utf-8;'});
@@ -5250,7 +5251,7 @@ async function renderSeriesAnalysis(){
       const st=arr.length;
       const swr=((sw/st)*100).toFixed(1)+'%';
       return `<tr>
-        <td style="padding:4px 8px;font-size:11px;">${key}</td>
+        <td style="padding:4px 8px;font-size:11px;">${escapeHtml(key)}</td>
         <td style="padding:4px 6px;text-align:center;">${st}</td>
         <td style="padding:4px 6px;text-align:center;">${sw}</td>
         <td style="padding:4px 6px;text-align:center;">${st-sw}</td>
@@ -5310,7 +5311,7 @@ async function renderSeriesAnalysis(){
       // アイテム採用率（このポケモンの試合のうち何割で使われたか）
       const rate=((it/pokeBattles.length)*100).toFixed(0)+'%';
       return `<tr>
-        <td style="padding:4px 8px;font-size:11px;">${item}</td>
+        <td style="padding:4px 8px;font-size:11px;">${escapeHtml(item)}</td>
         <td style="padding:4px 6px;text-align:center;color:var(--text3);">${rate}</td>
         <td style="padding:4px 6px;text-align:center;">${it}</td>
         <td style="padding:4px 6px;text-align:center;">${iw}</td>
@@ -5344,7 +5345,7 @@ async function renderSeriesAnalysis(){
     const bwr=((bw/bt)*100).toFixed(1)+'%';
     const brate=((bt/bs.length)*100).toFixed(0)+'%';
     return `<tr>
-      <td style="padding:4px 8px;font-size:11px;">${item}</td>
+      <td style="padding:4px 8px;font-size:11px;">${escapeHtml(item)}</td>
       <td style="padding:4px 6px;text-align:center;color:var(--text3);">${brate}</td>
       <td style="padding:4px 6px;text-align:center;">${bt}</td>
       <td style="padding:4px 6px;text-align:center;">${bw}</td>
@@ -5432,13 +5433,13 @@ async function renderSeriesAnalysis(){
   const c2={};
   bs.forEach(b=>{ if(!b.pokemon||!b.lane)return; const k=b.pokemon+'|'+b.lane; (c2[k]=c2[k]||{poke:b.pokemon,lane:b.lane,w:0,l:0}); b.result==='win'?c2[k].w++:c2[k].l++; });
   const c2Rows=Object.values(c2).map(s=>({...s,t:s.w+s.l,wr:s.w/(s.w+s.l)}));
-  const c2Fmt=(e)=>wpRow(`${iconImg(e.poke,'',18)} ${escapeHtml(e.poke)} <span style="color:var(--text3);">・${e.lane}</span>`,e);
+  const c2Fmt=(e)=>wpRow(`${iconImg(e.poke,'',18)} ${escapeHtml(e.poke)} <span style="color:var(--text3);">・${escapeHtml(e.lane)}</span>`,e);
   // 型×レーン×モード
   const MODE_LBL={solo:'ソロ',duo:'デュオ/トリオ',full:'フルパ'};
   const c3={};
   bs.forEach(b=>{ const role=b.pokemon&&pokeRole[b.pokemon]; if(!role||!b.lane||!b.match_type)return; const k=role+'|'+b.lane+'|'+b.match_type; (c3[k]=c3[k]||{role,lane:b.lane,mode:b.match_type,w:0,l:0}); b.result==='win'?c3[k].w++:c3[k].l++; });
   const c3Rows=Object.values(c3).map(s=>({...s,t:s.w+s.l,wr:s.w/(s.w+s.l)}));
-  const c3Fmt=(e)=>wpRow(`${escapeHtml(e.role)} <span style="color:var(--text3);">・${e.lane}・${MODE_LBL[e.mode]||e.mode}</span>`,e);
+  const c3Fmt=(e)=>wpRow(`${escapeHtml(e.role)} <span style="color:var(--text3);">・${escapeHtml(e.lane)}・${MODE_LBL[e.mode]||escapeHtml(e.mode)}</span>`,e);
   const winPatternHTML=(c2Rows.some(e=>e.t>=MINP)||c3Rows.some(e=>e.t>=MINP))
     ?`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${MINP}戦以上の組み合わせを勝率順に。全体勝率 ${(baseWR*100).toFixed(1)}%（右端は基準との差）</div>
       <div style="font-size:12px;font-weight:700;margin:8px 0 4px;">🐾 ポケモン × レーン</div>
