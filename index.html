@@ -3068,9 +3068,9 @@ function renderTrendChart(){
   const step=Math.max(1,Math.ceil(total/20));
   const MVW=10; // 移動平均の窓（直近10戦）
   const pushPt=(i)=>{
-    const cum=bs.slice(0,i), cw=cum.filter(b=>b.result==='win').length;
+    const cum=bs.slice(0,i), cw=winCount(cum);
     wrs.push(((cw/cum.length)*100).toFixed(1));
-    const win=bs.slice(Math.max(0,i-MVW),i), ww=win.filter(b=>b.result==='win').length;
+    const win=bs.slice(Math.max(0,i-MVW),i), ww=winCount(win);
     mv.push(((ww/win.length)*100).toFixed(1));
     labels.push(i+'戦');
   };
@@ -3103,6 +3103,20 @@ function renderTrendChart(){
   renderBestWorstSlots(bs);
 }
 
+// 日別/週間/時間帯/曜日で共通の勝率バー行。gridCols はラベル列幅の上書き（''なら既定）。
+function wrBarRow(label,{win,loss},gridCols){
+  const total=win+loss;
+  const wr=total>0?Math.round(win/total*100):0;
+  const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
+  return `<div class="daily-wr-row"${gridCols?` style="grid-template-columns:${gridCols};"`:''}>
+      <div class="daily-wr-date">${label}</div>
+      <div class="daily-wr-bar-wrap">
+        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
+      </div>
+      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
+    </div>`;
+}
+
 function renderDailyWinRate(battles){
   const el=document.getElementById('dailyWrList');
   if(!el) return;
@@ -3127,19 +3141,7 @@ function renderDailyWinRate(battles){
 
   // 新しい日が上
   const keys=Object.keys(map).sort((a,b)=>b.localeCompare(a));
-  el.innerHTML=keys.map(k=>{
-    const {win,loss}=map[k];
-    const total=win+loss;
-    const wr=total>0?Math.round(win/total*100):0;
-    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
-    return `<div class="daily-wr-row">
-      <div class="daily-wr-date">${fmt(k)}</div>
-      <div class="daily-wr-bar-wrap">
-        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
-      </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
-    </div>`;
-  }).join('');
+  el.innerHTML=keys.map(k=>wrBarRow(fmt(k),map[k],'')).join('');
 }
 
 function renderWeeklyWinRate(battles){
@@ -3181,19 +3183,7 @@ function renderWeeklyWinRate(battles){
 
   // 新しい週が上
   const keys=Object.keys(map).sort((a,b)=>b.localeCompare(a));
-  el.innerHTML=keys.map(k=>{
-    const {win,loss}=map[k];
-    const total=win+loss;
-    const wr=total>0?Math.round(win/total*100):0;
-    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
-    return `<div class="daily-wr-row" style="grid-template-columns:80px 1fr 70px;">
-      <div class="daily-wr-date">${weekLabel(k)}</div>
-      <div class="daily-wr-bar-wrap">
-        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
-      </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
-    </div>`;
-  }).join('');
+  el.innerHTML=keys.map(k=>wrBarRow(weekLabel(k),map[k],'80px 1fr 70px')).join('');
 }
 
 function renderHourlyWinRate(battles){
@@ -3214,19 +3204,7 @@ function renderHourlyWinRate(battles){
 
   // 時刻の早い順（0時→23時）に表示
   const idxs=Object.keys(map).map(Number).sort((a,b)=>a-b);
-  el.innerHTML=idxs.map(bi=>{
-    const {win,loss}=map[bi];
-    const total=win+loss;
-    const wr=total>0?Math.round(win/total*100):0;
-    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
-    return `<div class="daily-wr-row" style="grid-template-columns:68px 1fr 70px;">
-      <div class="daily-wr-date">${labels[bi]}</div>
-      <div class="daily-wr-bar-wrap">
-        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
-      </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
-    </div>`;
-  }).join('');
+  el.innerHTML=idxs.map(bi=>wrBarRow(labels[bi],map[bi],'68px 1fr 70px')).join('');
 }
 
 // 曜日別勝率（1日の切り替わりAM9:00で曜日を判定）
@@ -3245,19 +3223,7 @@ function renderWeekdayWinRate(battles){
   }
   // 月→日の順で表示
   const order=[1,2,3,4,5,6,0];
-  el.innerHTML=order.filter(d=>map[d]).map(d=>{
-    const {win,loss}=map[d];
-    const total=win+loss;
-    const wr=total>0?Math.round(win/total*100):0;
-    const barClass=wr>50?'wr-win':wr<50?'wr-loss':'wr-even';
-    return `<div class="daily-wr-row" style="grid-template-columns:52px 1fr 70px;">
-      <div class="daily-wr-date">${wd[d]}曜</div>
-      <div class="daily-wr-bar-wrap">
-        <div class="daily-wr-bar ${barClass}" style="width:${wr}%"></div>
-      </div>
-      <div class="daily-wr-stats">${win}勝${loss}敗 <span style="font-weight:700;color:${wrColor(wr)}">${wr}%</span></div>
-    </div>`;
-  }).join('');
+  el.innerHTML=order.filter(d=>map[d]).map(d=>wrBarRow(wd[d]+'曜',map[d],'52px 1fr 70px')).join('');
 }
 
 // おまけ: 得意・苦手な「曜日×2時間帯」TOP3 / WORST3（3戦以上のみ対象）
@@ -3293,7 +3259,7 @@ function renderCompareChart(){
   if(!allSeriesData.length) return;
   const labels=allSeriesData.map(s=>s.name);
   const wrs=allSeriesData.map(s=>{
-    const w=s.battles.filter(b=>b.result==='win').length;
+    const w=winCount(s.battles);
     const t=s.battles.length;
     return t>0?parseFloat(((w/t)*100).toFixed(1)):0;
   });
@@ -3320,9 +3286,9 @@ function renderCompareChart(){
   // テーブル
   document.getElementById('compareList').innerHTML=allSeriesData.length
     ? allSeriesData.map(s=>{
-        const w=s.battles.filter(b=>b.result==='win').length;
+        const w=winCount(s.battles);
         const t=s.battles.length;
-        const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+        const wr=wrPct(w,t);
         const col=t>0?wrColor(wr):'var(--text2)';
         return `<div class="series-compare-row"><div class="series-name-cell">${escapeHtml(s.name)}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
       }).join('')
@@ -3364,18 +3330,18 @@ function statsSummaryHTML(battles){
 
 function renderTotalStats(){
   const all=allSeriesData.flatMap(s=>s.battles);
-  const w=all.filter(b=>b.result==='win').length;
+  const w=winCount(all);
   const t=all.length;
   document.getElementById('ttTotal').textContent=t;
   document.getElementById('ttWins').textContent=w;
   document.getElementById('ttLosses').textContent=t-w;
-  document.getElementById('ttWR').textContent=t>0?((w/t)*100).toFixed(1)+'%':'—';
+  document.getElementById('ttWR').textContent=wrPct(w,t);
   const modes=[{key:'solo',label:'🎮 ソロ'},{key:'duo',label:'👥 デュオ/トリオ'},{key:'full',label:'🏆 フルパ'}];
   document.getElementById('ttModeStats').innerHTML=modes.map(({key,label})=>{
     const ml=all.filter(b=>b.match_type===key);
-    const mw=ml.filter(b=>b.result==='win').length;
+    const mw=winCount(ml);
     const mt=ml.length;
-    const mwr=mt>0?((mw/mt)*100).toFixed(1)+'%':'—';
+    const mwr=wrPct(mw,mt);
     const col=mt>0?wrColor(mwr):'var(--text2)';
     return `<div class="series-compare-row"><div class="series-name-cell">${label}</div><div class="series-val">${mt}</div><div class="series-val">${mw}</div><div class="series-wr-cell" style="color:${col}">${mwr}</div></div>`;
   }).join('');
@@ -3399,9 +3365,9 @@ function renderTotalStats(){
 const MY_PICKUP_CARDS = [
   { id:'winrate', name:'勝率', title:'📈 勝率', detail:'trend',
     render(all){
-      const t=all.length, w=all.filter(b=>b.result==='win').length;
+      const t=all.length, w=winCount(all);
       const wr=t>0?((w/t)*100).toFixed(1):'—';
-      const recent=all.slice(-10), rw=recent.filter(b=>b.result==='win').length, rt=recent.length;
+      const recent=all.slice(-10), rw=winCount(recent), rt=recent.length;
       const col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div>
         <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>
@@ -3433,7 +3399,7 @@ const MY_PICKUP_CARDS = [
   { id:'modewr', name:'モード別勝率', title:'🎮 モード別勝率', detail:'total',
     render(all){
       return [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].map(([k,lbl])=>{
-        const m=all.filter(b=>b.match_type===k), w=m.filter(b=>b.result==='win').length, t=m.length;
+        const m=all.filter(b=>b.match_type===k), w=winCount(m), t=m.length;
         const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text3)';
         return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}/${t}</span></div>`;
       }).join('');
@@ -3441,7 +3407,7 @@ const MY_PICKUP_CARDS = [
   },
   { id:'recent', name:'直近20戦', title:'🕐 直近20戦の成績', detail:'trend',
     render(all){
-      const r=all.slice(-20), w=r.filter(b=>b.result==='win').length, t=r.length;
+      const r=all.slice(-20), w=winCount(r), t=r.length;
       const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
     }
@@ -3451,7 +3417,7 @@ const MY_PICKUP_CARDS = [
       const LANES=['上','中央','下'];
       const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
-      return rows.map(([l,m])=>{const w=m.filter(b=>b.result==='win').length,t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
+      return rows.map(([l,m])=>{const w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
@@ -3462,7 +3428,7 @@ const MY_PICKUP_CARDS = [
       const map={}; all.forEach(b=>{const r=b.pokemon&&pokeRole[b.pokemon]; if(!r)return; (map[r]=map[r]||[]).push(b);});
       const rows=ROLE_ORDER.filter(r=>map[r]);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
-      return rows.map(r=>{const m=map[r],w=m.filter(b=>b.result==='win').length,t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
+      return rows.map(r=>{const m=map[r],w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
     }
   },
@@ -3599,9 +3565,9 @@ function renderPokeDetail(){
   if(detailMode!=='all') bs=bs.filter(b=>b.match_type===detailMode);
   if(!bs.length){content.innerHTML='<div class="empty" style="padding:1.5rem 0;">このモードの記録がありません</div>';return;}
 
-  const w=bs.filter(b=>b.result==='win').length;
+  const w=winCount(bs);
   const t=bs.length;
-  const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+  const wr=wrPct(w,t);
   const wrCol=wrColor(wr);
 
   // ---- セット集計ヘルパー ----
@@ -4177,7 +4143,7 @@ async function generateShareImage(battlesData,titleLabel){
   const solo=battlesData.filter(b=>b.match_type==='solo');
   const duo=battlesData.filter(b=>b.match_type==='duo');
   const full=battlesData.filter(b=>b.match_type==='full');
-  const cs=list=>{const w=list.filter(b=>b.result==='win').length,t=list.length;return{w,l:t-w,t,wr:t>0?w/t*100:null};};
+  const cs=list=>{const w=winCount(list),t=list.length;return{w,l:t-w,t,wr:t>0?w/t*100:null};};
   const tS=cs(battlesData);
   const modes=[
     {label:'ソロ',         emoji:'🎮',color:'#7c83f5',badgeBg:'#1e2040',...cs(solo)},
@@ -4560,8 +4526,8 @@ function renderStats(){
   const botWrap=document.getElementById('botToggleWrap');
   if(botWrap){ botWrap.style.display=battles.some(b=>b.is_bot)?'':'none'; const cb=document.getElementById('statBotToggle'); if(cb) cb.checked=statIncludeBot; }
   const solo=bs.filter(b=>b.match_type==='solo'),duo=bs.filter(b=>b.match_type==='duo'),full=bs.filter(b=>b.match_type==='full');
-  const sT=(l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById('sTotal').textContent=w+lo;document.getElementById('sWins').textContent=w;document.getElementById('sLosses').textContent=lo;document.getElementById('sWR').textContent=wr?wr+'%':'—';document.getElementById('sWRBar').style.width=(wr||0)+'%';};
-  const sM=(p,l)=>{const w=l.filter(b=>b.result==='win').length,lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById(p+'W').textContent=w;document.getElementById(p+'L').textContent=lo;document.getElementById(p+'WR').textContent=wr?wr+'%':'—';document.getElementById(p+'Bar').style.width=(wr||0)+'%';};
+  const sT=(l)=>{const w=winCount(l),lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById('sTotal').textContent=w+lo;document.getElementById('sWins').textContent=w;document.getElementById('sLosses').textContent=lo;document.getElementById('sWR').textContent=wr?wr+'%':'—';document.getElementById('sWRBar').style.width=(wr||0)+'%';};
+  const sM=(p,l)=>{const w=winCount(l),lo=l.filter(b=>b.result==='loss').length,wr=calcWR(w,w+lo);document.getElementById(p+'W').textContent=w;document.getElementById(p+'L').textContent=lo;document.getElementById(p+'WR').textContent=wr?wr+'%':'—';document.getElementById(p+'Bar').style.width=(wr||0)+'%';};
   sT(bs);sM('solo',solo);sM('duo',duo);sM('full',full);
   renderToday();
 
@@ -4570,14 +4536,14 @@ function renderStats(){
   const rankRows=RANKS.map(rank=>{
     const rl=bs.filter(b=>aggRankTier(b,playedTierMap)===rank);
     if(!rl.length)return null;
-    const w=rl.filter(b=>b.result==='win').length;
+    const w=winCount(rl);
     const lo=rl.length-w;
     const wr=calcWR(w,rl.length);
     const s=RANK_STYLE[rank]||{color:'var(--text2)',bg:'var(--bg3)'};
     const wrCol=wr?wrColor(wr):'var(--text2)';
     // モード内訳（ソロ/デュオ/フルパ）
     const modeLine=(label,cls,arr)=>{
-      const mw=arr.filter(b=>b.result==='win').length, ml=arr.length-mw, mwr=calcWR(mw,arr.length);
+      const mw=winCount(arr), ml=arr.length-mw, mwr=calcWR(mw,arr.length);
       const mcol=mwr?wrColor(mwr):'var(--text3)';
       return `<div class="rank-mode-line"><span class="badge ${cls}" style="font-size:9px;padding:2px 7px;">${label}</span><span class="rank-mode-rec">${arr.length?`${mw}勝 ${ml}敗`:'—'}</span><span class="rank-mode-wr" style="color:${mcol};">${mwr?mwr+'%':'—'}</span></div>`;
     };
@@ -4635,7 +4601,7 @@ function renderToday(){
     el.innerHTML='<span class="ts-label">📅 今日の成績</span><span class="ts-empty">まだ記録がありません</span>';
     return;
   }
-  const w=todays.filter(b=>b.result==='win').length;
+  const w=winCount(todays);
   const l=todays.length-w;
   const wr=Math.round(w/todays.length*100);
   const col=wrColor(wr);
@@ -5133,17 +5099,17 @@ async function renderSeriesAnalysis(){
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalRateChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">マスター以上のレート記録が2件以上必要です</div>';
 
-  const w=bs.filter(b=>b.result==='win').length;
+  const w=winCount(bs);
   const t=bs.length;
-  const wr=t>0?((w/t)*100).toFixed(1)+'%':'—';
+  const wr=wrPct(w,t);
   const wrCol=t>0?wrColor(wr):'var(--text2)';
 
   // ── ヘルパー ──
   const modeWR=(arr,mode)=>{
     const m=mode==='all'?arr:arr.filter(b=>b.match_type===mode);
     if(!m.length)return'—';
-    const mw=m.filter(b=>b.result==='win').length;
-    return ((mw/m.length)*100).toFixed(1)+'%';
+    const mw=winCount(m);
+    return wrPct(mw,m.length);
   };
   // 勝敗色は js/utils.js の共通 wrColor を使用（'—'→var(--text3) も既定で一致）
   const makeAccordion=(title,bodyHTML)=>`
@@ -5175,9 +5141,9 @@ async function renderSeriesAnalysis(){
   });
   const b1Rows=RANKS.filter(r=>rankMap[r]).map(r=>{
     const arr=rankMap[r];
-    const rw=arr.filter(b=>b.result==='win').length;
+    const rw=winCount(arr);
     const rt=arr.length;
-    const rwr=((rw/rt)*100).toFixed(1)+'%';
+    const rwr=wrPct(rw,rt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
     return `<tr>
       <td style="padding:4px 6px;">${rankBadge(r)}</td>
@@ -5206,9 +5172,9 @@ async function renderSeriesAnalysis(){
     const rpList=Object.entries(rpMap).sort((a,b)=>b[1].length-a[1].length);
     if(!rpList.length)return'';
     const rows=rpList.map(([name,arr])=>{
-      const rw=arr.filter(b=>b.result==='win').length;
+      const rw=winCount(arr);
       const rt=arr.length;
-      const rwr=((rw/rt)*100).toFixed(1)+'%';
+      const rwr=wrPct(rw,rt);
       const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
       return `<tr>
         <td style="padding:4px 6px;"><div style="display:flex;align-items:center;gap:4px;">${iconImg(name,'',16)}<span>${escapeHtml(name)}</span></div></td>
@@ -5247,9 +5213,9 @@ async function renderSeriesAnalysis(){
     });
     const sList=Object.entries(smap).sort((a,b)=>b[1].length-a[1].length);
     const rows=sList.map(([key,arr])=>{
-      const sw=arr.filter(b=>b.result==='win').length;
+      const sw=winCount(arr);
       const st=arr.length;
-      const swr=((sw/st)*100).toFixed(1)+'%';
+      const swr=wrPct(sw,st);
       return `<tr>
         <td style="padding:4px 8px;font-size:11px;">${escapeHtml(key)}</td>
         <td style="padding:4px 6px;text-align:center;">${st}</td>
@@ -5258,8 +5224,8 @@ async function renderSeriesAnalysis(){
         <td style="padding:4px 6px;text-align:center;color:${wrColor(swr)};font-weight:600;">${swr}</td>
       </tr>`;
     }).join('');
-    const pt=pokeBattles.length,pw=pokeBattles.filter(b=>b.result==='win').length;
-    const pwr=((pw/pt)*100).toFixed(1)+'%';
+    const pt=pokeBattles.length,pw=winCount(pokeBattles);
+    const pwr=wrPct(pw,pt);
     return `<div style="margin-bottom:12px;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:4px 0;border-bottom:1px solid var(--border);">
         ${iconImg(pokeName,'',20)}
@@ -5305,9 +5271,9 @@ async function renderSeriesAnalysis(){
     const iList=Object.entries(imap).sort((a,b)=>b[1].length-a[1].length);
     if(!iList.length)return'';
     const rows=iList.map(([item,arr])=>{
-      const iw=arr.filter(b=>b.result==='win').length;
+      const iw=winCount(arr);
       const it=arr.length;
-      const iwr=((iw/it)*100).toFixed(1)+'%';
+      const iwr=wrPct(iw,it);
       // アイテム採用率（このポケモンの試合のうち何割で使われたか）
       const rate=((it/pokeBattles.length)*100).toFixed(0)+'%';
       return `<tr>
@@ -5319,8 +5285,8 @@ async function renderSeriesAnalysis(){
         <td style="padding:4px 6px;text-align:center;color:${wrColor(iwr)};font-weight:600;">${iwr}</td>
       </tr>`;
     }).join('');
-    const pt=pokeBattles.length,pw=pokeBattles.filter(b=>b.result==='win').length;
-    const pwr=((pw/pt)*100).toFixed(1)+'%';
+    const pt=pokeBattles.length,pw=winCount(pokeBattles);
+    const pwr=wrPct(pw,pt);
     return `<div style="margin-bottom:12px;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:4px 0;border-bottom:1px solid var(--border);">
         ${iconImg(pokeName,'',20)}
@@ -5340,9 +5306,9 @@ async function renderSeriesAnalysis(){
   });
   const baList=Object.entries(baMap).sort((a,b)=>b[1].length-a[1].length);
   const baRows=baList.map(([item,arr])=>{
-    const bw=arr.filter(b=>b.result==='win').length;
+    const bw=winCount(arr);
     const bt=arr.length;
-    const bwr=((bw/bt)*100).toFixed(1)+'%';
+    const bwr=wrPct(bw,bt);
     const brate=((bt/bs.length)*100).toFixed(0)+'%';
     return `<tr>
       <td style="padding:4px 8px;font-size:11px;">${escapeHtml(item)}</td>
@@ -5384,13 +5350,13 @@ async function renderSeriesAnalysis(){
   bs.forEach(b=>{ if(!b.lane)return; (laneMap[b.lane]=laneMap[b.lane]||[]).push(b); });
   const laneCols=[{label:'レーン',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}];
   const laneRows=LANES.filter(l=>laneMap[l]).map(l=>{
-    const arr=laneMap[l], lw=arr.filter(b=>b.result==='win').length, lt=arr.length, lwr=((lw/lt)*100).toFixed(1)+'%';
+    const arr=laneMap[l], lw=winCount(arr), lt=arr.length, lwr=wrPct(lw,lt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
     return `<tr><td style="padding:4px 6px;">${l}</td><td style="padding:4px 6px;text-align:center;">${lt}</td><td style="padding:4px 6px;text-align:center;">${lw}</td><td style="padding:4px 6px;text-align:center;">${lt-lw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(lwr)}">${lwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
   }).join('');
   const lanePokeSections=LANES.filter(l=>laneMap[l]).map(l=>{
     const pm={}; laneMap[l].filter(b=>b.pokemon).forEach(b=>{(pm[b.pokemon]=pm[b.pokemon]||{w:0,l:0});b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
-    const rows=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,sv])=>{const pt=sv.w+sv.l,pwr=((sv.w/pt)*100).toFixed(1)+'%';return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(n,'',18)} ${escapeHtml(n)}</div><div class="series-val">${pt}</div><div class="series-val">${sv.w}</div><div class="series-wr-cell" style="color:${wrColor(pwr)}">${pwr}</div></div>`;}).join('');
+    const rows=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,sv])=>{const pt=sv.w+sv.l,pwr=wrPct(sv.w,pt);return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(n,'',18)} ${escapeHtml(n)}</div><div class="series-val">${pt}</div><div class="series-val">${sv.w}</div><div class="series-wr-cell" style="color:${wrColor(pwr)}">${pwr}</div></div>`;}).join('');
     return `<div style="margin-bottom:8px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${l}レーン</div>${rows||'<div class="empty" style="padding:0.4rem 0;">記録なし</div>'}</div>`;
   }).join('');
   const laneHTML=laneRows
@@ -5408,7 +5374,7 @@ async function renderSeriesAnalysis(){
     return `<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${r}</div>${h||'<div class="poke-mode-empty" style="padding:4px 0;">記録なし</div>'}</div>`;
   }).join('');
   const roleRows=ROLE_ORDER.filter(r=>roleMap[r]).map(r=>{
-    const arr=roleMap[r], rw=arr.filter(b=>b.result==='win').length, rt=arr.length, rwr=((rw/rt)*100).toFixed(1)+'%';
+    const arr=roleMap[r], rw=winCount(arr), rt=arr.length, rwr=wrPct(rw,rt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
     return `<tr><td style="padding:4px 6px;">${r}</td><td style="padding:4px 6px;text-align:center;">${rt}</td><td style="padding:4px 6px;text-align:center;">${rw}</td><td style="padding:4px 6px;text-align:center;">${rt-rw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
   }).join('');
@@ -5466,7 +5432,7 @@ async function renderSeriesAnalysis(){
     <div class="chart-wrap" style="height:200px;margin-bottom:12px;"><canvas id="seriesanalChart"></canvas></div>
     <div class="series-compare-row header"><div>ポケモン</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
     ${pokeList.map(([name,ps])=>{
-      const pt=ps.w+ps.l,pwr=pt>0?((ps.w/pt)*100).toFixed(1)+'%':'—';
+      const pt=ps.w+ps.l,pwr=wrPct(ps.w,pt);
       const pc=pt>0?wrColor(pwr):'var(--text2)';
       return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'',20)} ${escapeHtml(name)}</div><div class="series-val">${pt}</div><div class="series-val">${ps.w}</div><div class="series-wr-cell" style="color:${pc}">${pwr}</div></div>`;
     }).join('')}

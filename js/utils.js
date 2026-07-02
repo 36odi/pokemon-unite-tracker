@@ -57,6 +57,12 @@ function gameDayKey(ts){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// ===== 勝敗集計の共通ヘルパー =====
+// battle配列の勝ち数。`.filter(b=>b.result==='win').length` の共通化。
+function winCount(arr){ return arr.filter(b=>b.result==='win').length; }
+// 勝率の%文字列（小数1桁）。t==0 は '—'。calcWR(index.html)の「+'%'」版。
+function wrPct(w,t){ return t>0 ? ((w/t)*100).toFixed(1)+'%' : '—'; }
+
 // ===== 勝率の勝敗色 =====
 // 引数は百分率（数値 0..100 か "50%"/"50.0" 文字列）。比率(0..1)を渡すときは *100 して百分率で渡すこと。
 // データ無し（null/''/'—'/NaN）は noneColor（既定 var(--text3)）。50%以上=勝色、未満=負色。

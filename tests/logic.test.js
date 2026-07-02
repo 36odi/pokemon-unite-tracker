@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, buildPlayedTierMap, aggRankTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -125,6 +125,18 @@ eq(F.wrColor(1), 'var(--loss)', '1 は1%扱い(比率ではない) -> loss');
 eq(F.wrColor('—'), 'var(--text3)', 'dash -> none(text3)');
 eq(F.wrColor(null), 'var(--text3)', 'null -> none(text3)');
 eq(F.wrColor('', 'var(--text2)'), 'var(--text2)', 'empty -> 指定noneColor');
+
+// ---- winCount / wrPct（勝敗集計ヘルパー） ----
+section('winCount / wrPct');
+{
+  const arr=[{result:'win'},{result:'loss'},{result:'win'},{result:'loss'},{result:'loss'}];
+  eq(F.winCount(arr), 2, 'winCount: 2勝3敗の配列で2');
+  eq(F.winCount([]), 0, 'winCount: 空配列は0');
+  eq(F.wrPct(1,3), '33.3%', 'wrPct: 1/3 -> 33.3%');
+  eq(F.wrPct(1,2), '50.0%', 'wrPct: 1/2 -> 50.0%');
+  eq(F.wrPct(0,0), '—', 'wrPct: 分母0 -> —');
+  eq(F.wrPct(0,4), '0.0%', 'wrPct: 0勝 -> 0.0%');
+}
 
 // ---- buildPlayedTierMap / aggRankTier（プレイ時のランク帯＝直前レートで帯分け） ----
 section('playedTier (rank by pre-match rate)');
