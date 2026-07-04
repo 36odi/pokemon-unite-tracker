@@ -28,7 +28,8 @@ const EN2JP = {
   'Sylveon':'ニンフィア','Talonflame':'ファイアロー','Tinkaton':'デカヌチャン','Trevenant':'オーロット',
   'Tsareena':'アマージョ','Typhlosion':'バクフーン','Tyranitar':'バンギラス','Umbreon':'ブラッキー',
   'Urshifu':'ウーラオス','Vaporeon':'シャワーズ','Venusaur':'フシギバナ','Wigglytuff':'プクリン',
-  'Zacian':'ザシアン','Zapdos':'サンダー','Zeraora':'ゼラオラ','Zoroark':'ゾロアーク'
+  'Zacian':'ザシアン','Zapdos':'サンダー','Zeraora':'ゼラオラ','Zoroark':'ゾロアーク',
+  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル'
 };
 
 // ---- CSV パース（クォート対応）----
