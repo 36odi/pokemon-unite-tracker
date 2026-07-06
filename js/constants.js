@@ -1,7 +1,10 @@
 // ===== アプリ定数（ポケモン・わざ・もちもの・ランク）=====
 // index.html から分離（Phase 2）。DOM・Supabase に依存しないデータのみ。
 
-const SPRITE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+// ポケモンアイコンは同梱の images/pokemon/<図鑑ID>.png を使う（PokeAPI sprites 由来）。
+// 旧: raw.githubusercontent.com へのホットリンク → 2026-07-05 に GitHub のレート制限(429)で
+// 全ユーザーのアイコンが消えたため、リポジトリ同梱の同一オリジン配信に恒久移行(SWキャッシュも効く)。
+const SPRITE = 'images/pokemon/';
 const ICON_ID = {
   'ピカチュウ':25,'アローラキュウコン':10104,'アローラライチュウ':10100,
   'フシギバナ':3,'イベルタル':717,'インテレオン':818,'ウッウ':845,'エースバーン':815,
