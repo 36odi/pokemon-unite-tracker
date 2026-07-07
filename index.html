@@ -2051,6 +2051,13 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.29',
+    date: '2026-07-07',
+    items: [
+      '分析の「ポケモン別詳細」に📚シリーズ別勝率を追加。選んだポケモンのシリーズごとの成績（試合数・勝敗・勝率）を確認できます。モード（ソロ/デュオ/フルパ）の絞り込みにも連動します',
+    ]
+  },
+  {
     version: 'v5.28',
     date: '2026-07-06',
     items: [
@@ -3724,6 +3731,23 @@ function renderPokeDetail(){
       return `<div class="detail-subsection" style="margin-top:10px;">
         <div class="detail-subsection-title">🏅 ランク帯別</div>
         <table class="stat-table"><thead><tr><th>ランク</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead><tbody>${rankRows}</tbody></table>
+      </div>`;
+    })()}
+
+    ${(()=>{
+      // A9: シリーズ別勝率（選択ポケモン×現在のモードで、シリーズごとの成績。記録のあるシリーズのみ）
+      const rows=allSeriesData.map(s=>{
+        let list=s.battles.filter(b=>b.pokemon===pokeName);
+        if(detailMode!=='all') list=list.filter(b=>b.match_type===detailMode);
+        if(!list.length) return null;
+        const sw=winCount(list), st=list.length, swr=calcWR(sw,st);
+        const cls=parseFloat(swr)>=50?'wr-good':'wr-bad';
+        return `<tr><td style="font-size:11px;">${escapeHtml(s.name)}${s.archived?' 📦':''}</td><td style="text-align:center;">${st}</td><td style="text-align:center;">${sw}</td><td style="text-align:center;">${st-sw}</td><td style="text-align:center;" class="${cls}">${swr}%</td></tr>`;
+      }).filter(Boolean).join('');
+      if(!rows) return '';
+      return `<div class="detail-subsection" style="margin-top:10px;">
+        <div class="detail-subsection-title">📚 シリーズ別</div>
+        <table class="stat-table"><thead><tr><th>シリーズ</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead><tbody>${rows}</tbody></table>
       </div>`;
     })()}
   `;
