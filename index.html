@@ -2689,7 +2689,9 @@ async function exportCsv(){
   if(isGuest()){
     allBattles=selectedIds.flatMap(sid=>guestGetBattles(sid)).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   } else {
-    const {data}=await db.from('battles').select('*').in('series_id',selectedIds).order('created_at',{ascending:false});
+    // 1000行上限で出力が欠けないよう sbFetchAll でページング
+    const {data}=await sbFetchAll((f,t)=>db.from('battles').select('*').in('series_id',selectedIds)
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
     allBattles=normBattles(data||[]);
   }
   if(!allBattles.length){msg.textContent='選択したシリーズに記録がありません';return;}
@@ -2998,8 +3000,10 @@ async function loadAnalysis(){
     } else {
     // P1: 必要列のみ取得
     const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
-    const {data:allBattles,error:e2}=await db.from('battles')
-      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id');
+    // 全シリーズ横断の全件取得。1000行上限があるため sbFetchAll でページング（orderはページ整合用の安定ソート）
+    const {data:allBattles,error:e2}=await sbFetchAll((f,t)=>db.from('battles')
+      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
+      .order('created_at',{ascending:true}).order('id',{ascending:true}).range(f,t));
     if(e1||e2){ console.error(e1||e2); return; }
     normBattles(allBattles||[]);
     allSeriesData=(seriesList||[]).map(s=>({
@@ -4416,11 +4420,11 @@ async function loadBattles(){
     historyPage=1;analysisNeedsRefresh=true;
     renderStats();renderHistory();return;
   }
-  // P1: 必要列のみ取得
-  const {data}=await db.from('battles')
+  // P1: 必要列のみ取得。1シリーズでも1000戦超に備え sbFetchAll でページング
+  const {data}=await sbFetchAll((f,t)=>db.from('battles')
     .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
     .eq('series_id',currentSeriesId)
-    .order('created_at',{ascending:false});
+    .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
   battles=normBattles(data||[]);
   historyPage=1;
   // P2: 分析キャッシュを無効化

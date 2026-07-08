@@ -68,7 +68,7 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labFnSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -268,6 +268,52 @@ try {
   ok(true, 'git unavailable — sw version check skipped');
 }
 
-// ---- 結果 ----
-console.log(`\n${fail === 0 ? 'ALL PASS' : 'FAILURES'} — ${pass} passed, ${fail} failed`);
-process.exit(fail === 0 ? 0 : 1);
+// ---- sbFetchAll（Supabase 1000行上限のページング取得）: 非同期のため最後にまとめて実行 ----
+(async () => {
+  section('sbFetchAll (pagination)');
+  // 総数 total 件の行(0..total-1)を返すモック。呼び出し回数も数える。
+  const mock = (total) => {
+    let calls = 0;
+    const q = (from, to) => {
+      calls++;
+      const end = Math.min(total, to + 1);
+      const data = from >= total ? [] : Array.from({length: end - from}, (_, i) => from + i);
+      return Promise.resolve({data, error: null});
+    };
+    return {q, calls: () => calls};
+  };
+  {
+    const m = mock(2500);
+    const {data, error} = await F.sbFetchAll(m.q);
+    eq(data.length, 2500, '2500行を全件取得（1000上限を跨ぐ）');
+    eq(data[2499], 2499, '最終行まで欠落なし');
+    eq(m.calls(), 3, '2500行は3ページで取得');
+    eq(error, null, 'エラーなし');
+  }
+  {
+    const m = mock(1000);
+    const {data} = await F.sbFetchAll(m.q);
+    eq(data.length, 1000, 'ちょうど1000行も全件');
+    eq(m.calls(), 2, '境界値は2ページ目(空)で終了');
+  }
+  {
+    const m = mock(135);
+    const {data} = await F.sbFetchAll(m.q);
+    eq(data.length, 135, '1000未満は1ページ');
+    eq(m.calls(), 1, '1000未満はクエリ1回');
+  }
+  {
+    // 2ページ目でエラー → error非null・dataは部分集合
+    let calls = 0;
+    const q = () => { calls++; return Promise.resolve(calls === 1
+      ? {data: Array.from({length: 1000}, (_, i) => i), error: null}
+      : {data: null, error: {message: 'boom'}}); };
+    const {data, error} = await F.sbFetchAll(q);
+    eq(!!error, true, '途中ページのエラーを伝播');
+    eq(data.length, 1000, 'エラー時のdataはそこまでの部分集合');
+  }
+
+  // ---- 結果 ----
+  console.log(`\n${fail === 0 ? 'ALL PASS' : 'FAILURES'} — ${pass} passed, ${fail} failed`);
+  process.exit(fail === 0 ? 0 : 1);
+})();

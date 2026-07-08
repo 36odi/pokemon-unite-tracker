@@ -46,6 +46,24 @@ function normBattles(arr){
   return arr || [];
 }
 
+// ===== Supabase ページング取得 =====
+// Supabase(PostgREST)は1クエリ最大1000行しか返さず、超過分は黙って切り捨てられる。
+// 対戦記録の累計が1000戦を超えた2026-07に分析・CSVの集計欠け(135戦→127戦等)が実際に発生したため、
+// 全件が必要なクエリは必ずこのヘルパー経由で range ページングして取得する。
+// makeQuery(from,to): .range(from,to) を適用した「新しい」クエリを返す関数。
+//   ページ間で行が重複/欠落しないよう、呼び出し側で安定した .order(created_at + id) を必ず付けること。
+// 戻り値: {data, error}。途中ページでエラーが出たら error 非null（dataはそこまでの部分集合）。
+const SB_PAGE_SIZE = 1000;
+async function sbFetchAll(makeQuery){
+  const all = [];
+  for(let from = 0;; from += SB_PAGE_SIZE){
+    const {data, error} = await makeQuery(from, from + SB_PAGE_SIZE - 1);
+    if(error) return {data: all, error};
+    all.push(...(data || []));
+    if(!data || data.length < SB_PAGE_SIZE) return {data: all, error: null};
+  }
+}
+
 // ===== ゲーム日（AM9:00を1日の境目とする） =====
 // 深夜帯のプレイを前日扱いにするため、対戦時刻を9時間前へ補正した Date を返す。
 // 日別/週間/曜日別など複数の集計で共通利用し、同一基準を保証する。
