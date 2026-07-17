@@ -19,7 +19,8 @@ const head=csv[0]; const col={}; head.forEach((h,i)=>col[h]=i);
 const ALIAS={'ミュウツー(X)':'ミュウツーX','ミュウツー(Y)':'ミュウツーY'};
 const norm=p=>ALIAS[p]||p;
 const STAT={'Atk':'攻撃','SpAtk':'特攻'};
-const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(v); return isNaN(n)?0:n; };
+// シートの数値エクスポートが「1,040.」形式(カンマ区切り+末尾ドット)になることがあるためカンマを除去してから解釈
+const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(String(v).replace(/,/g,'')); return isNaN(n)?0:n; };
 
 // CSV候補: pokemon -> [{stat,coeff,lv,fix,move}]
 const db={};

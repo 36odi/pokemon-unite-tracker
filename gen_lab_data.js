@@ -27,16 +27,17 @@ function readCSV(filePath) {
   return rows;
 }
 
+// シートの数値エクスポートが「1,040.」形式(カンマ区切り+末尾ドット)になることがあるためカンマを除去してから解釈
 function toNum(s) {
   if (!s || !s.trim()) return null;
-  const v = parseFloat(s.trim().replace(/%$/, ''));
+  const v = parseFloat(s.trim().replace(/,/g, '').replace(/%$/, ''));
   return isNaN(v) ? null : v;
 }
 
 function parseStatStr(s) {
   const res = {};
   if (!s || !s.trim()) return res;
-  s.split('/').forEach(part => {
+  s.replace(/,/g, '').split('/').forEach(part => {
     const m = part.trim().match(/^(.+?)([+-]\d*\.?\d+)(%?)$/);
     if (m) res[m[1].trim()] = parseFloat(m[2]);
   });

@@ -17,7 +17,8 @@ function parseCSV(text){
   if(f.length||row.length){row.push(f);rows.push(row);}
   return rows;
 }
-const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(v); return isNaN(n)?0:n; };
+// シートの数値エクスポートが「1,040.」形式(カンマ区切り+末尾ドット)になることがあるためカンマを除去してから解釈
+const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(String(v).replace(/,/g,'')); return isNaN(n)?0:n; };
 const ALIAS={'ミュウツー(X)':'ミュウツーX','ミュウツー(Y)':'ミュウツーY'};
 const norm=p=>ALIAS[p]||p;
 const SLOT_T2U={'通常攻撃':'Basic','わざ1':'Move 1','わざ2':'Move 2','ユナイトわざ':'Unite Move'};

@@ -49,10 +49,12 @@ const rows=parseCSV(csvText).filter(r=>r.length>=14 && r[0]!=='pokemon_id');
 // csv[en][level] = {hp,atk,def,spatk,spdef,ms}
 const csv={};
 const lastUpd={};
+// シートの数値エクスポートが「3,000.」形式(カンマ区切り+末尾ドット)になることがあるためカンマを除去してから解釈
+const num=v=>{ const n=parseFloat(String(v??'').replace(/,/g,'')); return isNaN(n)?0:n; };
 for(const r of rows){
-  const en=r[2], lv=+r[3];
+  const en=r[2], lv=num(r[3]);
   if(!csv[en])csv[en]={};
-  csv[en][lv]={hp:+r[4],atk:+r[5],def:+r[6],spatk:+r[7],spdef:+r[8],ms:+r[13]};
+  csv[en][lv]={hp:num(r[4]),atk:num(r[5]),def:num(r[6]),spatk:num(r[7]),spdef:num(r[8]),ms:num(r[13])};
   lastUpd[en]=r[21];
 }
 
