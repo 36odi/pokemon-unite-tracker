@@ -69,7 +69,7 @@ const body = `
   ${utilsSrc}
   ${labFnSrc}
   return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
-          POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
+          ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
 
@@ -227,6 +227,9 @@ const dedicatedUnknown = Object.keys(F.DEDICATED_ITEMS).filter(p => !allPoke.inc
 ok(dedicatedUnknown.length === 0, `DEDICATED_ITEMS pokemon all in POKEMON_DATA (bad: ${dedicatedUnknown.join(', ')})`);
 const skillsUnknown = Object.keys(F.SKILLS).filter(p => !allPoke.includes(p));
 ok(skillsUnknown.length === 0, `SKILLS pokemon all in POKEMON_DATA (bad: ${skillsUnknown.slice(0, 5).join(', ')})`);
+ok(F.POKEMON_DATA.bal.pokemon.includes('パルキア'), 'Palkia is in the All-Rounder battle roster');
+eq(F.ICON_ID['パルキア'], 484, 'Palkia uses National Pokédex icon 484');
+eq(F.SKILLS['パルキア'], {s1:['はどうだん'], s2:['ドラゴンクロー']}, 'Palkia battle moves are selectable');
 
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
