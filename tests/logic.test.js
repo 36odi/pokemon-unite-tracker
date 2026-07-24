@@ -258,6 +258,10 @@ ok(notCached.length === 0, `all local assets precached in sw.js (not cached: ${n
 // CSS が抽出済みで index.html に巨大 <style> ブロックが残っていないこと
 ok(fs.existsSync(path.join(ROOT, 'styles.css')) && fs.statSync(path.join(ROOT, 'styles.css')).size > 10000, 'styles.css exists and non-trivial');
 ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html');
+// GitHub Pages の公開ルートへバックアップ HTML が再混入しないこと
+const backupHtml = fs.readdirSync(ROOT)
+  .filter(name => /\.html$/i.test(name) && /backup|\.bak(?:\.|$)/i.test(name));
+ok(backupHtml.length === 0, `no backup HTML in publish root (found: ${backupHtml.join(', ')})`);
 
 // ---- SWキャッシュ版数の上げ忘れ検知（git がある場合のみ） ----
 // ローカル資産が origin/main から変わっているのに sw.js の CACHE 版数が同じだと、
@@ -285,6 +289,39 @@ try {
 
 // ---- sbFetchAll（Supabase 1000行上限のページング取得）: 非同期のため最後にまとめて実行 ----
 (async () => {
+  // ---- SW activate（旧キャッシュ削除） ----
+  section('sw activate cache cleanup');
+  const vm = require('vm');
+  const swHandlers = {};
+  const deletedCaches = [];
+  let clientsClaimed = false;
+  const currentCache = (swSrc.match(/CACHE\s*=\s*'([^']+)'/) || [])[1];
+  const swContext = {
+    self: {
+      addEventListener: (type, handler) => { swHandlers[type] = handler; },
+      skipWaiting: async () => {},
+      clients: { claim: async () => { clientsClaimed = true; } },
+      location: { origin: 'http://127.0.0.1' },
+    },
+    caches: {
+      open: async () => ({ addAll: async () => {}, put: async () => {} }),
+      keys: async () => ['unite-tracker-v55', currentCache],
+      delete: async key => { deletedCaches.push(key); return true; },
+      match: async () => undefined,
+    },
+    fetch: async () => { throw new Error('fetch must not run during activate'); },
+    URL,
+    Promise,
+  };
+  vm.runInNewContext(swSrc, swContext, { filename: 'sw.js' });
+  let activateWork;
+  swHandlers.activate({ waitUntil: promise => { activateWork = promise; } });
+  await activateWork;
+  ok(currentCache && currentCache !== 'unite-tracker-v55', `SW cache version bumped from v55 (current: ${currentCache})`);
+  ok(deletedCaches.includes('unite-tracker-v55'), 'activate deletes unite-tracker-v55');
+  ok(!deletedCaches.includes(currentCache), `activate retains current cache (${currentCache})`);
+  ok(clientsClaimed, 'activate claims clients after cache cleanup');
+
   section('sbFetchAll (pagination)');
   // 総数 total 件の行(0..total-1)を返すモック。呼び出し回数も数える。
   const mock = (total) => {
