@@ -22,8 +22,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
    スキル数値を unite-db 準拠に上書きする（`data/unitedb_ratios.csv` がある場合）。
 3. 照合で差分ゼロを確認：
    ```
-   node tools/diff_ratios.js     # レシオ: 完全一致(1665/1665) を確認
-   node tools/diff_stats.js      # ステータス: 差分ゼロ を確認
+   node tools/diff_ratios.js     # レシオ: 完全一致(1701/1701) を確認
+   node tools/diff_stats.js      # ステータス: 97/97体・差分ゼロを確認
    node tests/logic.test.js      # 全テスト
    ```
 4. `sw.js` の `CACHE` 版数を +1 してコミット・プッシュ（プッシュ前チェックが検知）。

@@ -21,7 +21,7 @@ const EN2JP = {
   'Mega Gyarados':'メガギャラドス','Mega Lucario':'メガルカリオ','Mega Mewtwo X':'ミュウツーX',
   'Mega Mewtwo Y':'ミュウツーY','Meganium':'メガニウム','Meowscarada':'マスカーニャ','Meowth':'ニャース',
   'Metagross':'メタグロス','Mew':'ミュウ','Mimikyu':'ミミッキュ','Miraidon':'ミライドン',
-  'Moltres':'ファイヤー','Mr. Mime':'バリヤード','Ninetales':'アローラキュウコン','Pawmot':'パーモット',
+  'Moltres':'ファイヤー','Mr. Mime':'バリヤード','Ninetales':'アローラキュウコン','Palkia':'パルキア','Pawmot':'パーモット',
   'Pikachu':'ピカチュウ','Psyduck':'コダック','Raichu':'アローラライチュウ','Rapidash':'ガラルギャロップ',
   'Sableye':'ヤミラミ','Scizor':'ハッサム','Scyther':'ストライク',"Sirfetch'd":'ネギガナイト',
   'Skeledirge':'ラウドボーン','Slowbro':'ヤドラン','Snorlax':'カビゴン','Suicune':'スイクン',

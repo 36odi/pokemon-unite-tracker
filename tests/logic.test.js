@@ -217,6 +217,18 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
+eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
+eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
+eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
+eq([S['パルキア']?.spatk[0], S['パルキア']?.spatk[14]], [118, 700], 'Palkia SpAtk matches source at lv1/lv15');
+const palkiaLab = K['パルキア'] || [];
+eq(palkiaLab.length, 12, 'Palkia has 12 lab ratio rows');
+const palkiaAura = palkiaLab.find(r => r.name === 'はどうだん' && r.dmgType === 'ダメージ');
+eq([palkiaAura?.coeff, palkiaAura?.fixed, palkiaAura?.lvScale], [96, 288, 0], 'Aura Sphere main ratio is present');
+eq(palkiaLab.find(r => r.name === 'アクアリング' && r.dmgType === '回復')?.hits, 4, 'Aqua Ring healing uses 4 hits');
+eq(palkiaLab.find(r => r.name === 'きりさく')?.hits, 2, 'Slash uses 2 hits');
+eq([palkiaLab.find(r => r.dmgType === 'ダメージ - 連続斬り')?.hits, palkiaLab.find(r => r.dmgType === 'ダメージ - 連続斬り')?.hitsVar], [7, true], 'Palkia Unite flurry is variable up to 7 hits');
+eq([palkiaLab.find(r => r.dmgType === 'ダメージ - 最終段')?.coeff, palkiaLab.find(r => r.dmgType === 'ダメージ - 最終段')?.fixed], [108, 325], 'Palkia Unite final-hit ratio is present');
 
 // ---- 定数データの整合性（js/constants.js） ----
 section('constants integrity');
