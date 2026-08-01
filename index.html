@@ -2051,6 +2051,14 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.35',
+    date: '2026-08-01',
+    items: [
+      'ランク別成績の「その試合をプレイしていたランク帯で集計する」処理を、すべてのランク帯に広げました。これまではマスター↔レジェンドのみでしたが、エリート→エキスパートやエキスパート→マスターなどの昇格試合も、昇格前のランクの成績に計上されます',
+      'エキスパートからマスターへ昇格した直後の記録では、レートの初期値が<strong>0</strong>になるようにしました（前のシリーズのレートを引き継がなくなります）',
+    ]
+  },
+  {
     version: 'v5.34',
     date: '2026-07-24',
     items: [
@@ -5059,9 +5067,12 @@ function stepRate(id,delta){
   el.value=Math.max(0,Math.min(99999,cur+delta));
   if(id==='rankRate') onRankRateInput();
 }
+// レート入力の初期値。レートはシリーズ内でのみ連続する（シリーズが変わるとランクリセット）ので、
+// 現在シリーズの最新レート記録を返し、まだ無ければ 0 を返す。
+// ＝エキスパートからマスターへ昇格した直後の初戦は 0 スタートになる（前シリーズの値は引き継がない）。
 function getLastRate(){
   for(const b of battles){ const r=rankRate(b.rank); if(r!=null) return r; }
-  const ls=localStorage.getItem('form_lastRate'); return (ls!==null&&ls!=='')?parseInt(ls):null;
+  return 0;
 }
 // 記録フォームから rank 値（内包文字列）を生成
 function getRankValue(){
@@ -5071,7 +5082,6 @@ function getRankValue(){
     const rv=document.getElementById('rankRate')?.value;
     if(rv===''||rv==null) return null;
     const n=Math.max(0,Math.min(99999,parseInt(rv)||0));
-    localStorage.setItem('form_lastRate',String(n));
     return 'レート '+n;
   }
   const cls=document.getElementById('rankClass')?.value;

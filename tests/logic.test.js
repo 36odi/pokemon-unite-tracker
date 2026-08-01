@@ -155,11 +155,27 @@ section('playedTier (rank by pre-match rate)');
   const d2={rank:'レート 995', created_at:'2026-06-02T02:00:00Z'};
   const dm=F.buildPlayedTierMap([d1,d2]);
   eq(dm.get(d2), 'レジェンド', '995だが直前1005でプレイ=レジェンド(降格試合)');
-  // 非レート記録(クラス)は map に載らず、aggRankTier は従来 rankTier
-  const c1={rank:'エキスパート・C1', created_at:'2026-06-03T01:00:00Z'};
-  const cm=F.buildPlayedTierMap([c1]);
-  eq(cm.has(c1), false, 'クラス記録は playedMap に含めない');
-  eq(F.aggRankTier(c1, cm), 'エキスパート', 'クラス記録は従来通り rankTier');
+  // クラス帯(ビギナー〜エキスパート)も同じルールで補正される
+  const c1={rank:'エリート・C1',      created_at:'2026-06-03T01:00:00Z'};
+  const c2={rank:'エキスパート・C5',  created_at:'2026-06-03T02:00:00Z'};
+  const cm=F.buildPlayedTierMap([c1,c2]);
+  eq(cm.get(c1), 'エリート', 'シリーズ最初のクラス記録は自身で判定');
+  eq(cm.get(c2), 'エリート', 'エキスパート記録だが直前エリートでプレイ(昇格試合)');
+  // クラス帯 → レート帯の昇格(エキスパート→マスター)もまたげる
+  const e1={rank:'エキスパート・C1', created_at:'2026-06-04T01:00:00Z'};
+  const e2={rank:'レート 0',         created_at:'2026-06-04T02:00:00Z'};
+  const e3={rank:'レート 20',        created_at:'2026-06-04T03:00:00Z'};
+  const em=F.buildPlayedTierMap([e1,e2,e3]);
+  eq(em.get(e2), 'エキスパート', 'マスター記録だが直前エキスパートでプレイ(昇格試合)');
+  eq(em.get(e3), 'マスター', '2戦目以降はマスター');
+  // 下位帯も同様
+  const g1={rank:'ビギナー・C1', created_at:'2026-06-05T01:00:00Z'};
+  const g2={rank:'スーパー・C5', created_at:'2026-06-05T02:00:00Z'};
+  eq(F.buildPlayedTierMap([g1,g2]).get(g2), 'ビギナー', 'ビギナー→スーパー昇格も補正');
+  // ランク未記録は map に載らず、aggRankTier は rankTier(=null)
+  const n1={rank:null, created_at:'2026-06-06T01:00:00Z'};
+  const nm=F.buildPlayedTierMap([n1]);
+  eq(nm.has(n1), false, 'ランク未記録は playedMap に含めない');
   eq(F.aggRankTier(b2, null), 'レジェンド', 'map不在時は記録どおり rankTier(1010=レジェンド)');
 }
 

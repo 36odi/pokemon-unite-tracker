@@ -93,24 +93,25 @@ function wrColor(pct, noneColor){
 }
 
 // ===== プレイ時のランク帯（ランク別成績の集計用） =====
-// 記録されるレートは「試合後の結果値」なので、試合後レートで帯分けすると昇格/降格をまたいだ試合が
+// 記録するランクは「試合後の結果」なので、記録どおりに帯分けすると昇格/降格をまたいだ試合が
 // 実際にプレイした帯と1つずれる（例: 990→勝→1010 はマスターの試合だがレジェンド扱いになる）。
-// そこで各レート試合を「直前に記録したレート試合のレート」で帯分けする（＝その試合をプレイしていた帯）。
-// レートはシリーズ内でのみ連続するため、seriesBattles は同一シリーズの全 battle を渡すこと。
-// シリーズ最初のレート試合は直前が無いため自身のレートで判定する。
-// 戻り値: Map<battle, 'マスター'|'レジェンド'>（レート記録のある試合のみ格納。非レート記録は含めない）。
+// そこで各試合を「直前に記録した試合の帯」で分類する（＝その試合をプレイしていた帯）。
+// レート帯(マスター/レジェンド)だけでなくクラス帯(ビギナー〜エキスパート)や
+// エキスパート→マスターの昇格もまたぐため、レートに限らず全ランク記録を時系列で連ねて判定する。
+// ランクはシリーズ内でのみ連続するため、seriesBattles は同一シリーズの全 battle を渡すこと。
+// シリーズ最初の記録は直前が無いため自身の帯で判定する。
+// 戻り値: Map<battle, 帯名>（ランク記録のある試合のみ格納。ランク未記録は含めない）。
 function buildPlayedTierMap(seriesBattles){
   const map = new Map();
-  const rated = (seriesBattles || []).filter(b => rankRate(b.rank) != null)
+  const ranked = (seriesBattles || []).filter(b => rankTier(b.rank) != null)
     .slice().sort((a, c) => new Date(a.created_at) - new Date(c.created_at));
-  rated.forEach((b, i) => {
-    const baseRate = i > 0 ? rankRate(rated[i-1].rank) : rankRate(b.rank);
-    map.set(b, rankTier('レート ' + baseRate));
+  ranked.forEach((b, i) => {
+    map.set(b, i > 0 ? rankTier(ranked[i-1].rank) : rankTier(b.rank));
   });
   return map;
 }
-// 集計時のランク帯。レート試合は playedMap（buildPlayedTierMap）優先、
-// 非レート記録（クラス等）や map 不在の場合は記録どおりの rankTier。
+// 集計時のランク帯。ランク記録のある試合は playedMap（buildPlayedTierMap）優先、
+// ランク未記録や map 不在の場合は記録どおりの rankTier。
 function aggRankTier(b, playedMap){
   return (playedMap && playedMap.has(b)) ? playedMap.get(b) : rankTier(b.rank);
 }
