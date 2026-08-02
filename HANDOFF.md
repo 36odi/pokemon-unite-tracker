@@ -1,17 +1,20 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-08-03 / アプリバージョン: v5.35 / 公開SW: v58 / ローカルSW: v58
+> 最終更新: 2026-08-03 / アプリバージョン: v5.36 / 公開SW: v58 / ローカルSW: v59
 
-## 0. 現在のスナップショット（2026-08-03 05:05 JST）
+## 0. 現在のスナップショット（2026-08-03 05:52 JST）
 
-- `main` は v5.35 / SW v58。実装コミット `aa3ab67` でラボのDOM非依存計算関数 `computeStats` / `dcCalcActual` を `js/lab-core.js` へ分離した（Phase 3、挙動不変）。
+- Phase 4は `agent/phase4-structural-hardening` で実装・ローカル検証済み。PWA設定修正、シリーズ全件取得のページング、ラボ計算依存の明示化、シリーズ分析概要の純粋関数化を、4コミットへ分離している。
+- ローカルは v5.36 / SW v59。公開はこの記録時点では v5.35 / SW v58で、PRマージ後にGitHub Pagesの反映と公開ブラウザ検証を行う。
+- PWAは `start_url` / `scope` を相対指定へ変更し、既存ピカチュウ画像を元に192px・512pxの正方形PNGを同梱。manifest・Service Workerの双方から参照する。
+- `series` の全件読込3箇所を `sbFetchAll` 経由へ統一し、`created_at` + `id` の安定ソートで1,001件の取得テストを追加した。
+- `computeStats(input, deps)` は必要なデータと補正規則を明示的に受け取る。シリーズ分析は概要集計だけを `buildSeriesAnalysisOverview()` としてDOM描画から分離した。
 - `index.html` は7,092行から7,027行へ縮小。テストはHTML文字列からの関数抽出を廃止し、`js/lab-core.js` を直接評価する構造へ変更。
 - メインスプレッドシートの構造元へ不足していた5体（イベルタル／ウェーニバル／メガニウム／ラウドボーン／パルキア）を追加済み。`わざデータ` 56行、`ステータスデータ` 75行を登録し、full regen禁止を解除。
 - コミット `6b1d498` は、CSVの新数値書式（`"1,040."`）対応と、ギルガルド／オーダイル／ギャラドス／ウェーニバル／ニンフィア／バクフーンのバランス調整19値を取り込んだデータ更新。
-- manifestのPWAアイコンは同梱 `images/pokemon/25.png` へ移行し、Service Workerの事前キャッシュ対象へ追加。SW v52。
-- 検証済み: `node tests/logic.test.js` 106/106 PASS、変更対象JS構文・`git diff --check`ともに終了コード0。レシオ1701/1701一致、ステータス97/97体差分ゼロは直近データ更新時の検証値。
-- ブラウザ実測済み: ゲスト起動、ラボ表示、ピカチュウLv9のもちもの補正（特攻418→486）、対カビゴンLv9の実ダメージ（通常198→129、ユナイト771→550）、コンソールエラー0。
-- Supabase変更は不要。今回差分は計算関数の配置・読込・テスト・Service Workerキャッシュだけで、SQL・migration・スキーマ変更を伴わない。
+- 検証済み: `node tests/logic.test.js` 126/126 PASS。レシオ1701/1701一致、ステータス97/97体差分ゼロ、分類・ステータス型監査0件、変更対象JS構文・`git diff --check`終了コード0。
+- ローカルブラウザ実測済み: ゲスト起動、ラボ表示、ピカチュウLv9のもちもの補正（特攻418→486）、対カビゴンLv9の実ダメージ（通常198→129、ユナイト771→550）、コンソールエラー0。旧Service Workerキャッシュを避けるため未使用originで現行版を検証した。
+- Supabase変更は不要。今回差分はフロントエンド、取得方式、テスト、PWA資産だけで、SQL・migration・スキーマ変更を伴わない。
 - 対戦用ロスターは96体。ラボは97体（ストライクを含む）、スキル1,773行、メダル257枚、もちもの34個、メダル色11種。
 - `gen_lab_data.js` は `lab_data_generated.js` と本番用 `lab_data.js` の両方へ直接出力し、その後 unite-db 正本化を自動実行する。
 - メインスプレッドシートのsheet3/4は97体登録済み。4タブからのfull regenで97体を生成し、現行ラボと全ポケモンの値が一致することを確認済み（出力上の差はオブジェクトの並び順のみ）。
@@ -129,7 +132,7 @@
 
 ### `sw.js`
 
-Service Worker。キャッシュ名 `unite-tracker-v58`。`lab_data.js`、`js/constants.js`、`js/utils.js`、`js/lab-core.js` を含むアプリシェルをキャッシュする。
+Service Worker。キャッシュ名 `unite-tracker-v59`。`lab_data.js`、`js/constants.js`、`js/utils.js`、`js/lab-core.js`、PWA用192px・512pxアイコンを含むアプリシェルをキャッシュする。
 
 ---
 
@@ -188,6 +191,7 @@ Service Worker。キャッシュ名 `unite-tracker-v58`。`lab_data.js`、`js/co
 - [x] manifestのPWAアイコンを同梱画像へ移行
 - [x] メインスプレッドシート sheet3/4 の不足5体を補完し、full regen禁止を解除
 - [x] Phase 3: `computeStats` / `dcCalcActual` を `js/lab-core.js` へ分離
+- [x] Phase 4: PWA設定、シリーズ全件取得、ラボ依存明示化、シリーズ分析概要分離
 
 ---
 

@@ -12,6 +12,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const indexSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const labSrc = fs.readFileSync(path.join(ROOT, 'lab_data.js'), 'utf8');
+const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 
 // ---- アサーション ----
 let pass = 0, fail = 0;
@@ -42,8 +43,13 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labCoreSrc}
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
-          ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
+  const LAB_STATS_DEPS = {
+    status:LAB_STATUS, itemStats:LAB_ITEMS, statMap:LAB_STAT_MAP,
+    pctItems:LAB_PCT_ITEMS, dmgStackItems:LAB_DMG_STACK_ITEMS,
+    stackItems:LAB_STACK_ITEMS, goalItems:LAB_GOAL_ITEMS, medalBonus:labCalcMedalBonus,
+  };
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+          LAB_STATS_DEPS, ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
 
@@ -112,6 +118,28 @@ section('winCount / wrPct');
   eq(F.wrPct(0,4), '0.0%', 'wrPct: 0勝 -> 0.0%');
 }
 
+// ---- シリーズ分析の概要集計 ----
+section('series analysis overview');
+{
+  eq(F.buildSeriesAnalysisOverview([]), {
+    total:0,wins:0,winRate:'—',rateBattles:[],rateData:[],rateLabels:[],rateShowLegendLine:false,
+    pokeList:[],dayMap:{},dayKeys:[],
+  }, 'empty series returns an empty overview');
+  const b1={result:'win',rank:'レート 920',pokemon:'ピカチュウ',created_at:'2026-08-02T10:00:00Z'};
+  const b2={result:'loss',rank:'エキスパート・C1',pokemon:'カビゴン',created_at:'2026-08-01T10:00:00Z'};
+  const b3={result:'win',rank:'レート 880',pokemon:'ピカチュウ',created_at:'2026-08-01T12:00:00Z'};
+  const input=[b1,b2,b3];
+  const overview=F.buildSeriesAnalysisOverview(input);
+  eq([overview.total,overview.wins,overview.winRate], [3,2,'66.7%'], 'overview totals and win rate');
+  eq(overview.rateData, [880,920], 'rate data is sorted chronologically');
+  eq(overview.rateLabels, ['1','2'], 'rate labels follow sorted records');
+  eq(overview.rateShowLegendLine, true, 'legend threshold line is enabled from rate 900');
+  eq(overview.pokeList, [['ピカチュウ',{w:2,l:0}],['カビゴン',{w:0,l:1}]], 'pokemon usage is sorted by games');
+  eq(overview.dayKeys, ['2026-08-01','2026-08-02'], 'daily keys are sorted for chart rendering');
+  eq(overview.dayKeys.map(day=>overview.dayMap[day]), [{w:1,l:1},{w:1,l:0}], 'daily wins and losses are aggregated');
+  eq(input, [b1,b2,b3], 'overview does not reorder the source array');
+}
+
 // ---- buildPlayedTierMap / aggRankTier（プレイ時のランク帯＝直前レートで帯分け） ----
 section('playedTier (rank by pre-match rate)');
 {
@@ -169,12 +197,22 @@ ok(F.dcCalcActual(1000, 600, 0, 0, 0.5) === Math.floor(500 * 0.5), 'dmgReduce mu
 
 // ---- computeStats（基礎ステータス） ----
 section('computeStats (base stats)');
-const mega15 = F.computeStats({ poke: 'メガニウム', lv: 15, items: [] });
+const mega15 = F.computeStats({ poke: 'メガニウム', lv: 15, items: [] }, F.LAB_STATS_DEPS);
 ok(!!mega15, 'meganium computeStats returns');
 eq(mega15 && mega15['特攻'], 580, 'meganium lv15 SpAtk = 580');
 eq(mega15 && mega15['HP'], 9600, 'meganium lv15 HP = 9600');
-const pika1 = F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] });
+const pika1 = F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] }, F.LAB_STATS_DEPS);
 eq(pika1 && pika1['攻撃'], 134, 'pikachu lv1 Atk = 134');
+let missingDepsError = null;
+try { F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] }); } catch (e) { missingDepsError = e; }
+ok(missingDepsError instanceof TypeError, 'computeStats rejects an implicit-global call without deps');
+const syntheticDeps = {
+  status:{Test:{hp:[100],atk:[50],def:[20],spatk:[30],spdef:[10],ms:[3000]}},
+  itemStats:{Boost:[{atk:5}]}, statMap:{atk:'攻撃'}, pctItems:{}, dmgStackItems:{}, stackItems:{}, goalItems:{},
+  medalBonus:()=>({攻撃:7}),
+};
+const synthetic = F.computeStats({poke:'Test',lv:1,items:[{name:'Boost',grade:1}],medalPresetIdx:0},syntheticDeps);
+eq(synthetic && synthetic['攻撃'], 62, 'computeStats uses explicit item and medal dependencies');
 
 // ---- lab_data 整合性 ----
 section('lab_data integrity');
@@ -257,6 +295,21 @@ ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html'
 const backupHtml = fs.readdirSync(ROOT)
   .filter(name => /\.html$/i.test(name) && /backup|\.bak(?:\.|$)/i.test(name));
 ok(backupHtml.length === 0, `no backup HTML in publish root (found: ${backupHtml.join(', ')})`);
+
+// GitHub Pages のプロジェクト配下でも、インストール後の起動先とscopeがアプリ直下を指すこと。
+const manifestUrl = 'https://example.test/pokemon-unite-tracker/manifest.json';
+eq(new URL(manifest.start_url, manifestUrl).pathname, '/pokemon-unite-tracker/', 'manifest start_url resolves to project root');
+eq(new URL(manifest.scope, manifestUrl).pathname, '/pokemon-unite-tracker/', 'manifest scope resolves to project root');
+const pngSize = rel => {
+  const b = fs.readFileSync(path.join(ROOT, rel));
+  return [b.readUInt32BE(16), b.readUInt32BE(20)];
+};
+const iconBySize = Object.fromEntries((manifest.icons || []).map(icon => [icon.sizes, icon.src]));
+eq(pngSize(iconBySize['192x192']), [192, 192], 'manifest 192px icon has matching PNG dimensions');
+eq(pngSize(iconBySize['512x512']), [512, 512], 'manifest 512px icon has matching PNG dimensions');
+ok(swSrc.includes(iconBySize['192x192']) && swSrc.includes(iconBySize['512x512']), 'manifest icons are precached in sw.js');
+eq((indexSrc.match(/sbFetchAll\(\(f,t\)=>db\.from\('series'\)/g) || []).length, 3,
+  'all three full-series reads use sbFetchAll pagination');
 
 // ---- SWキャッシュ版数の上げ忘れ検知（git がある場合のみ） ----
 // ローカル資産が origin/main から変わっているのに sw.js の CACHE 版数が同じだと、
@@ -342,6 +395,13 @@ try {
     const {data} = await F.sbFetchAll(m.q);
     eq(data.length, 1000, 'ちょうど1000行も全件');
     eq(m.calls(), 2, '境界値は2ページ目(空)で終了');
+  }
+  {
+    const m = mock(1001);
+    const {data} = await F.sbFetchAll(m.q);
+    eq(data.length, 1001, 'series想定の1001行を欠落なく全件取得');
+    eq(data[1000], 1000, 'series想定の1001件目を保持');
+    eq(m.calls(), 2, '1001行は2ページで取得');
   }
   {
     const m = mock(135);

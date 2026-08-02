@@ -81,6 +81,39 @@ function winCount(arr){ return arr.filter(b=>b.result==='win').length; }
 // 勝率の%文字列（小数1桁）。t==0 は '—'。calcWR(index.html)の「+'%'」版。
 function wrPct(w,t){ return t>0 ? ((w/t)*100).toFixed(1)+'%' : '—'; }
 
+// シリーズ分析の概要モデル。DOM/Chart.jsから切り離し、描画前の集計を同じ基準で返す。
+function buildSeriesAnalysisOverview(battles){
+  const bs=battles||[];
+  const rateBattles=bs.filter(b=>rankRate(b.rank)!=null).slice()
+    .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const rateData=rateBattles.map(b=>rankRate(b.rank));
+  const pokeMap={};
+  bs.filter(b=>b.pokemon).forEach(b=>{
+    if(!pokeMap[b.pokemon]) pokeMap[b.pokemon]={w:0,l:0};
+    b.result==='win'?pokeMap[b.pokemon].w++:pokeMap[b.pokemon].l++;
+  });
+  const dayMap={};
+  bs.forEach(b=>{
+    const day=b.created_at?b.created_at.slice(0,10):null;
+    if(!day)return;
+    if(!dayMap[day])dayMap[day]={w:0,l:0};
+    b.result==='win'?dayMap[day].w++:dayMap[day].l++;
+  });
+  const wins=winCount(bs);
+  return {
+    total:bs.length,
+    wins,
+    winRate:wrPct(wins,bs.length),
+    rateBattles,
+    rateData,
+    rateLabels:rateBattles.map((b,i)=>String(i+1)),
+    rateShowLegendLine:rateData.length?Math.max(...rateData)>=900:false,
+    pokeList:Object.entries(pokeMap).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).slice(0,12),
+    dayMap,
+    dayKeys:Object.keys(dayMap).sort(),
+  };
+}
+
 // ===== 勝率の勝敗色 =====
 // 引数は百分率（数値 0..100 か "50%"/"50.0" 文字列）。比率(0..1)を渡すときは *100 して百分率で渡すこと。
 // データ無し（null/''/'—'/NaN）は noneColor（既定 var(--text3)）。50%以上=勝色、未満=負色。

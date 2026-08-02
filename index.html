@@ -2052,6 +2052,15 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.36',
+    date: '2026-08-03',
+    items: [
+      'ホーム画面追加時の起動先・適用範囲とアプリアイコンを見直し、PWAとして安定して起動できるようにしました',
+      'シリーズが1,000件を超えた場合でも、シリーズ一覧や分析対象を全件読み込めるようにしました',
+      'ラボ計算とシリーズ分析の内部構造を整理し、今後の変更を安全に検証しやすくしました',
+    ]
+  },
+  {
     version: 'v5.35',
     date: '2026-08-01',
     items: [
@@ -2703,7 +2712,15 @@ function renderChangelog(){
 async function openCsvModal(){
   document.getElementById('csvMsg').textContent='';
   // シリーズ一覧を取得して表示
-  const seriesList=isGuest()?guestGetSeries():(await db.from('series').select('*').order('created_at',{ascending:false})).data||[];
+  let seriesList;
+  if(isGuest()){
+    seriesList=guestGetSeries();
+  } else {
+    const {data,error}=await sbFetchAll((f,t)=>db.from('series').select('*')
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
+    if(error) console.error(error);
+    seriesList=error?[]:(data||[]);
+  }
   const listEl=document.getElementById('csvSeriesList');
   if(!seriesList||!seriesList.length){
     listEl.innerHTML='<div style="font-size:13px;color:var(--text3);">シリーズがありません</div>';
@@ -3047,7 +3064,9 @@ async function loadAnalysis(){
       }));
     } else {
     // P1: 必要列のみ取得
-    const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
+    const {data:seriesList,error:e1}=await sbFetchAll((f,t)=>db.from('series')
+      .select('id,name,created_at,user_id,archived')
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
     // 全シリーズ横断の全件取得。1000行上限があるため sbFetchAll でページング（orderはページ整合用の安定ソート）
     const {data:allBattles,error:e2}=await sbFetchAll((f,t)=>db.from('battles')
       .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
@@ -3896,8 +3915,10 @@ async function loadSeries(){
     if(!showArchived) list=list.filter(s=>!s.archived);
   } else {
     const sortCol=seriesSortMode==='name'?'name':'created_at';
-    const {data}=await db.from('series').select('*').order(sortCol,{ascending:sortAsc});
-    list=(data||[]).filter(s=>showArchived||!s.archived);
+    const {data,error}=await sbFetchAll((f,t)=>db.from('series').select('*')
+      .order(sortCol,{ascending:sortAsc}).order('id',{ascending:sortAsc}).range(f,t));
+    if(error) console.error(error);
+    list=(error?[]:(data||[])).filter(s=>showArchived||!s.archived);
   }
   const sel=document.getElementById('seriesSelect');
   sel.innerHTML='<option value="">— シリーズを選択 —</option>';
@@ -5182,18 +5203,16 @@ async function renderSeriesAnalysis(){
   if(seriesanalDayChartInst){seriesanalDayChartInst.destroy();seriesanalDayChartInst=null;}
   if(seriesanalRateChartInst){seriesanalRateChartInst.destroy();seriesanalRateChartInst=null;}
 
-  // ── レート推移（マスター以上）──
-  const rateBattles=bs.filter(b=>rankRate(b.rank)!=null).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  const rateData=rateBattles.map(b=>rankRate(b.rank));
-  const rateLabels=rateBattles.map((b,i)=>String(i+1));
-  const rateShowLegendLine=rateData.length?Math.max(...rateData)>=900:false;
+  // ── DOM非依存の概要集計 ──
+  const overview=buildSeriesAnalysisOverview(bs);
+  const {rateBattles,rateData,rateLabels,rateShowLegendLine,pokeList,dayMap,dayKeys}=overview;
   const rateHTML=rateData.length>=2
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalRateChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">マスター以上のレート記録が2件以上必要です</div>';
 
-  const w=winCount(bs);
-  const t=bs.length;
-  const wr=wrPct(w,t);
+  const w=overview.wins;
+  const t=overview.total;
+  const wr=overview.winRate;
   const wrCol=t>0?wrColor(wr):'var(--text2)';
 
   // ── ヘルパー ──
@@ -5214,14 +5233,6 @@ async function renderSeriesAnalysis(){
     </div>`;
   const tblHead=(cols)=>`<thead><tr style="color:var(--text3);border-bottom:1px solid var(--border);">${cols.map(c=>`<th style="padding:4px 6px;white-space:nowrap;${c.left?'text-align:left;':''}">${c.label}</th>`).join('')}</tr></thead>`;
   const tblWrap=(inner)=>`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">${inner}</table></div>`;
-
-  // ── ポケモン使用頻度集計 ──
-  const pokeMap={};
-  bs.filter(b=>b.pokemon).forEach(b=>{
-    if(!pokeMap[b.pokemon])pokeMap[b.pokemon]={w:0,l:0};
-    b.result==='win'?pokeMap[b.pokemon].w++:pokeMap[b.pokemon].l++;
-  });
-  const pokeList=Object.entries(pokeMap).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).slice(0,12);
 
   // ── B1: ランク帯別勝率 ──（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け）
   const playedTierMap=buildPlayedTierMap(bs);
@@ -5424,14 +5435,6 @@ async function renderSeriesAnalysis(){
     </div>`;
 
   // ── B7: 日別試合数 ──
-  const dayMap={};
-  bs.forEach(b=>{
-    const day=b.created_at?b.created_at.slice(0,10):null;
-    if(!day)return;
-    if(!dayMap[day])dayMap[day]={w:0,l:0};
-    b.result==='win'?dayMap[day].w++:dayMap[day].l++;
-  });
-  const dayKeys=Object.keys(dayMap).sort();
   const b7HTML=dayKeys.length>1
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalDayChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">データが2日以上必要です</div>';
@@ -5846,6 +5849,16 @@ const LAB_STAT_MAP={
   '通常攻撃の速さ':'通常攻撃の速さ','急所率':'急所率'
 };
 const LAB_STAT_ORDER=['HP','攻撃','防御','特攻','特防','移動速度'];
+const LAB_STATS_DEPS={
+  status:LAB_STATUS,
+  itemStats:LAB_ITEMS,
+  statMap:LAB_STAT_MAP,
+  pctItems:LAB_PCT_ITEMS,
+  dmgStackItems:LAB_DMG_STACK_ITEMS,
+  stackItems:LAB_STACK_ITEMS,
+  goalItems:LAB_GOAL_ITEMS,
+  medalBonus:labCalcMedalBonus,
+};
 
 function calcLabStats(scroll=false){
   const poke=document.getElementById('labPokeSelect')?.value;
@@ -6483,8 +6496,8 @@ function calcDmgCalcMain(scroll=false){
     koStack: parseInt(document.getElementById('dcStackSlider')?.value||0),
     goalCount:parseInt(document.getElementById('dcGoalSlider')?.value||0),
     medalPresetIdx:medalVal!==''?parseInt(medalVal):null,
-  });
-  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems});
+  },LAB_STATS_DEPS);
+  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems},LAB_STATS_DEPS);
   if(!dcAtkStats||!dcDefStats) return;
   // ポケモン変更時のみスキルセレクト再構築
   if(dcCurAtkPoke!==atkPoke){ dcCurAtkPoke=atkPoke; dcUpdateSkillSelects(atkPoke); }
