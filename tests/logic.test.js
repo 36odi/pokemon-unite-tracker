@@ -2,9 +2,8 @@
 /*
  * 軽量テスト（依存なし）: node tests/logic.test.js
  *
- * 本番ファイル(index.html / lab_data.js)は変更しません。
- * index.html から「純粋ロジック関数」をソース抽出して評価し、
- * lab_data.js のデータ整合性も検証します。
+ * 本番の分離済みロジックファイルを直接評価し、
+ * index.html のアプリシェルと lab_data.js のデータ整合性も検証します。
  * 壊れたら非ゼロ終了します（CI / push前チェックに利用可）。
  */
 const fs = require('fs');
@@ -24,35 +23,10 @@ function eq(actual, expected, msg) {
 function ok(cond, msg) { if (cond) pass++; else { fail++; console.log(`  FAIL: ${msg}`); } }
 function section(name) { console.log(`\n# ${name}`); }
 
-// ---- index.html から関数ソースを抽出（波括弧バランス） ----
-function extractFn(src, name) {
-  const sig = `function ${name}(`;
-  const i = src.indexOf(sig);
-  if (i < 0) throw new Error(`function not found: ${name}`);
-  // 引数リストの '(' から ')' までをパレンバランスでスキップ（分割代入引数 {…} 対策）
-  let p = i + sig.length - 1; // '(' の位置
-  let pd = 0, k = p;
-  for (; k < src.length; k++) {
-    const c = src[k];
-    if (c === '(') pd++;
-    else if (c === ')') { pd--; if (pd === 0) { k++; break; } }
-  }
-  // ')' の後の最初の '{' が本体開始
-  const open = src.indexOf('{', k);
-  let depth = 0, j = open;
-  for (; j < src.length; j++) {
-    const c = src[j];
-    if (c === '{') depth++;
-    else if (c === '}') { depth--; if (depth === 0) { j++; break; } }
-  }
-  return src.slice(i, j);
-}
-
-// 分離済みファイル（js/constants.js, js/utils.js）はそのまま読み込んで評価。
-// ラボ系（dcCalcActual, computeStats）はまだ index.html 内なのでソース抽出（Phase 3 で分離予定）。
+// 分離済みファイルをそのまま読み込んで評価。
 const constantsSrc = fs.readFileSync(path.join(ROOT, 'js', 'constants.js'), 'utf8');
 const utilsSrc = fs.readFileSync(path.join(ROOT, 'js', 'utils.js'), 'utf8');
-const labFnSrc = ['dcCalcActual', 'computeStats'].map(n => extractFn(indexSrc, n)).join('\n');
+const labCoreSrc = fs.readFileSync(path.join(ROOT, 'js', 'lab-core.js'), 'utf8');
 
 // computeStats が参照する可能性のあるグローバルのスタブ + lab_data
 // （items空・medal無しの呼び出しでは中身は実行されないが、参照安全のため定義）
@@ -67,7 +41,7 @@ const body = `
   function labCalcMedalBonus(){ return {}; }
   ${constantsSrc}
   ${utilsSrc}
-  ${labFnSrc}
+  ${labCoreSrc}
   return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
@@ -262,6 +236,11 @@ eq(F.SKILLS['パルキア'], {s1:['はどうだん'], s2:['ドラゴンクロー
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
 const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+const labCoreTag = '<script src="js/lab-core.js"></script>';
+ok(indexSrc.includes(labCoreTag) && indexSrc.indexOf(labCoreTag) < indexSrc.indexOf('<script>'),
+  'lab-core.js loads before the inline application script');
+ok(!/function\s+(?:computeStats|dcCalcActual)\s*\(/.test(indexSrc),
+  'lab core functions are not duplicated in index.html');
 // index.html が参照するローカル資産（js/css/json）が実在し、SW のプリキャッシュにも載っていること
 const localRefs = [...indexSrc.matchAll(/(?:src|href)="(?!https?:|\/\/|data:|#)([^"]+)"/g)]
   .map(m => m[1])
