@@ -43,8 +43,13 @@ const body = `
   ${constantsSrc}
   ${utilsSrc}
   ${labCoreSrc}
+  const LAB_STATS_DEPS = {
+    status:LAB_STATUS, itemStats:LAB_ITEMS, statMap:LAB_STAT_MAP,
+    pctItems:LAB_PCT_ITEMS, dmgStackItems:LAB_DMG_STACK_ITEMS,
+    stackItems:LAB_STACK_ITEMS, goalItems:LAB_GOAL_ITEMS, medalBonus:labCalcMedalBonus,
+  };
   return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
-          ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
+          LAB_STATS_DEPS, ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
 
@@ -170,12 +175,22 @@ ok(F.dcCalcActual(1000, 600, 0, 0, 0.5) === Math.floor(500 * 0.5), 'dmgReduce mu
 
 // ---- computeStats（基礎ステータス） ----
 section('computeStats (base stats)');
-const mega15 = F.computeStats({ poke: 'メガニウム', lv: 15, items: [] });
+const mega15 = F.computeStats({ poke: 'メガニウム', lv: 15, items: [] }, F.LAB_STATS_DEPS);
 ok(!!mega15, 'meganium computeStats returns');
 eq(mega15 && mega15['特攻'], 580, 'meganium lv15 SpAtk = 580');
 eq(mega15 && mega15['HP'], 9600, 'meganium lv15 HP = 9600');
-const pika1 = F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] });
+const pika1 = F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] }, F.LAB_STATS_DEPS);
 eq(pika1 && pika1['攻撃'], 134, 'pikachu lv1 Atk = 134');
+let missingDepsError = null;
+try { F.computeStats({ poke: 'ピカチュウ', lv: 1, items: [] }); } catch (e) { missingDepsError = e; }
+ok(missingDepsError instanceof TypeError, 'computeStats rejects an implicit-global call without deps');
+const syntheticDeps = {
+  status:{Test:{hp:[100],atk:[50],def:[20],spatk:[30],spdef:[10],ms:[3000]}},
+  itemStats:{Boost:[{atk:5}]}, statMap:{atk:'攻撃'}, pctItems:{}, dmgStackItems:{}, stackItems:{}, goalItems:{},
+  medalBonus:()=>({攻撃:7}),
+};
+const synthetic = F.computeStats({poke:'Test',lv:1,items:[{name:'Boost',grade:1}],medalPresetIdx:0},syntheticDeps);
+eq(synthetic && synthetic['攻撃'], 62, 'computeStats uses explicit item and medal dependencies');
 
 // ---- lab_data 整合性 ----
 section('lab_data integrity');

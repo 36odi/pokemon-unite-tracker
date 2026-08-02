@@ -5858,6 +5858,16 @@ const LAB_STAT_MAP={
   '通常攻撃の速さ':'通常攻撃の速さ','急所率':'急所率'
 };
 const LAB_STAT_ORDER=['HP','攻撃','防御','特攻','特防','移動速度'];
+const LAB_STATS_DEPS={
+  status:LAB_STATUS,
+  itemStats:LAB_ITEMS,
+  statMap:LAB_STAT_MAP,
+  pctItems:LAB_PCT_ITEMS,
+  dmgStackItems:LAB_DMG_STACK_ITEMS,
+  stackItems:LAB_STACK_ITEMS,
+  goalItems:LAB_GOAL_ITEMS,
+  medalBonus:labCalcMedalBonus,
+};
 
 function calcLabStats(scroll=false){
   const poke=document.getElementById('labPokeSelect')?.value;
@@ -6495,8 +6505,8 @@ function calcDmgCalcMain(scroll=false){
     koStack: parseInt(document.getElementById('dcStackSlider')?.value||0),
     goalCount:parseInt(document.getElementById('dcGoalSlider')?.value||0),
     medalPresetIdx:medalVal!==''?parseInt(medalVal):null,
-  });
-  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems});
+  },LAB_STATS_DEPS);
+  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems},LAB_STATS_DEPS);
   if(!dcAtkStats||!dcDefStats) return;
   // ポケモン変更時のみスキルセレクト再構築
   if(dcCurAtkPoke!==atkPoke){ dcCurAtkPoke=atkPoke; dcUpdateSkillSelects(atkPoke); }
