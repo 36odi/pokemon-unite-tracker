@@ -271,6 +271,8 @@ const iconBySize = Object.fromEntries((manifest.icons || []).map(icon => [icon.s
 eq(pngSize(iconBySize['192x192']), [192, 192], 'manifest 192px icon has matching PNG dimensions');
 eq(pngSize(iconBySize['512x512']), [512, 512], 'manifest 512px icon has matching PNG dimensions');
 ok(swSrc.includes(iconBySize['192x192']) && swSrc.includes(iconBySize['512x512']), 'manifest icons are precached in sw.js');
+eq((indexSrc.match(/sbFetchAll\(\(f,t\)=>db\.from\('series'\)/g) || []).length, 3,
+  'all three full-series reads use sbFetchAll pagination');
 
 // ---- SWキャッシュ版数の上げ忘れ検知（git がある場合のみ） ----
 // ローカル資産が origin/main から変わっているのに sw.js の CACHE 版数が同じだと、
@@ -356,6 +358,13 @@ try {
     const {data} = await F.sbFetchAll(m.q);
     eq(data.length, 1000, 'ちょうど1000行も全件');
     eq(m.calls(), 2, '境界値は2ページ目(空)で終了');
+  }
+  {
+    const m = mock(1001);
+    const {data} = await F.sbFetchAll(m.q);
+    eq(data.length, 1001, 'series想定の1001行を欠落なく全件取得');
+    eq(data[1000], 1000, 'series想定の1001件目を保持');
+    eq(m.calls(), 2, '1001行は2ページで取得');
   }
   {
     const m = mock(135);

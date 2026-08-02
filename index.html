@@ -2703,7 +2703,15 @@ function renderChangelog(){
 async function openCsvModal(){
   document.getElementById('csvMsg').textContent='';
   // シリーズ一覧を取得して表示
-  const seriesList=isGuest()?guestGetSeries():(await db.from('series').select('*').order('created_at',{ascending:false})).data||[];
+  let seriesList;
+  if(isGuest()){
+    seriesList=guestGetSeries();
+  } else {
+    const {data,error}=await sbFetchAll((f,t)=>db.from('series').select('*')
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
+    if(error) console.error(error);
+    seriesList=error?[]:(data||[]);
+  }
   const listEl=document.getElementById('csvSeriesList');
   if(!seriesList||!seriesList.length){
     listEl.innerHTML='<div style="font-size:13px;color:var(--text3);">シリーズがありません</div>';
@@ -3047,7 +3055,9 @@ async function loadAnalysis(){
       }));
     } else {
     // P1: 必要列のみ取得
-    const {data:seriesList,error:e1}=await db.from('series').select('id,name,created_at,user_id,archived').order('created_at',{ascending:false});
+    const {data:seriesList,error:e1}=await sbFetchAll((f,t)=>db.from('series')
+      .select('id,name,created_at,user_id,archived')
+      .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
     // 全シリーズ横断の全件取得。1000行上限があるため sbFetchAll でページング（orderはページ整合用の安定ソート）
     const {data:allBattles,error:e2}=await sbFetchAll((f,t)=>db.from('battles')
       .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
@@ -3896,8 +3906,10 @@ async function loadSeries(){
     if(!showArchived) list=list.filter(s=>!s.archived);
   } else {
     const sortCol=seriesSortMode==='name'?'name':'created_at';
-    const {data}=await db.from('series').select('*').order(sortCol,{ascending:sortAsc});
-    list=(data||[]).filter(s=>showArchived||!s.archived);
+    const {data,error}=await sbFetchAll((f,t)=>db.from('series').select('*')
+      .order(sortCol,{ascending:sortAsc}).order('id',{ascending:sortAsc}).range(f,t));
+    if(error) console.error(error);
+    list=(error?[]:(data||[])).filter(s=>showArchived||!s.archived);
   }
   const sel=document.getElementById('seriesSelect');
   sel.innerHTML='<option value="">— シリーズを選択 —</option>';
