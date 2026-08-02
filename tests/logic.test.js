@@ -12,6 +12,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const indexSrc = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const labSrc = fs.readFileSync(path.join(ROOT, 'lab_data.js'), 'utf8');
+const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
 
 // ---- アサーション ----
 let pass = 0, fail = 0;
@@ -257,6 +258,19 @@ ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html'
 const backupHtml = fs.readdirSync(ROOT)
   .filter(name => /\.html$/i.test(name) && /backup|\.bak(?:\.|$)/i.test(name));
 ok(backupHtml.length === 0, `no backup HTML in publish root (found: ${backupHtml.join(', ')})`);
+
+// GitHub Pages のプロジェクト配下でも、インストール後の起動先とscopeがアプリ直下を指すこと。
+const manifestUrl = 'https://example.test/pokemon-unite-tracker/manifest.json';
+eq(new URL(manifest.start_url, manifestUrl).pathname, '/pokemon-unite-tracker/', 'manifest start_url resolves to project root');
+eq(new URL(manifest.scope, manifestUrl).pathname, '/pokemon-unite-tracker/', 'manifest scope resolves to project root');
+const pngSize = rel => {
+  const b = fs.readFileSync(path.join(ROOT, rel));
+  return [b.readUInt32BE(16), b.readUInt32BE(20)];
+};
+const iconBySize = Object.fromEntries((manifest.icons || []).map(icon => [icon.sizes, icon.src]));
+eq(pngSize(iconBySize['192x192']), [192, 192], 'manifest 192px icon has matching PNG dimensions');
+eq(pngSize(iconBySize['512x512']), [512, 512], 'manifest 512px icon has matching PNG dimensions');
+ok(swSrc.includes(iconBySize['192x192']) && swSrc.includes(iconBySize['512x512']), 'manifest icons are precached in sw.js');
 
 // ---- SWキャッシュ版数の上げ忘れ検知（git がある場合のみ） ----
 // ローカル資産が origin/main から変わっているのに sw.js の CACHE 版数が同じだと、
