@@ -48,7 +48,7 @@ const body = `
     pctItems:LAB_PCT_ITEMS, dmgStackItems:LAB_DMG_STACK_ITEMS,
     stackItems:LAB_STACK_ITEMS, goalItems:LAB_GOAL_ITEMS, medalBonus:labCalcMedalBonus,
   };
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
           LAB_STATS_DEPS, ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
@@ -116,6 +116,28 @@ section('winCount / wrPct');
   eq(F.wrPct(1,2), '50.0%', 'wrPct: 1/2 -> 50.0%');
   eq(F.wrPct(0,0), '—', 'wrPct: 分母0 -> —');
   eq(F.wrPct(0,4), '0.0%', 'wrPct: 0勝 -> 0.0%');
+}
+
+// ---- シリーズ分析の概要集計 ----
+section('series analysis overview');
+{
+  eq(F.buildSeriesAnalysisOverview([]), {
+    total:0,wins:0,winRate:'—',rateBattles:[],rateData:[],rateLabels:[],rateShowLegendLine:false,
+    pokeList:[],dayMap:{},dayKeys:[],
+  }, 'empty series returns an empty overview');
+  const b1={result:'win',rank:'レート 920',pokemon:'ピカチュウ',created_at:'2026-08-02T10:00:00Z'};
+  const b2={result:'loss',rank:'エキスパート・C1',pokemon:'カビゴン',created_at:'2026-08-01T10:00:00Z'};
+  const b3={result:'win',rank:'レート 880',pokemon:'ピカチュウ',created_at:'2026-08-01T12:00:00Z'};
+  const input=[b1,b2,b3];
+  const overview=F.buildSeriesAnalysisOverview(input);
+  eq([overview.total,overview.wins,overview.winRate], [3,2,'66.7%'], 'overview totals and win rate');
+  eq(overview.rateData, [880,920], 'rate data is sorted chronologically');
+  eq(overview.rateLabels, ['1','2'], 'rate labels follow sorted records');
+  eq(overview.rateShowLegendLine, true, 'legend threshold line is enabled from rate 900');
+  eq(overview.pokeList, [['ピカチュウ',{w:2,l:0}],['カビゴン',{w:0,l:1}]], 'pokemon usage is sorted by games');
+  eq(overview.dayKeys, ['2026-08-01','2026-08-02'], 'daily keys are sorted for chart rendering');
+  eq(overview.dayKeys.map(day=>overview.dayMap[day]), [{w:1,l:1},{w:1,l:0}], 'daily wins and losses are aggregated');
+  eq(input, [b1,b2,b3], 'overview does not reorder the source array');
 }
 
 // ---- buildPlayedTierMap / aggRankTier（プレイ時のランク帯＝直前レートで帯分け） ----

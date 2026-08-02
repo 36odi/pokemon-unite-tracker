@@ -5194,18 +5194,16 @@ async function renderSeriesAnalysis(){
   if(seriesanalDayChartInst){seriesanalDayChartInst.destroy();seriesanalDayChartInst=null;}
   if(seriesanalRateChartInst){seriesanalRateChartInst.destroy();seriesanalRateChartInst=null;}
 
-  // ── レート推移（マスター以上）──
-  const rateBattles=bs.filter(b=>rankRate(b.rank)!=null).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  const rateData=rateBattles.map(b=>rankRate(b.rank));
-  const rateLabels=rateBattles.map((b,i)=>String(i+1));
-  const rateShowLegendLine=rateData.length?Math.max(...rateData)>=900:false;
+  // ── DOM非依存の概要集計 ──
+  const overview=buildSeriesAnalysisOverview(bs);
+  const {rateBattles,rateData,rateLabels,rateShowLegendLine,pokeList,dayMap,dayKeys}=overview;
   const rateHTML=rateData.length>=2
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalRateChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">マスター以上のレート記録が2件以上必要です</div>';
 
-  const w=winCount(bs);
-  const t=bs.length;
-  const wr=wrPct(w,t);
+  const w=overview.wins;
+  const t=overview.total;
+  const wr=overview.winRate;
   const wrCol=t>0?wrColor(wr):'var(--text2)';
 
   // ── ヘルパー ──
@@ -5226,14 +5224,6 @@ async function renderSeriesAnalysis(){
     </div>`;
   const tblHead=(cols)=>`<thead><tr style="color:var(--text3);border-bottom:1px solid var(--border);">${cols.map(c=>`<th style="padding:4px 6px;white-space:nowrap;${c.left?'text-align:left;':''}">${c.label}</th>`).join('')}</tr></thead>`;
   const tblWrap=(inner)=>`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">${inner}</table></div>`;
-
-  // ── ポケモン使用頻度集計 ──
-  const pokeMap={};
-  bs.filter(b=>b.pokemon).forEach(b=>{
-    if(!pokeMap[b.pokemon])pokeMap[b.pokemon]={w:0,l:0};
-    b.result==='win'?pokeMap[b.pokemon].w++:pokeMap[b.pokemon].l++;
-  });
-  const pokeList=Object.entries(pokeMap).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).slice(0,12);
 
   // ── B1: ランク帯別勝率 ──（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け）
   const playedTierMap=buildPlayedTierMap(bs);
@@ -5436,14 +5426,6 @@ async function renderSeriesAnalysis(){
     </div>`;
 
   // ── B7: 日別試合数 ──
-  const dayMap={};
-  bs.forEach(b=>{
-    const day=b.created_at?b.created_at.slice(0,10):null;
-    if(!day)return;
-    if(!dayMap[day])dayMap[day]={w:0,l:0};
-    b.result==='win'?dayMap[day].w++:dayMap[day].l++;
-  });
-  const dayKeys=Object.keys(dayMap).sort();
   const b7HTML=dayKeys.length>1
     ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalDayChart"></canvas></div>`
     :'<div class="empty" style="padding:0.8rem 0;">データが2日以上必要です</div>';
