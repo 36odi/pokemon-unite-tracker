@@ -1,14 +1,17 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-07-24 / アプリバージョン: v5.34 / 公開SW: v55 / ローカルSW: v55
+> 最終更新: 2026-08-03 / アプリバージョン: v5.35 / 公開SW: v58 / ローカルSW: v58
 
-## 0. 現在のスナップショット（2026-07-24 23:12 JST）
+## 0. 現在のスナップショット（2026-08-03 05:05 JST）
 
-- 公開 `main` は v5.34 / SW v55。更新済みunite-db正本シートからパルキアのステータス15行・レシオ96行を取得し、ラボへ12計算行として追加。
+- `main` は v5.35 / SW v58。実装コミット `aa3ab67` でラボのDOM非依存計算関数 `computeStats` / `dcCalcActual` を `js/lab-core.js` へ分離した（Phase 3、挙動不変）。
+- `index.html` は7,092行から7,027行へ縮小。テストはHTML文字列からの関数抽出を廃止し、`js/lab-core.js` を直接評価する構造へ変更。
 - メインスプレッドシートの構造元へ不足していた5体（イベルタル／ウェーニバル／メガニウム／ラウドボーン／パルキア）を追加済み。`わざデータ` 56行、`ステータスデータ` 75行を登録し、full regen禁止を解除。
 - コミット `6b1d498` は、CSVの新数値書式（`"1,040."`）対応と、ギルガルド／オーダイル／ギャラドス／ウェーニバル／ニンフィア／バクフーンのバランス調整19値を取り込んだデータ更新。
 - manifestのPWAアイコンは同梱 `images/pokemon/25.png` へ移行し、Service Workerの事前キャッシュ対象へ追加。SW v52。
-- 検証済み: `node tests/logic.test.js` 95/95 PASS、レシオ1701/1701一致、ステータス97/97体差分ゼロ、変換器の構造ドリフト・オラクル不一致0。
+- 検証済み: `node tests/logic.test.js` 106/106 PASS、変更対象JS構文・`git diff --check`ともに終了コード0。レシオ1701/1701一致、ステータス97/97体差分ゼロは直近データ更新時の検証値。
+- ブラウザ実測済み: ゲスト起動、ラボ表示、ピカチュウLv9のもちもの補正（特攻418→486）、対カビゴンLv9の実ダメージ（通常198→129、ユナイト771→550）、コンソールエラー0。
+- Supabase変更は不要。今回差分は計算関数の配置・読込・テスト・Service Workerキャッシュだけで、SQL・migration・スキーマ変更を伴わない。
 - 対戦用ロスターは96体。ラボは97体（ストライクを含む）、スキル1,773行、メダル257枚、もちもの34個、メダル色11種。
 - `gen_lab_data.js` は `lab_data_generated.js` と本番用 `lab_data.js` の両方へ直接出力し、その後 unite-db 正本化を自動実行する。
 - メインスプレッドシートのsheet3/4は97体登録済み。4タブからのfull regenで97体を生成し、現行ラボと全ポケモンの値が一致することを確認済み（出力上の差はオブジェクトの並び順のみ）。
@@ -119,14 +122,14 @@
 
 - **257枚** メダル / **11色** セット効果
 - **34個** もちもの（G1〜G40 補正データ）
-- **96匹** ポケモンのスキルデータ（計1,761行）
-- **96匹** ポケモンのステータス（Lv1〜15）
+- **97匹** ポケモンのスキルデータ（計1,773行）
+- **97匹** ポケモンのステータス（Lv1〜15）
 
 ---
 
 ### `sw.js`
 
-Service Worker。キャッシュ名 `unite-tracker-v2`、`lab_data.js` もキャッシュ対象。
+Service Worker。キャッシュ名 `unite-tracker-v58`。`lab_data.js`、`js/constants.js`、`js/utils.js`、`js/lab-core.js` を含むアプリシェルをキャッシュする。
 
 ---
 
@@ -165,12 +168,6 @@ Service Worker。キャッシュ名 `unite-tracker-v2`、`lab_data.js` もキャ
 
 ## 5. 未解決の課題と次にやるべきこと
 
-### 優先度 高
-
-- [ ] **メインスプレッドシート sheet3/4 へ不足5体を登録**
-  - 2026-07-24確認: sheet3/4はいずれも92体で、イベルタル／ウェーニバル／メガニウム／ラウドボーン／パルキアが未登録。
-  - 現行 `lab_data.js` は97体。構造元に5体を追加するまで `gen_lab_data.js` のフル再生成は禁止。
-
 - [ ] **わざ1/わざ2 のアップグレード表示が「アップグレードなし」と表示されるケースの確認**
   - `upg` が空文字の行は `アップグレードなし` と表示される仕様だが、実際の挙動を要確認
 
@@ -189,6 +186,8 @@ Service Worker。キャッシュ名 `unite-tracker-v2`、`lab_data.js` もキャ
 - [x] `gen_lab_data.js` から本番用 `lab_data.js` への直接出力
 - [x] スマホ環境でのヘルプモーダル確認（390×844）
 - [x] manifestのPWAアイコンを同梱画像へ移行
+- [x] メインスプレッドシート sheet3/4 の不足5体を補完し、full regen禁止を解除
+- [x] Phase 3: `computeStats` / `dcCalcActual` を `js/lab-core.js` へ分離
 
 ---
 
@@ -215,9 +214,13 @@ node "C:/Users/ishgo/Downloads/pokemon-unite-tracker/gen_lab_data.js"
 ```
 C:/Users/ishgo/Downloads/pokemon-unite-tracker/
 ├── index.html              # メイン PWA（全コード）
+├── js/constants.js         # 分離済み定数（Phase 2）
+├── js/utils.js             # 分離済み純粋関数（Phase 2）
+├── js/lab-core.js          # ラボ計算コア（Phase 3）
 ├── lab_data.js             # 生成済みラボデータ（本番使用）
 ├── lab_data_generated.js   # gen_lab_data.js の出力（コピー元）
 ├── gen_lab_data.js         # CSV → lab_data.js 変換スクリプト
+├── tests/logic.test.js     # 依存なしロジック・構造検証
 ├── sw.js                   # Service Worker
 └── HANDOFF.md              # このファイル
 
