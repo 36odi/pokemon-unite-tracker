@@ -270,6 +270,9 @@ ok(skillsUnknown.length === 0, `SKILLS pokemon all in POKEMON_DATA (bad: ${skill
 ok(F.POKEMON_DATA.bal.pokemon.includes('パルキア'), 'Palkia is in the All-Rounder battle roster');
 eq(F.ICON_ID['パルキア'], 484, 'Palkia uses National Pokédex icon 484');
 eq(F.SKILLS['パルキア'], {s1:['はどうだん'], s2:['ドラゴンクロー']}, 'Palkia battle moves are selectable');
+ok(F.POKEMON_DATA.atk.pokemon.includes('レシラム'), 'Reshiram is in the Attacker battle roster');
+eq(F.ICON_ID['レシラム'], 643, 'Reshiram uses National Pokedex icon 643');
+eq(F.SKILLS['レシラム'], {s1:['りゅうのまい'], s2:['あおいほのお']}, 'Reshiram battle moves are selectable');
 
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
@@ -304,6 +307,11 @@ const pngSize = rel => {
   const b = fs.readFileSync(path.join(ROOT, rel));
   return [b.readUInt32BE(16), b.readUInt32BE(20)];
 };
+const reshiramIconPath = 'images/pokemon/643.png';
+ok(fs.existsSync(path.join(ROOT, reshiramIconPath)), 'Reshiram local icon exists');
+if (fs.existsSync(path.join(ROOT, reshiramIconPath))) {
+  eq(pngSize(reshiramIconPath), [96, 96], 'Reshiram icon is a 96x96 PNG');
+}
 const iconBySize = Object.fromEntries((manifest.icons || []).map(icon => [icon.sizes, icon.src]));
 eq(pngSize(iconBySize['192x192']), [192, 192], 'manifest 192px icon has matching PNG dimensions');
 eq(pngSize(iconBySize['512x512']), [512, 512], 'manifest 512px icon has matching PNG dimensions');
@@ -353,7 +361,7 @@ try {
     },
     caches: {
       open: async () => ({ addAll: async () => {}, put: async () => {} }),
-      keys: async () => ['unite-tracker-v55', currentCache],
+      keys: async () => ['unite-tracker-v59', currentCache],
       delete: async key => { deletedCaches.push(key); return true; },
       match: async () => undefined,
     },
@@ -365,8 +373,8 @@ try {
   let activateWork;
   swHandlers.activate({ waitUntil: promise => { activateWork = promise; } });
   await activateWork;
-  ok(currentCache && currentCache !== 'unite-tracker-v55', `SW cache version bumped from v55 (current: ${currentCache})`);
-  ok(deletedCaches.includes('unite-tracker-v55'), 'activate deletes unite-tracker-v55');
+  ok(currentCache && currentCache !== 'unite-tracker-v59', `SW cache version bumped from v59 (current: ${currentCache})`);
+  ok(deletedCaches.includes('unite-tracker-v59'), 'activate deletes unite-tracker-v59');
   ok(!deletedCaches.includes(currentCache), `activate retains current cache (${currentCache})`);
   ok(clientsClaimed, 'activate claims clients after cache cleanup');
 
