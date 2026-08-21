@@ -288,12 +288,17 @@ const dedicatedUnknown = Object.keys(F.DEDICATED_ITEMS).filter(p => !allPoke.inc
 ok(dedicatedUnknown.length === 0, `DEDICATED_ITEMS pokemon all in POKEMON_DATA (bad: ${dedicatedUnknown.join(', ')})`);
 const skillsUnknown = Object.keys(F.SKILLS).filter(p => !allPoke.includes(p));
 ok(skillsUnknown.length === 0, `SKILLS pokemon all in POKEMON_DATA (bad: ${skillsUnknown.slice(0, 5).join(', ')})`);
+const rosterSkillsMissing = allPoke.filter(p => !F.SKILLS[p]);
+ok(rosterSkillsMissing.length === 0, `every battle-roster Pokemon has SKILLS (missing: ${rosterSkillsMissing.join(', ')})`);
 ok(F.POKEMON_DATA.bal.pokemon.includes('パルキア'), 'Palkia is in the All-Rounder battle roster');
 eq(F.ICON_ID['パルキア'], 484, 'Palkia uses National Pokédex icon 484');
 eq(F.SKILLS['パルキア'], {s1:['はどうだん'], s2:['ドラゴンクロー']}, 'Palkia battle moves are selectable');
 ok(F.POKEMON_DATA.atk.pokemon.includes('レシラム'), 'Reshiram is in the Attacker battle roster');
 eq(F.ICON_ID['レシラム'], 643, 'Reshiram uses National Pokedex icon 643');
 eq(F.SKILLS['レシラム'], {s1:['りゅうのまい'], s2:['あおいほのお']}, 'Reshiram battle moves are selectable');
+ok(F.POKEMON_DATA.bal.pokemon.includes('ソルガレオ'), 'Solgaleo is in the All-Rounder battle roster');
+eq(F.ICON_ID['ソルガレオ'], 791, 'Solgaleo uses National Pokedex icon 791');
+eq(F.SKILLS['ソルガレオ'], {s1:['アイアンヘッド'], s2:['サイコショック']}, 'Solgaleo battle moves are selectable');
 
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
@@ -328,6 +333,13 @@ const pngSize = rel => {
   const b = fs.readFileSync(path.join(ROOT, rel));
   return [b.readUInt32BE(16), b.readUInt32BE(20)];
 };
+const rosterIconProblems = allPoke.filter(p => {
+  const id = F.ICON_ID[p];
+  if (!id) return true;
+  const rel = `images/pokemon/${id}.png`;
+  return !fs.existsSync(path.join(ROOT, rel)) || pngSize(rel).some(n => n !== 96);
+});
+ok(rosterIconProblems.length === 0, `every battle-roster Pokemon has a 96x96 local icon (bad: ${rosterIconProblems.join(', ')})`);
 const reshiramIconPath = 'images/pokemon/643.png';
 ok(fs.existsSync(path.join(ROOT, reshiramIconPath)), 'Reshiram local icon exists');
 if (fs.existsSync(path.join(ROOT, reshiramIconPath))) {
