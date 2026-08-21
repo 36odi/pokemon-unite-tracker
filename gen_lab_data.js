@@ -210,14 +210,15 @@ console.error(`生成完了: ${out.length} bytes → ${prodPath}`);
 // ========================
 const ROOT_DIR = 'C:/Users/ishgo/Downloads/pokemon-unite-tracker';
 const ratiosCsv = `${ROOT_DIR}/data/unitedb_ratios.csv`;
-if (fs.existsSync(ratiosCsv)) {
-  try {
-    require('child_process').execSync('node tools/build_skills_from_unitedb.js --apply',
-      { cwd: ROOT_DIR, stdio: 'inherit' });
-    console.error('unite-db レシオでスキル数値を正本化しました');
-  } catch (e) {
-    console.error('警告: unite-db 正本化に失敗（lab_data.js は生成済み）:', e.message);
-  }
-} else {
-  console.error('警告: data/unitedb_ratios.csv が無いため unite-db 正本化をスキップ（多段わざのlvScaleが誤る可能性）');
-}
+const statsCsv = `${ROOT_DIR}/data/unitedb_stats.csv`;
+if (!fs.existsSync(ratiosCsv)) throw new Error('data/unitedb_ratios.csv が無いため生成を中止');
+if (!fs.existsSync(statsCsv)) throw new Error('data/unitedb_stats.csv が無いため生成を中止');
+const childProcess = require('child_process');
+childProcess.execFileSync(process.execPath, ['tools/build_skills_from_unitedb.js','--apply'],
+  { cwd: ROOT_DIR, stdio: 'inherit' });
+console.error('unite-db レシオでスキル数値を正本化しました');
+childProcess.execFileSync(process.execPath, ['tools/build_status_from_unitedb.js','--apply'],
+  { cwd: ROOT_DIR, stdio: 'inherit' });
+console.error('unite-db Lv1-15ステータスを正本化しました');
+fs.copyFileSync(prodPath, outPath);
+console.error('正本化後の lab_data.js を lab_data_generated.js へ同期しました');

@@ -22,6 +22,9 @@ const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(String(v).replac
 const ALIAS={'ミュウツー(X)':'ミュウツーX','ミュウツー(Y)':'ミュウツーY'};
 const norm=p=>ALIAS[p]||p;
 const SLOT_T2U={'通常攻撃':'Basic','わざ1':'Move 1','わざ2':'Move 2','ユナイトわざ':'Unite Move'};
+// レシラムは受領済みの対戦記録仕様と正本シートで Move 1/2 の向きが逆。
+// 他ポケモンへ影響させないよう、ポケモン単位の明示的な例外として扱う。
+const SLOT_OVERRIDE={'レシラム':{'わざ1':'Move 2','わざ2':'Move 1'}};
 const KEEP_ENH=new Set(['メガニウム|はなふぶき']); // 強化成分は現行保持
 // 分類(ダメージ/回復/シールド)の正本判定。unite-dbのeffect_labelを正とする。
 const udbCat=l=>/Heal/i.test(l)?'回復':(/Shield/i.test(l)?'シールド':(/Damage/i.test(l)?'ダメージ':null));
@@ -57,6 +60,25 @@ const labSrc=fs.readFileSync(path.join(ROOT,'lab_data.js'),'utf8');
 eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));
 const SK=globalThis.LAB_SKILLS;
 
+// 統合シートへの反映前でもfull regenで新ポケモンを失わないため、構造だけを明示する。
+// 数値は下の正本対応処理で unitedb_ratios.csv から必ず供給する。
+if(!SK['レシラム']){
+  SK['レシラム']=[
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 通常',upg:'',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:null},
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 強化',upg:'',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:null},
+    {slot:'わざ1',name:'おいかぜ',dmgType:'',upg:'',stat:'特攻',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:4},
+    {slot:'わざ1',name:'りゅうのまい',dmgType:'シールド',upg:'5',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:7.5},
+    {slot:'わざ1',name:'りゅうのまい+',dmgType:'シールド',upg:'11',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:7.5},
+    {slot:'わざ2',name:'りゅうのいぶき',dmgType:'ダメージ',upg:'',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'あおいほのお',dmgType:'ダメージ',upg:'7',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:8},
+    {slot:'わざ2',name:'あおいほのお',dmgType:'ダメージ - やけど',upg:'7',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:5,hitsVar:false,cd:8},
+    {slot:'わざ2',name:'あおいほのお+',dmgType:'ダメージ',upg:'13',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:8},
+    {slot:'わざ2',name:'あおいほのお+',dmgType:'ダメージ - やけど',upg:'13',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:5,hitsVar:false,cd:8},
+    {slot:'ユナイトわざ',name:'烈火招雷',dmgType:'ダメージ - ほのお',upg:'',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:8},
+    {slot:'ユナイトわざ',name:'烈火招雷',dmgType:'ダメージ - いかずち',upg:'',stat:'特攻',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:8}
+  ];
+}
+
 function toolMoves(rows){
   const bySlot={};
   rows.forEach((row,idx)=>{
@@ -78,7 +100,8 @@ for(const p of Object.keys(SK)){
   newVals[p]={};
   const tm=toolMoves(SK[p]);
   for(const tslot of Object.keys(tm)){
-    const umoves=udb[p]?.[SLOT_T2U[tslot]]||[];
+    const sourceSlot=SLOT_OVERRIDE[p]?.[tslot]||SLOT_T2U[tslot];
+    const umoves=udb[p]?.[sourceSlot]||[];
     tm[tslot].forEach((tmv,mi)=>{
       const umv=umoves[mi];
       const keepEnh=KEEP_ENH.has(p+'|'+tmv.base);

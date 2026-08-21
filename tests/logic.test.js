@@ -245,6 +245,8 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
+eq(Object.keys(S).length, 98, 'LAB_STATUS contains 98 Pokemon including Reshiram');
+eq(Object.keys(K).length, 98, 'LAB_SKILLS contains 98 Pokemon including Reshiram');
 eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
 eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
@@ -257,6 +259,25 @@ eq(palkiaLab.find(r => r.name === 'アクアリング' && r.dmgType === '回復'
 eq(palkiaLab.find(r => r.name === 'きりさく')?.hits, 2, 'Slash uses 2 hits');
 eq([palkiaLab.find(r => r.dmgType === 'ダメージ - 連続斬り')?.hits, palkiaLab.find(r => r.dmgType === 'ダメージ - 連続斬り')?.hitsVar], [7, true], 'Palkia Unite flurry is variable up to 7 hits');
 eq([palkiaLab.find(r => r.dmgType === 'ダメージ - 最終段')?.coeff, palkiaLab.find(r => r.dmgType === 'ダメージ - 最終段')?.fixed], [108, 325], 'Palkia Unite final-hit ratio is present');
+eq(S['レシラム']?.role, 'Attacker', 'Reshiram lab role is Attacker');
+eq(S['レシラム']?.dmg, 'Special', 'Reshiram lab damage type is Special');
+eq([S['レシラム']?.hp[0], S['レシラム']?.hp[14]], [3200, 6700], 'Reshiram HP matches source at lv1/lv15');
+eq([S['レシラム']?.spatk[0], S['レシラム']?.spatk[14]], [55, 1000], 'Reshiram SpAtk matches source at lv1/lv15');
+const reshiramLab = K['レシラム'] || [];
+eq(reshiramLab.length, 12, 'Reshiram has 12 lab structure rows');
+const reshi = (slot, name, type) => reshiramLab.find(r => r.slot === slot && r.name === name && r.dmgType === type);
+eq([reshi('わざ2','りゅうのいぶき','ダメージ')?.coeff, reshi('わざ2','りゅうのいぶき','ダメージ')?.fixed], [40, 500], 'Dragon Breath ratio is in tool move slot 2');
+eq([reshi('わざ2','あおいほのお','ダメージ')?.coeff, reshi('わざ2','あおいほのお','ダメージ')?.fixed], [110, 700], 'Blue Flare ratio is in tool move slot 2');
+eq([reshi('わざ2','あおいほのお','ダメージ - やけど')?.coeff, reshi('わざ2','あおいほのお','ダメージ - やけど')?.fixed, reshi('わざ2','あおいほのお','ダメージ - やけど')?.hits], [11, 70, 5], 'Blue Flare burn is five hits in tool move slot 2');
+eq([reshi('わざ1','りゅうのまい','シールド')?.coeff, reshi('わざ1','りゅうのまい','シールド')?.fixed, reshi('わざ1','りゅうのまい','シールド')?.upg], [80, 300, '5'], 'Dragon Dance shield is in tool move slot 1');
+eq([reshi('わざ1','りゅうのまい+','シールド')?.coeff, reshi('わざ1','りゅうのまい+','シールド')?.fixed, reshi('わざ1','りゅうのまい+','シールド')?.upg], [80, 300, '11'], 'Dragon Dance+ keeps its shield ratio at Lv11');
+eq([reshi('わざ2','あおいほのお+','ダメージ')?.coeff, reshi('わざ2','あおいほのお+','ダメージ')?.fixed, reshi('わざ2','あおいほのお+','ダメージ')?.upg], [110, 700, '13'], 'Blue Flare+ keeps its main ratio at Lv13');
+eq([reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.fixed], [100, 500], 'Reshiram Unite flames ratio is present');
+eq([reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.fixed], [60, 300], 'Reshiram Unite lightning ratio is present');
+const ratioSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_ratios.csv'), 'utf8');
+const statsSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_stats.csv'), 'utf8');
+ok((ratioSource.match(/Reshiram/g) || []).length >= 96, 'ratio source contains all Reshiram source rows');
+eq((statsSource.match(/,Reshiram,Reshiram,/g) || []).length, 15, 'stats source contains exactly 15 Reshiram levels');
 
 // ---- 定数データの整合性（js/constants.js） ----
 section('constants integrity');
