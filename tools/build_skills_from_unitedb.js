@@ -79,6 +79,29 @@ if(!SK['レシラム']){
   ];
 }
 
+if(!SK['ソルガレオ']){
+  SK['ソルガレオ']=[
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 通常（コスモッグ）',upg:'',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:null},
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 強化（コスモッグ）',upg:'',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:null},
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 強化（コスモウム・3ヒット）',upg:'',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:3,hitsVar:false,cd:null},
+    {slot:'通常攻撃',name:'通常攻撃',dmgType:'ダメージ - 強化（ソルガレオ）',upg:'',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:null},
+    {slot:'わざ1',name:'テレポート',dmgType:'',upg:'',stat:'攻撃',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:5},
+    {slot:'わざ1',name:'アイアンヘッド',dmgType:'ダメージ',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6.5},
+    {slot:'わざ1',name:'アイアンヘッド',dmgType:'ダメージ - 連撃（1ヒット）',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:true,cd:6.5},
+    {slot:'わざ1',name:'アイアンヘッド',dmgType:'ダメージ - 連撃（妨害無効の相手）',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6.5},
+    {slot:'わざ1',name:'アイアンヘッド+',dmgType:'ダメージ - 連撃（妨害無効の相手）',upg:'11',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6.5},
+    {slot:'わざ2',name:'コスモパワー',dmgType:'',upg:'',stat:'攻撃',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'ダメージ - チャージ0',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'ダメージ - チャージ1',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'ダメージ - チャージ2',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'ダメージ - チャージ3',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'ダメージ - ツメ（2ヒット）',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:2,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック',dmgType:'回復 - ツメ',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'わざ2',name:'サイコショック+',dmgType:'回復 - ツメ',upg:'13',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:6},
+    {slot:'ユナイトわざ',name:'シャイニングメテオクラッシャー',dmgType:'ダメージ',upg:'7',stat:'攻撃',coeff:0,fixed:0,lvScale:0,hits:1,hitsVar:false,cd:112}
+  ];
+}
+
 function toolMoves(rows){
   const bySlot={};
   rows.forEach((row,idx)=>{

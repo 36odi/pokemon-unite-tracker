@@ -35,7 +35,7 @@ const EN2JP={
   'Metagross':'メタグロス','Mew':'ミュウ','Mimikyu':'ミミッキュ','Miraidon':'ミライドン',
   'Moltres':'ファイヤー','Mr.Mime':'バリヤード','Ninetales':'アローラキュウコン','Palkia':'パルキア','Pawmot':'パーモット',
   'Pikachu':'ピカチュウ','Psyduck':'コダック','Raichu':'アローラライチュウ','Rapidash':'ガラルギャロップ',
-  'Reshiram':'レシラム','Sableye':'ヤミラミ','Scizor':'ハッサム','Scyther':'ストライク','Sirfetchd':'ネギガナイト',
+  'Reshiram':'レシラム','Sableye':'ヤミラミ','Scizor':'ハッサム','Scyther':'ストライク','Sirfetchd':'ネギガナイト','Solgaleo':'ソルガレオ',
   'Skeledirge':'ラウドボーン','Slowbro':'ヤドラン','Snorlax':'カビゴン','Suicune':'スイクン',
   'Sylveon':'ニンフィア','Talonflame':'ファイアロー','Tinkaton':'デカヌチャン','Trevenant':'オーロット',
   'Tsareena':'アマージョ','Typhlosion':'バクフーン','Tyranitar':'バンギラス','Umbreon':'ブラッキー',
@@ -77,7 +77,7 @@ for(const [en,sourceRows] of Object.entries(grouped)){
   }
   canonical[jp]=entry;
 }
-if(Object.keys(canonical).length!==98){ console.error('ABORT: 正本ポケモン数が98ではない: '+Object.keys(canonical).length); process.exit(1); }
+if(Object.keys(canonical).length!==99){ console.error('ABORT: 正本ポケモン数が99ではない: '+Object.keys(canonical).length); process.exit(1); }
 
 const labPath=path.join(ROOT,'lab_data.js');
 const labSrc=fs.readFileSync(labPath,'utf8');

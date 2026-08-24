@@ -245,8 +245,8 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
-eq(Object.keys(S).length, 98, 'LAB_STATUS contains 98 Pokemon including Reshiram');
-eq(Object.keys(K).length, 98, 'LAB_SKILLS contains 98 Pokemon including Reshiram');
+eq(Object.keys(S).length, 99, 'LAB_STATUS contains 99 Pokemon including Solgaleo');
+eq(Object.keys(K).length, 99, 'LAB_SKILLS contains 99 Pokemon including Solgaleo');
 eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
 eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
@@ -274,10 +274,28 @@ eq([reshi('わざ1','りゅうのまい+','シールド')?.coeff, reshi('わざ1
 eq([reshi('わざ2','あおいほのお+','ダメージ')?.coeff, reshi('わざ2','あおいほのお+','ダメージ')?.fixed, reshi('わざ2','あおいほのお+','ダメージ')?.upg], [110, 700, '13'], 'Blue Flare+ keeps its main ratio at Lv13');
 eq([reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.fixed], [100, 500], 'Reshiram Unite flames ratio is present');
 eq([reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.fixed], [60, 300], 'Reshiram Unite lightning ratio is present');
+eq(S['ソルガレオ']?.role, 'All-Rounder', 'Solgaleo lab role is All-Rounder');
+eq(S['ソルガレオ']?.dmg, 'Physical', 'Solgaleo lab damage type is Physical');
+eq([S['ソルガレオ']?.hp[0], S['ソルガレオ']?.hp[14]], [3200, 8800], 'Solgaleo HP matches source at lv1/lv15');
+eq([S['ソルガレオ']?.atk[0], S['ソルガレオ']?.atk[14]], [160, 530], 'Solgaleo Atk matches source at lv1/lv15');
+const solgaleoLab = K['ソルガレオ'] || [];
+eq(solgaleoLab.length, 18, 'Solgaleo has 18 lab structure rows');
+const sol = (slot, name, type) => solgaleoLab.find(r => r.slot === slot && r.name === name && r.dmgType === type);
+eq([sol('通常攻撃','通常攻撃','ダメージ - 通常（コスモッグ）')?.coeff, sol('通常攻撃','通常攻撃','ダメージ - 通常（コスモッグ）')?.fixed], [100, 0], 'Solgaleo basic ratio is present');
+eq([sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.coeff, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.fixed, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.hits], [34, 102, 3], 'Solgaleo Cosmoem boosted attack uses three hits');
+eq([sol('わざ1','アイアンヘッド','ダメージ')?.coeff, sol('わざ1','アイアンヘッド','ダメージ')?.fixed, sol('わざ1','アイアンヘッド','ダメージ')?.upg], [98, 294, '7'], 'Iron Head base ratio is in move slot 1 at Lv7');
+eq([sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.coeff, sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.fixed, sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.hitsVar], [65, 195, true], 'Iron Head barrage is variable per hit');
+eq([sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.coeff, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.fixed, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.upg], [325, 975, '11'], 'Iron Head+ enhanced component keeps the user-provided Lv11');
+eq([sol('わざ2','サイコショック','ダメージ - チャージ3')?.coeff, sol('わざ2','サイコショック','ダメージ - チャージ3')?.fixed], [143, 429], 'Psyshock maximum charge ratio is in move slot 2');
+eq([sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.coeff, sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.fixed, sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.hits], [68, 204, 2], 'Psyshock claw swipe uses two hits');
+eq([sol('わざ2','サイコショック+','回復 - ツメ')?.coeff, sol('わざ2','サイコショック+','回復 - ツメ')?.fixed, sol('わざ2','サイコショック+','回復 - ツメ')?.upg], [84, 252, '13'], 'Psyshock+ healing keeps the user-provided Lv13');
+eq([sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.coeff, sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.fixed, sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.upg], [220, 660, '7'], 'Solgaleo Unite ratio is present at Lv7');
 const ratioSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_ratios.csv'), 'utf8');
 const statsSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_stats.csv'), 'utf8');
 ok((ratioSource.match(/Reshiram/g) || []).length >= 96, 'ratio source contains all Reshiram source rows');
 eq((statsSource.match(/,Reshiram,Reshiram,/g) || []).length, 15, 'stats source contains exactly 15 Reshiram levels');
+eq((ratioSource.match(/,Solgaleo,ソルガレオ,/g) || []).length, 96, 'ratio source contains exactly 96 Solgaleo source rows');
+eq((statsSource.match(/,Solgaleo,Solgaleo,/g) || []).length, 15, 'stats source contains exactly 15 Solgaleo levels');
 
 // ---- 定数データの整合性（js/constants.js） ----
 section('constants integrity');
