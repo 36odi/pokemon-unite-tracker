@@ -1,0 +1,9 @@
+-- 原則は旧アプリへ戻すだけとし、列と設定を残す。
+-- 下記は除外設定を失うためコメント化した最終手段。元のスタッツ数値は消さない。
+-- 実行条件: 新コードを使用するクライアントを停止し、旧版へ戻し、
+-- idとexclude_from_avg_statsを承認された安全な場所に退避し、列削除の別途承認を得る。
+-- CASCADEは使用しない。依存があれば停止して再検討する。
+-- BEGIN;
+-- ALTER TABLE public.battles DROP COLUMN exclude_from_avg_stats;
+-- NOTIFY pgrst, 'reload schema';
+-- COMMIT;

@@ -48,10 +48,52 @@ const body = `
     pctItems:LAB_PCT_ITEMS, dmgStackItems:LAB_DMG_STACK_ITEMS,
     stackItems:LAB_STACK_ITEMS, goalItems:LAB_GOAL_ITEMS, medalBonus:labCalcMedalBonus,
   };
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS, aggBattleStats, normBattles,
           LAB_STATS_DEPS, ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
+
+section('average stats exclusion');
+const avgFixture=[
+  {result:'win',kills:10,dmg_dealt:1000},
+  {result:'loss',kills:0,dmg_dealt:null},
+  {result:'win',kills:null,dmg_dealt:3000},
+  {result:'loss',kills:20,dmg_dealt:100,exclude_from_avg_stats:true},
+  {result:'win',exclude_from_avg_stats:true}
+];
+const avgBefore=JSON.stringify(avgFixture);
+const avg=F.aggBattleStats(avgFixture);
+eq([avg.n,avg.winN,avg.lossN,avg.excludedN,avg.excludedWinN,avg.excludedLossN,avg.missingN],[3,2,1,1,0,1,1],'record counts distinguish excluded stats and missing stats');
+eq([avg.rows[0].all,avg.rows[0].win,avg.rows[0].loss],[5,10,0],'KO means retain zero and exclude only flagged battle');
+eq([avg.rows[2].all,avg.rows[2].win,avg.rows[2].loss],[2000,2000,null],'damage uses only its own inputs');
+eq([avg.rows[0].allN,avg.rows[2].allN,avg.rows[1].allN],[2,2,0],'per-field denominators');
+eq(JSON.stringify(avgFixture),avgBefore,'aggregation does not mutate source');
+eq([avgFixture.length,F.winCount(avgFixture),F.wrPct(F.winCount(avgFixture),avgFixture.length)],[5,3,'60.0%'],'excluded battles remain in overall results');
+const includedAgain=avgFixture.map(b=>({...b,exclude_from_avg_stats:false}));
+const restoredAvg=F.aggBattleStats(includedAgain);
+eq([restoredAvg.n,restoredAvg.excludedN,restoredAvg.rows[0].all],[4,0,10],'turning exclusion off restores KO mean');
+eq(restoredAvg.rows[2].all,4100/3,'turning exclusion off restores damage mean');
+const noStats=F.aggBattleStats([{result:'win',kills:null,assists:'',exclude_from_avg_stats:true},{}]);
+eq([noStats.n,noStats.excludedN,noStats.missingN],[0,0,2],'empty stats are not counted as excluded records');
+ok(noStats.rows.every(r=>r.all===null&&r.win===null&&r.loss===null),'empty stats never produce zero or NaN means');
+const allExcluded=F.aggBattleStats([{result:'win',kills:0,exclude_from_avg_stats:true}]);
+eq([allExcluded.n,allExcluded.excludedN,allExcluded.excludedWinN],[0,1,1],'excluded zero is a recorded excluded battle');
+ok(allExcluded.rows.every(r=>r.all===null),'all excluded means null');
+const partial=F.aggBattleStats([{result:'win',kills:4}]);
+eq([partial.n,partial.rows[0].all,partial.rows[2].all],[1,4,null],'KO-only record never changes damage average');
+const legacy=F.aggBattleStats([{result:'win',kills:2},{result:'loss',kills:4,exclude_from_avg_stats:null},{kills:6,exclude_from_avg_stats:false}]);
+eq([legacy.n,legacy.excludedN,legacy.rows[0].all],[3,0,4],'missing null false flags preserve old mean');
+eq(F.aggBattleStats([{kills:'0'},{kills:'2'}]).rows[0].all,1,'legacy numeric strings retain zero');
+eq(F.aggBattleStats([{kills:''},{kills:' '},{kills:'invalid'},{kills:Infinity}]).n,0,'non-values do not create a stats record');
+eq(F.aggBattleStats([]).n,0,'empty battle list');
+for(const key of ['kills','assists','dmg_dealt','dmg_taken','heal','goals']){
+  const a=F.aggBattleStats([{result:'win',[key]:0},{result:'loss',[key]:10},{result:'win',[key]:999,exclude_from_avg_stats:true}]);
+  const i=['kills','assists','dmg_dealt','dmg_taken','heal','goals'].indexOf(key);
+  eq([a.rows[i].all,a.rows[i].win,a.rows[i].loss,a.rows[i].allN],[5,0,10,2],key+' follows identical exclusion rule');
+}
+const normalized=F.normBattles([{kills:0},{exclude_from_avg_stats:null},{exclude_from_avg_stats:true,kills:9},{exclude_from_avg_stats:false}]);
+eq(normalized.map(b=>b.exclude_from_avg_stats),[false,false,true,false],'read boundary normalizes legacy flags');
+eq([normalized[0].kills,normalized[2].kills],[0,9],'normalization preserves numeric inputs');
 
 // ---- escapeHtml ----
 section('escapeHtml');

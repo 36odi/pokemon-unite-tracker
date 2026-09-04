@@ -42,8 +42,42 @@ function gradeTier(grade){ return grade>=20?2:grade>=10?1:0; }
 const POKE_NAME_ALIASES = { 'ミュウツー(X)':'ミュウツーX', 'ミュウツー(Y)':'ミュウツーY' };
 function normPokeName(p){ return POKE_NAME_ALIASES[p] || p; }
 function normBattles(arr){
-  for(const b of arr || []){ if(b && b.pokemon) b.pokemon = normPokeName(b.pokemon); }
+  for(const b of arr || []){
+    if(!b) continue;
+    if(b.pokemon) b.pokemon = normPokeName(b.pokemon);
+    b.exclude_from_avg_stats = b.exclude_from_avg_stats === true;
+  }
   return arr || [];
+}
+
+// 平均スタッツ専用の集計。元の試合一覧や勝率・レート用の集計には影響させない。
+const STAT_FIELDS=[['kills','KO','num'],['assists','アシスト','num'],['dmg_dealt','与ダメ','dmg'],['dmg_taken','被ダメ','dmg'],['heal','回復','dmg'],['goals','ゴール','num']];
+function battleStatValue(value){
+  if(value==null || (typeof value==='string' && value.trim()==='')) return null;
+  const n=Number(value);
+  return Number.isFinite(n)?n:null;
+}
+function hasBattleStats(b){ return STAT_FIELDS.some(([key])=>battleStatValue(b[key])!=null); }
+function aggBattleStats(battles){
+  const recorded=battles.filter(hasBattleStats);
+  const included=recorded.filter(b=>b.exclude_from_avg_stats!==true);
+  const excluded=recorded.filter(b=>b.exclude_from_avg_stats===true);
+  const wins=included.filter(b=>b.result==='win'), losses=included.filter(b=>b.result==='loss');
+  const average=(arr,key)=>{
+    const values=arr.map(b=>battleStatValue(b[key])).filter(v=>v!=null);
+    return {value:values.length?values.reduce((sum,v)=>sum+v,0)/values.length:null,n:values.length};
+  };
+  return {
+    n:included.length, winN:wins.length, lossN:losses.length,
+    excludedN:excluded.length,
+    excludedWinN:excluded.filter(b=>b.result==='win').length,
+    excludedLossN:excluded.filter(b=>b.result==='loss').length,
+    missingN:battles.length-recorded.length,
+    rows:STAT_FIELDS.map(([key,label,type])=>{
+      const all=average(included,key), win=average(wins,key), loss=average(losses,key);
+      return {label,type,all:all.value,win:win.value,loss:loss.value,allN:all.n,winN:win.n,lossN:loss.n};
+    })
+  };
 }
 
 // ===== Supabase ページング取得 =====

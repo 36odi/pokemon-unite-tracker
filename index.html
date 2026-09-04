@@ -298,6 +298,10 @@
             <label class="ms-field">被ダメージ<input type="number" id="statDmgTaken" min="0" inputmode="numeric" placeholder="—" /></label>
             <label class="ms-field">回復<input type="number" id="statHeal" min="0" inputmode="numeric" placeholder="—" /></label>
           </div>
+          <div class="stats-exclude-option">
+            <label for="statExcludeAvgStats"><input type="checkbox" id="statExcludeAvgStats" aria-describedby="statExcludeAvgStatsHelp" />平均スタッツから除外する</label>
+            <div id="statExcludeAvgStatsHelp" class="stats-exclude-help">短時間で終了した試合などに。勝率・試合数には含まれます。</div>
+          </div>
           <textarea class="note-input" id="noteInput" placeholder="対戦のメモをフリーワードで入力できます" rows="2"></textarea>
         </div>
         <div style="height:8px;"></div>
@@ -1498,6 +1502,10 @@
         <label class="ms-field">被ダメージ<input type="number" id="editStatDmgTaken" min="0" inputmode="numeric" placeholder="—" /></label>
         <label class="ms-field">回復<input type="number" id="editStatHeal" min="0" inputmode="numeric" placeholder="—" /></label>
       </div>
+      <div class="stats-exclude-option">
+        <label for="editStatExcludeAvgStats"><input type="checkbox" id="editStatExcludeAvgStats" aria-describedby="editStatExcludeAvgStatsHelp" />平均スタッツから除外する</label>
+        <div id="editStatExcludeAvgStatsHelp" class="stats-exclude-help">短時間で終了した試合などに。勝率・試合数には含まれます。</div>
+      </div>
     </div>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeModal('editModal')">キャンセル</button>
@@ -1918,6 +1926,7 @@ async function migrateGuestData(){
         pokemon:b.pokemon||null, skill1:b.skill1||null, skill2:b.skill2||null,
         items:b.items||null, battle_item:b.battle_item||null, lane:b.lane||null, note:b.note||null,
         kills:b.kills??null, assists:b.assists??null, dmg_dealt:b.dmg_dealt??null, dmg_taken:b.dmg_taken??null, heal:b.heal??null, goals:b.goals??null,
+        exclude_from_avg_stats:b.exclude_from_avg_stats===true,
         created_at:b.created_at||new Date().toISOString()
       }));
       const {error:be}=await db.from('battles').insert(rows);
@@ -2051,6 +2060,14 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.41',
+    date: '2026-09-03',
+    items: [
+      '試合の数値を残したまま、平均スタッツから除外できるようになりました。過去の試合も編集から切り替えられます。',
+      'シリーズ分析で、画面やシリーズを素早く切り替えたときのグラフ表示を安定させました。',
+    ]
+  },
   {
     version: 'v5.40',
     date: '2026-08-24',
@@ -2798,7 +2815,7 @@ async function exportCsv(){
     return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   };
 
-  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン','KO','アシスト','与ダメージ','被ダメージ','回復','ゴール数'];
+  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン','KO','アシスト','与ダメージ','被ダメージ','回復','ゴール数','平均スタッツから除外'];
   const rows=allBattles.map(b=>[
     formatDate(b.created_at),
     selectedNames[b.series_id]||'',
@@ -2816,7 +2833,8 @@ async function exportCsv(){
     b.dmg_dealt??'',
     b.dmg_taken??'',
     b.heal??'',
-    b.goals??''
+    b.goals??'',
+    b.exclude_from_avg_stats===true
   ]);
 
   // CSVインジェクション対策: 数式として解釈されうる先頭文字(= + - @ タブ)は ' を前置して無害化（メモ・シリーズ名などの自由入力向け）
@@ -3099,7 +3117,7 @@ async function loadAnalysis(){
       .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
     // 全シリーズ横断の全件取得。1000行上限があるため sbFetchAll でページング（orderはページ整合用の安定ソート）
     const {data:allBattles,error:e2}=await sbFetchAll((f,t)=>db.from('battles')
-      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
+      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id')
       .order('created_at',{ascending:true}).order('id',{ascending:true}).range(f,t));
     if(e1||e2){ console.error(e1||e2); return; }
     normBattles(allBattles||[]);
@@ -3417,26 +3435,12 @@ function renderCompareChart(){
     : '<div class="empty" style="padding:1rem 0;">データなし</div>';
 }
 
-// スタッツ（KO/アシスト/与ダメ/被ダメ/回復/ゴール）の集計（記録のある試合のみ・項目ごとに非nullで平均）
-const STAT_FIELDS=[['kills','KO','num'],['assists','アシスト','num'],['dmg_dealt','与ダメ','dmg'],['dmg_taken','被ダメ','dmg'],['heal','回復','dmg'],['goals','ゴール','num']];
-function aggBattleStats(battles){
-  const anyStat=b=>b.kills!=null||b.assists!=null||b.dmg_dealt!=null||b.dmg_taken!=null||b.heal!=null||b.goals!=null;
-  const wins=battles.filter(b=>b.result==='win'), losses=battles.filter(b=>b.result==='loss');
-  const avg=(arr,key)=>{
-    const v=arr.map(b=>b[key]).filter(x=>x!=null&&x!=='').map(Number).filter(x=>!isNaN(x));
-    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
-  };
-  return {
-    n:battles.filter(anyStat).length,
-    winN:wins.filter(anyStat).length,
-    lossN:losses.filter(anyStat).length,
-    rows:STAT_FIELDS.map(([key,label,type])=>({label,type,all:avg(battles,key),win:avg(wins,key),loss:avg(losses,key)}))
-  };
-}
-// 集計テーブルHTML。記録が無ければ空文字を返す（呼び出し側で出し分け）
+// 平均の対象なしでも、未入力と除外記録を区別して表示する。
 function statsSummaryHTML(battles){
   const a=aggBattleStats(battles);
-  if(!a.n) return '';
+  const excluded=`<div class="stats-excluded-count">平均対象外: ${a.excludedN}件（勝ち${a.excludedWinN}件・負け${a.excludedLossN}件）</div>`;
+  const note='<div class="stats-summary-note">※ 平均対象外の件数は、数値を1項目以上記録した試合のみです。</div>';
+  if(!a.n) return `<div class="stats-summary"><div class="empty" style="padding:0.8rem 0;">${a.excludedN?'対象の記録がありません':'スタッツの記録がありません'}</div>${excluded}${note}</div>`;
   const fmt=(v,type)=> v==null?'—':(type==='dmg'?Math.round(v).toLocaleString():v.toFixed(1));
   const th=(label,col)=>`<th style="padding:4px 6px;text-align:center;${col?'color:'+col+';':'color:var(--text3);'}">${label}</th>`;
   const head=`<thead><tr style="border-bottom:1px solid var(--border);">${th('項目')}${th('全体('+a.n+')')}${th('勝ち('+a.winN+')','var(--win)')}${th('負け('+a.lossN+')','var(--loss)')}</tr></thead>`;
@@ -3446,8 +3450,8 @@ function statsSummaryHTML(battles){
     <td style="padding:4px 6px;text-align:center;color:var(--win);">${fmt(r.win,r.type)}</td>
     <td style="padding:4px 6px;text-align:center;color:var(--loss);">${fmt(r.loss,r.type)}</td>
   </tr>`).join('');
-  return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">${head}<tbody>${body}</tbody></table></div>
-    <div style="font-size:10px;color:var(--text3);margin-top:6px;">※ 各項目を記録した試合のみで平均（項目ごとに記録数が異なる場合あり）</div>`;
+  return `<div class="stats-summary"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">${head}<tbody>${body}</tbody></table></div>
+    ${excluded}<div class="stats-summary-note">※ 各項目を記録した対象試合のみで平均（項目ごとに記録数が異なる場合あり）</div>${note}</div>`;
 }
 
 function renderTotalStats(){
@@ -3478,7 +3482,7 @@ function renderTotalStats(){
       }).join('')
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
   const ssEl=document.getElementById('ttStatsSummary');
-  if(ssEl) ssEl.innerHTML=statsSummaryHTML(all)||'<div class="empty" style="padding:0.8rem 0;">スタッツの記録がありません</div>';
+  if(ssEl) ssEl.innerHTML=statsSummaryHTML(all);
 }
 
 // ---- マイピックアップ（要約カード）----
@@ -3764,7 +3768,7 @@ function renderPokeDetail(){
       <div class="stat-box" style="flex:1;"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:16px;color:${wrCol}">${wr}</div></div>
     </div>
 
-    ${(()=>{const h=statsSummaryHTML(bs);return h?`<div class="detail-subsection"><div class="detail-subsection-title">⚔️ 平均スタッツ</div>${h}</div>`:'';})()}
+    <div class="detail-subsection"><div class="detail-subsection-title">⚔️ 平均スタッツ</div>${statsSummaryHTML(bs)}</div>
 
     ${!hasSet?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
 
@@ -4521,7 +4525,7 @@ async function loadBattles(){
   }
   // P1: 必要列のみ取得。1シリーズでも1000戦超に備え sbFetchAll でページング
   const {data}=await sbFetchAll((f,t)=>db.from('battles')
-    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,created_at,series_id')
+    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id')
     .eq('series_id',currentSeriesId)
     .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
   battles=normBattles(data||[]);
@@ -4799,6 +4803,7 @@ function renderHistory(){
     const tb=`<span class="badge ${cm[b.match_type]||'badge-solo'}">${lm[b.match_type]||b.match_type}</span>`;
     const rkb=rankBadge(b.rank);
     const botb=b.is_bot?`<span class="badge" style="background:#2a2440;color:#b794f6;">🤖 BOT</span>`:'';
+    const avgb=b.exclude_from_avg_stats===true?'<span class="badge stats-excluded-badge">平均対象外</span>':'';
     const laneb=b.lane?`<span class="badge" style="background:#16324a;color:#7ec8ff;">${escapeHtml(b.lane)}</span>`:'';
 
     const pokeImgUrl=b.pokemon?getIconUrl(b.pokemon):null;
@@ -4841,7 +4846,7 @@ function renderHistory(){
 
     return `<div class="h-card">
       <div class="h-row1">
-        <div class="h-badges">${rb}${tb}${rkb}${laneb}${botb}</div>
+        <div class="h-badges">${rb}${tb}${rkb}${laneb}${botb}${avgb}</div>
         <div class="h-meta-r">
           <span class="h-num">#${num}</span>
           <span class="h-date">${ds}</span>
@@ -4891,6 +4896,7 @@ let currentSeriesArchived=false;
 let seriesanalChartInst=null;
 let seriesanalDayChartInst=null;
 let seriesanalRateChartInst=null;
+let seriesanalRenderId=0;
 let navId=0; // ナビゲーションガード用カウンタ
 let streakOpen=false;
 
@@ -4924,9 +4930,17 @@ const STAT_INPUTS=[['kills','Kills'],['assists','Assists'],['dmg_dealt','DmgDeal
 // 入力値→整数 or null（未入力・不正・負数は null）。
 const parseStatInput=id=>{const v=document.getElementById(id)?.value; if(v==null||v==='')return null; const n=parseInt(v,10); return (isNaN(n)||n<0)?null:n;};
 // 参考記録（KO/アシスト/与ダメ/被ダメ/回復/ゴール）を prefix の入力欄から読む。
-function readStatInputs(prefix){ const o={}; STAT_INPUTS.forEach(([key,suf])=>{o[key]=parseStatInput(prefix+suf);}); return o; }
+function readStatInputs(prefix){
+  const o={}; STAT_INPUTS.forEach(([key,suf])=>{o[key]=parseStatInput(prefix+suf);});
+  o.exclude_from_avg_stats=document.getElementById(prefix+'ExcludeAvgStats')?.checked===true;
+  return o;
+}
 // prefix の入力欄に battle の値を反映（b=null で全クリア）。
-function fillStatInputs(prefix,b){ STAT_INPUTS.forEach(([key,suf])=>{const e=document.getElementById(prefix+suf); if(e)e.value=(b&&b[key]!=null)?b[key]:'';}); }
+function fillStatInputs(prefix,b){
+  STAT_INPUTS.forEach(([key,suf])=>{const e=document.getElementById(prefix+suf); if(e)e.value=(b&&b[key]!=null)?b[key]:'';});
+  const chk=document.getElementById(prefix+'ExcludeAvgStats');
+  if(chk)chk.checked=b?.exclude_from_avg_stats===true;
+}
 function readBattleStats(){ return readStatInputs('stat'); }
 function clearBattleStats(){ fillStatInputs('stat',null); }
 
@@ -5214,13 +5228,18 @@ async function deleteAccount(){
 
 // ===== A5 シリーズ分析 =====
 async function renderSeriesAnalysis(){
+  const myRender=++seriesanalRenderId;
   const myNav=navId; // 呼び出し時点のnavIdを保存
   const sel=document.getElementById('seriesanalSelect');
   const content=document.getElementById('seriesanalContent');
+  // チャートを先に破棄
+  if(seriesanalChartInst){seriesanalChartInst.destroy();seriesanalChartInst=null;}
+  if(seriesanalDayChartInst){seriesanalDayChartInst.destroy();seriesanalDayChartInst=null;}
+  if(seriesanalRateChartInst){seriesanalRateChartInst.destroy();seriesanalRateChartInst=null;}
   if(!sel||!content)return;
   const seriesId=sel.value;
   if(!seriesId){content.innerHTML='<div class="empty">シリーズを選択してください</div>';return;}
-  if(myNav!==navId)return; // ナビゲート済みなら中断
+  if(myNav!==navId||myRender!==seriesanalRenderId)return; // 画面移動済み、または古い描画なら中断
   content.innerHTML='<div class="empty">読み込み中...</div>';
   try{
   const s=allSeriesData.find(x=>x.id===seriesId);
@@ -5228,10 +5247,6 @@ async function renderSeriesAnalysis(){
   const bs=s.battles;
   if(!bs.length){content.innerHTML='<div class="empty">このシリーズに記録がありません</div>';return;}
 
-  // チャートを先に破棄
-  if(seriesanalChartInst){seriesanalChartInst.destroy();seriesanalChartInst=null;}
-  if(seriesanalDayChartInst){seriesanalDayChartInst.destroy();seriesanalDayChartInst=null;}
-  if(seriesanalRateChartInst){seriesanalRateChartInst.destroy();seriesanalRateChartInst=null;}
 
   // ── DOM非依存の概要集計 ──
   const overview=buildSeriesAnalysisOverview(bs);
@@ -5493,10 +5508,10 @@ async function renderSeriesAnalysis(){
   const ROLE_ORDER=['アタック型','バランス型','スピード型','ディフェンス型','サポート型'];
   const roleMap={}; bs.filter(b=>b.pokemon&&pokeRole[b.pokemon]).forEach(b=>{const r=pokeRole[b.pokemon];(roleMap[r]=roleMap[r]||[]).push(b);});
   // 平均スタッツ（型別）: 型で役割が違うため総合は出さず、型ごとに平均を表示。
-  // 5型すべて常に表示し、記録の無い型は「記録なし」と明示する。
+  // 5型すべて常に表示し、未入力と全件除外を共通の表示で区別する。
   const roleStatsHTML=ROLE_ORDER.map(r=>{
-    const h=roleMap[r]?statsSummaryHTML(roleMap[r]):'';
-    return `<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${r}</div>${h||'<div class="poke-mode-empty" style="padding:4px 0;">記録なし</div>'}</div>`;
+    const h=statsSummaryHTML(roleMap[r]||[]);
+    return `<div style="margin-bottom:10px;"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;">${r}</div>${h}</div>`;
   }).join('');
   const roleRows=ROLE_ORDER.filter(r=>roleMap[r]).map(r=>{
     const arr=roleMap[r], rw=winCount(arr), rt=arr.length, rwr=wrPct(rw,rt);
@@ -5578,7 +5593,7 @@ async function renderSeriesAnalysis(){
   // ── ポケモン使用チャート ──
   if(pokeList.length){
     setTimeout(()=>{
-      if(myNav!==navId)return; // ナビゲート済みなら中断
+      if(myNav!==navId||myRender!==seriesanalRenderId)return; // 画面移動済み、または古い描画なら中断
       const canvas=document.getElementById('seriesanalChart');
       if(!canvas)return;
       seriesanalChartInst=new Chart(canvas,{
@@ -5605,7 +5620,7 @@ async function renderSeriesAnalysis(){
   // ── B7 日別チャート ──
   if(dayKeys.length>1){
     setTimeout(()=>{
-      if(myNav!==navId)return; // ナビゲート済みなら中断
+      if(myNav!==navId||myRender!==seriesanalRenderId)return; // 画面移動済み、または古い描画なら中断
       const canvas=document.getElementById('seriesanalDayChart');
       if(!canvas)return;
       seriesanalDayChartInst=new Chart(canvas,{
@@ -5632,7 +5647,7 @@ async function renderSeriesAnalysis(){
   // ── レート推移チャート ──
   if(rateData.length>=2){
     setTimeout(()=>{
-      if(myNav!==navId)return;
+      if(myNav!==navId||myRender!==seriesanalRenderId)return;
       const canvas=document.getElementById('seriesanalRateChart');
       if(!canvas)return;
       const datasets=[{
