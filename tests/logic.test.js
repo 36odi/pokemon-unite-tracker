@@ -270,7 +270,7 @@ for (const [name, s] of Object.entries(S)) {
 }
 ok(badStat.length === 0, `all stat arrays length 15 & numeric (bad: ${badStat.slice(0, 5).join(', ')})`);
 
-const validSlots = new Set(['通常攻撃', 'わざ1', 'わざ2', 'ユナイトわざ']);
+const validSlots = new Set(['特性', '通常攻撃', 'わざ1', 'わざ2', 'ユナイトわざ']);
 let badSkill = [];
 for (const [name, rows] of Object.entries(K)) {
   if (!Array.isArray(rows)) { badSkill.push(`${name}:notArray`); continue; }
@@ -287,8 +287,8 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
-eq(Object.keys(S).length, 99, 'LAB_STATUS contains 99 Pokemon including Solgaleo');
-eq(Object.keys(K).length, 99, 'LAB_SKILLS contains 99 Pokemon including Solgaleo');
+eq(Object.keys(S).length, 100, 'LAB_STATUS contains 100 Pokemon including Morpeko');
+eq(Object.keys(K).length, 100, 'LAB_SKILLS contains 100 Pokemon including Morpeko');
 eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
 eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
@@ -309,13 +309,13 @@ const reshiramLab = K['レシラム'] || [];
 eq(reshiramLab.length, 12, 'Reshiram has 12 lab structure rows');
 const reshi = (slot, name, type) => reshiramLab.find(r => r.slot === slot && r.name === name && r.dmgType === type);
 eq([reshi('わざ2','りゅうのいぶき','ダメージ')?.coeff, reshi('わざ2','りゅうのいぶき','ダメージ')?.fixed], [40, 500], 'Dragon Breath ratio is in tool move slot 2');
-eq([reshi('わざ2','あおいほのお','ダメージ')?.coeff, reshi('わざ2','あおいほのお','ダメージ')?.fixed], [110, 700], 'Blue Flare ratio is in tool move slot 2');
-eq([reshi('わざ2','あおいほのお','ダメージ - やけど')?.coeff, reshi('わざ2','あおいほのお','ダメージ - やけど')?.fixed, reshi('わざ2','あおいほのお','ダメージ - やけど')?.hits], [11, 70, 5], 'Blue Flare burn is five hits in tool move slot 2');
+eq([reshi('わざ2','あおいほのお','ダメージ')?.coeff, reshi('わざ2','あおいほのお','ダメージ')?.fixed], [99, 630], 'Blue Flare ratio is in tool move slot 2');
+eq([reshi('わざ2','あおいほのお','ダメージ - やけど')?.coeff, reshi('わざ2','あおいほのお','ダメージ - やけど')?.fixed, reshi('わざ2','あおいほのお','ダメージ - やけど')?.hits], [9.9, 63, 5], 'Blue Flare burn is five hits in tool move slot 2');
 eq([reshi('わざ1','りゅうのまい','シールド')?.coeff, reshi('わざ1','りゅうのまい','シールド')?.fixed, reshi('わざ1','りゅうのまい','シールド')?.upg], [80, 300, '5'], 'Dragon Dance shield is in tool move slot 1');
 eq([reshi('わざ1','りゅうのまい+','シールド')?.coeff, reshi('わざ1','りゅうのまい+','シールド')?.fixed, reshi('わざ1','りゅうのまい+','シールド')?.upg], [80, 300, '11'], 'Dragon Dance+ keeps its shield ratio at Lv11');
-eq([reshi('わざ2','あおいほのお+','ダメージ')?.coeff, reshi('わざ2','あおいほのお+','ダメージ')?.fixed, reshi('わざ2','あおいほのお+','ダメージ')?.upg], [110, 700, '13'], 'Blue Flare+ keeps its main ratio at Lv13');
-eq([reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.fixed], [100, 500], 'Reshiram Unite flames ratio is present');
-eq([reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.fixed], [60, 300], 'Reshiram Unite lightning ratio is present');
+eq([reshi('わざ2','あおいほのお+','ダメージ')?.coeff, reshi('わざ2','あおいほのお+','ダメージ')?.fixed, reshi('わざ2','あおいほのお+','ダメージ')?.upg], [99, 630, '13'], 'Blue Flare+ keeps its main ratio at Lv13');
+eq([reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - ほのお')?.fixed], [90, 450], 'Reshiram Unite flames ratio is present');
+eq([reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.coeff, reshi('ユナイトわざ','烈火招雷','ダメージ - いかずち')?.fixed], [54, 270], 'Reshiram Unite lightning ratio is present');
 eq(S['ソルガレオ']?.role, 'All-Rounder', 'Solgaleo lab role is All-Rounder');
 eq(S['ソルガレオ']?.dmg, 'Physical', 'Solgaleo lab damage type is Physical');
 eq([S['ソルガレオ']?.hp[0], S['ソルガレオ']?.hp[14]], [3200, 8800], 'Solgaleo HP matches source at lv1/lv15');

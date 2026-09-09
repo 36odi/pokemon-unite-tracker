@@ -29,7 +29,7 @@ const EN2JP = {
   'Tsareena':'アマージョ','Typhlosion':'バクフーン','Tyranitar':'バンギラス','Umbreon':'ブラッキー',
   'Urshifu':'ウーラオス','Vaporeon':'シャワーズ','Venusaur':'フシギバナ','Wigglytuff':'プクリン',
   'Zacian':'ザシアン','Zapdos':'サンダー','Zeraora':'ゼラオラ','Zoroark':'ゾロアーク',
-  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル'
+  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル','Morpeko':'モルペコ'
 };
 
 // ---- CSV パース（クォート対応）----

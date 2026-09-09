@@ -850,6 +850,11 @@
           </div>
         </div>
         <!-- 通常攻撃 -->
+        <div id="labPassiveSection" style="display:none;">
+          <div class="lab-skill-slot-lbl">特性（条件を満たしたときの効果量）</div>
+          <div id="labDmgOutPassive" class="lab-dmg-out"></div>
+          <div style="font-size:11px;color:var(--text3);">各効果を個別に表示します。能力上昇はステータスへ自動加算されません。</div>
+        </div>
         <div id="labNormalSection" style="display:none;">
           <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
           <div id="labDmgOutNormal" class="lab-dmg-out"></div>
@@ -1006,6 +1011,10 @@
           </div>
         </div>
         <!-- 通常攻撃 -->
+        <div id="dcPassiveSection" style="display:none;margin-top:10px;">
+          <div class="lab-skill-slot-lbl">特性（条件を満たしたとき）</div>
+          <div id="dcDmgOutPassive" class="lab-dmg-out"></div>
+        </div>
         <div id="dcNormalSection" style="display:none;margin-top:10px;">
           <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
           <div id="dcDmgOutNormal" class="lab-dmg-out"></div>
@@ -2060,6 +2069,14 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.43',
+    date: '2026-09-09',
+    items: [
+      'モルペコをラボへ追加し、ステータス・わざ・特性の計算に対応しました。',
+      '9月3日のバランス調整をラボへ反映しました。',
+    ]
+  },
   {
     version: 'v5.42',
     date: '2026-09-05',
@@ -6077,6 +6094,13 @@ function labUpdateSkillSection(poke){
   fillSlot('わざ1','labSkill1Sel','labSkill1Upg','labDmgOut1');
   fillSlot('わざ2','labSkill2Sel','labSkill2Upg','labDmgOut2');
 
+  const passiveRows=rows.filter(r=>r.slot==='特性'&&r.coeff!=null);
+  const passiveSec=document.getElementById('labPassiveSection');
+  if(passiveSec){
+    passiveSec.style.display=passiveRows.length?'block':'none';
+    if(passiveRows.length) _renderDmgRows('labDmgOutPassive',passiveRows);
+  }
+
   // 通常攻撃（選択肢なし、全行を直接表示）
   const normalRows=rows.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
   const normalSec=document.getElementById('labNormalSection');
@@ -6151,6 +6175,8 @@ function calcLabDamageAll(){
   calcLabDamageSlot(2);
   const poke=document.getElementById('labPokeSelect')?.value;
   if(!poke||!labCalcResult) return;
+  const passiveRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='特性'&&r.coeff!=null);
+  if(passiveRows.length) _renderDmgRows('labDmgOutPassive',passiveRows);
   // 通常攻撃も更新
   const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
   if(normalRows.length) _renderDmgRows('labDmgOutNormal', normalRows);
@@ -6297,7 +6323,7 @@ function _calcDmgHtml(r){
   if(!labCalcResult) return '';
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
-  if(coeff==null||coeff<=0) return '';
+  if(coeff==null||(coeff<=0&&r.slot!=='特性')) return '';
   // ステータス種別（日本語・英語両対応）
   let base=0; let statLabel='';
   if(/特攻|Sp\.?\s*Atk|sp_?atk/i.test(st)){ base=labCalcResult['特攻']||0; statLabel='特攻'; }
@@ -6307,7 +6333,7 @@ function _calcDmgHtml(r){
   const lvBonus = lvScale * (lv - 1);
   const baseVal = Math.round((coeff/100)*base + lvBonus + fixed);
   // 回復・シールド行にレスキューフード倍率を適用
-  const isHealShield = /回復|シールド/.test(r.dmgType||'');
+  const isHealShield = (r.slot==='特性'?/^(回復|シールド)/:/回復|シールド/).test(r.dmgType||'');
   const {mult, pct, items:hsItems} = isHealShield ? labGetHealShieldMult(/回復/.test(r.dmgType||'')) : {mult:1, pct:0, items:[]};
   const perHit = pct>0 ? Math.round(baseVal * mult) : baseVal;
   const hits = r.hits || 1;
@@ -6439,7 +6465,7 @@ function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
   const defStat=isSpecial?(defStats['特防']||0):(defStats['防御']||0);
   const rawPerHit=Math.round(r.coeff/100*atkStat+(r.lvScale||0)*(atkLv-1)+(r.fixed||0));
   if(rawPerHit<=0) return null;
-  const isHealShield=/回復|シールド/.test(r.dmgType||'');
+  const isHealShield=(r.slot==='特性'?/^(回復|シールド)/:/回復|シールド/).test(r.dmgType||'');
   // すりぬけスプーン: 特攻ダメージのみ相手の特防を%無視
   const pctIgnore=(isSpecial && !isHealShield)?(spdefPen/100):0;
   const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat,0,pctIgnore);
@@ -6576,6 +6602,7 @@ function dcUpdateSkillSelects(poke){
     // わざが1択なら自動選択
     if(names.length===1){ sel.value=names[0]; dcSkillChanged(slot); }
   }
+  const ps=document.getElementById('dcPassiveSection'); if(ps) ps.style.display='none';
   const ns=document.getElementById('dcNormalSection'); if(ns) ns.style.display='none';
   const us=document.getElementById('dcUniteSection');  if(us) us.style.display='none';
 }
@@ -6620,6 +6647,12 @@ function dcUpdateDmgOutput(){
     out.innerHTML=html||'<div class="empty" style="font-size:12px;">ダメージなし</div>';
   }
   // 通常攻撃
+  const passiveRows=skills.filter(r=>r.slot==='特性'&&/^(ダメージ|回復|シールド)/.test(r.dmgType||''));
+  const ps=document.getElementById('dcPassiveSection'), po=document.getElementById('dcDmgOutPassive');
+  if(ps&&po){
+    ps.style.display=passiveRows.length?'block':'none';
+    po.innerHTML=passiveRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+  }
   const normalRows=skills.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null&&r.coeff>0);
   const ns=document.getElementById('dcNormalSection');
   const no=document.getElementById('dcDmgOutNormal');

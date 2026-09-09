@@ -41,7 +41,7 @@ const EN2JP={
   'Tsareena':'アマージョ','Typhlosion':'バクフーン','Tyranitar':'バンギラス','Umbreon':'ブラッキー',
   'Urshifu':'ウーラオス','Vaporeon':'シャワーズ','Venusaur':'フシギバナ','Wigglytuff':'プクリン',
   'Zacian':'ザシアン','Zapdos':'サンダー','Zeraora':'ゼラオラ','Zoroark':'ゾロアーク',
-  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル'
+  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル','Morpeko':'モルペコ'
 };
 
 const rows=parseCSV(fs.readFileSync(path.join(ROOT,'data','unitedb_stats.csv'),'utf8'));
@@ -61,14 +61,15 @@ if(unmapped.length){ console.error('ABORT: 日本語名対応なし: '+unmapped.
 const canonical={};
 for(const [en,sourceRows] of Object.entries(grouped)){
   const byLevel=new Map();
-  for(const row of sourceRows){ const level=num(row[col.level]); if(level!=null)byLevel.set(level,row); }
+  for(const row of sourceRows){ const level=num(row[col.level]); if(byLevel.has(level))throw Error(en+' の重複レベル: '+level); if(level!=null)byLevel.set(level,row); }
   if(byLevel.size!==15 || [...Array(15)].some((_,i)=>!byLevel.has(i+1))){
     console.error(`ABORT: ${en} のLv1-15が不完全 (${byLevel.size}/15)`); process.exit(1);
   }
   const jp=EN2JP[en], ordered=[...Array(15)].map((_,i)=>byLevel.get(i+1));
   const values=key=>ordered.map(row=>num(row[col[key]]));
   const entry={
-    role:ordered[0][col.role], dmg:ordered[0][col.damage_type],
+    // モルペコの出典空欄は2026-09-09のユーザー指定「物理」で補完。元CSVは保持。
+    role:ordered[0][col.role], dmg:ordered[0][col.damage_type]||(en==='Morpeko'?'Physical':''),
     hp:values('hp'), atk:values('attack'), def:values('defense'),
     spatk:values('sp_attack'), spdef:values('sp_defense'), ms:values('move_speed')
   };
@@ -77,7 +78,7 @@ for(const [en,sourceRows] of Object.entries(grouped)){
   }
   canonical[jp]=entry;
 }
-if(Object.keys(canonical).length!==99){ console.error('ABORT: 正本ポケモン数が99ではない: '+Object.keys(canonical).length); process.exit(1); }
+if(Object.keys(canonical).length!==100){ console.error('ABORT: 正本ポケモン数が100ではない: '+Object.keys(canonical).length); process.exit(1); }
 
 const labPath=path.join(ROOT,'lab_data.js');
 const labSrc=fs.readFileSync(labPath,'utf8');

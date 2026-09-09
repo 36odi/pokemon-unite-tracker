@@ -59,6 +59,9 @@ for(const p of Object.keys(udb)){
 const labSrc=fs.readFileSync(path.join(ROOT,'lab_data.js'),'utf8');
 eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));
 const SK=globalThis.LAB_SKILLS;
+const beforeAdditions=JSON.stringify(SK);
+require('./lab_source_additions')(SK,csv.slice(1).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]]))));
+const additionsChanged=beforeAdditions!==JSON.stringify(SK);
 
 // 統合シートへの反映前でもfull regenで新ポケモンを失わないため、構造だけを明示する。
 // 数値は下の正本対応処理で unitedb_ratios.csv から必ず供給する。
@@ -105,7 +108,7 @@ if(!SK['ソルガレオ']){
 function toolMoves(rows){
   const bySlot={};
   rows.forEach((row,idx)=>{
-    if(row.coeff==null) return;
+    if(row.coeff==null || row.sourceKey) return;
     const enh=/[+＋]$/.test(row.name); const base=row.name.replace(/[+＋]$/,'');
     bySlot[row.slot]=bySlot[row.slot]||[];
     let arr=bySlot[row.slot]; let mv=arr.length?arr[arr.length-1]:null;
@@ -162,7 +165,7 @@ if(catFixes.length){ console.log('\n--- 分類是正(回復/シールド) ---');
 if(!APPLY){
   // ドライラン＝検証用途: 現行データ(=既知の正)を再現できるか。再生成前後の整合チェックに使う。
   console.log('\n(ドライラン。--apply で lab_data.js に書き込み)');
-  process.exit(diffN===0?0:1);
+  process.exit(diffN===0&&!additionsChanged?0:1);
 }
 // --apply＝再生成時の上書き用途: 値の差分(diffN)は「スプレッドシートのバグをunite-dbで是正」なので正常。
 // 構造ドリフト（対応先なしの急増）だけ中止条件にする。
@@ -180,7 +183,7 @@ const updated=labSrc.slice(0,labSrc.indexOf('{',start))+JSON.stringify(SK)+labSr
 const g2={};(function(){const globalThis=g2;eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));})();
 const g3={};(function(){const globalThis=g3;eval(updated.replace(/const LAB_/g,'globalThis.LAB_'));})();
 let bad=0;
-for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType'].includes(key))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
+for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType','cd'].includes(key))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
 if(bad){ console.error('ABORT: 数値以外が変化'); process.exit(1); }
 fs.writeFileSync(path.join(ROOT,'lab_data.js'), updated);
 console.log('\nOK 適用完了（冪等チェック: 現行と同値を書き戻し。差分があればgitで確認可）');
