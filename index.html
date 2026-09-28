@@ -2070,6 +2070,11 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.45',
+    date: '2026-09-28',
+    items: ['ストリンダーをラボへ追加し、ステータス・わざ・特性の計算に対応しました。']
+  },
+  {
     version: 'v5.44',
     date: '2026-09-25',
     items: [
@@ -6086,7 +6091,7 @@ function labUpdateSkillSection(poke){
   if(!rows||!rows.length){ card.style.display='none'; return; }
 
   const fillSlot=(slotKey, selId, upgId, outId)=>{
-    const skills=[...new Set(rows.filter(r=>r.slot===slotKey&&r.coeff!=null).map(r=>r.name).filter(Boolean))];
+    const skills=[...new Set(rows.filter(r=>r.slot===slotKey&&(r.coeff!=null||r.description)).map(r=>r.name).filter(Boolean))];
     const sel=document.getElementById(selId);
     const upg=document.getElementById(upgId);
     const out=document.getElementById(outId);
@@ -6101,7 +6106,7 @@ function labUpdateSkillSection(poke){
   fillSlot('わざ1','labSkill1Sel','labSkill1Upg','labDmgOut1');
   fillSlot('わざ2','labSkill2Sel','labSkill2Upg','labDmgOut2');
 
-  const passiveRows=rows.filter(r=>r.slot==='特性'&&r.coeff!=null);
+  const passiveRows=rows.filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
   const passiveSec=document.getElementById('labPassiveSection');
   if(passiveSec){
     passiveSec.style.display=passiveRows.length?'block':'none';
@@ -6109,7 +6114,7 @@ function labUpdateSkillSection(poke){
   }
 
   // 通常攻撃（選択肢なし、全行を直接表示）
-  const normalRows=rows.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
+  const normalRows=rows.filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
   const normalSec=document.getElementById('labNormalSection');
   if(normalSec){
     normalSec.style.display=normalRows.length?'block':'none';
@@ -6117,7 +6122,7 @@ function labUpdateSkillSection(poke){
   }
 
   // ユナイトわざ（選択肢なし、全行を直接表示）
-  const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
+  const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description));
   const uniteSec=document.getElementById('labUniteSection');
   if(uniteSec){
     uniteSec.style.display=uniteRows.length?'block':'none';
@@ -6138,10 +6143,10 @@ function labSkillChanged(slotNum){
 // dmgType文字列ごとの件数で、+が持たない/不足分のベース行だけ繰り越す（重複・取り違え防止）。
 function labUpgradeRows(poke, name, upg){
   const all=LAB_SKILLS?.[poke]||[];
-  const plus=all.filter(r=>r.name===name&&r.upg===upg&&r.coeff!=null);
+  const plus=all.filter(r=>r.name===name&&r.upg===upg&&(r.coeff!=null||r.description));
   if(!/[+＋]$/.test(name||'')) return plus;
   const baseName=name.replace(/[+＋]$/,'');
-  const base=all.filter(r=>r.name===baseName&&r.coeff!=null);
+  const base=all.filter(r=>r.name===baseName&&(r.coeff!=null||r.description));
   if(!base.length) return plus;
   const plusByDt={}; plus.forEach(r=>{plusByDt[r.dmgType]=(plusByDt[r.dmgType]||0)+1;});
   const seen={}; const carried=[];
@@ -6156,7 +6161,7 @@ function _fillUpgrades(poke, skillName, upgId, outId){
   upg.innerHTML='';
   out.innerHTML='';
   if(!poke||!skillName) return;
-  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&r.coeff!=null);
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&(r.coeff!=null||r.description));
   const upgs=[...new Set(rows.map(r=>r.upg))];
   upgs.forEach(u=>{
     const o=document.createElement('option');
@@ -6182,13 +6187,13 @@ function calcLabDamageAll(){
   calcLabDamageSlot(2);
   const poke=document.getElementById('labPokeSelect')?.value;
   if(!poke||!labCalcResult) return;
-  const passiveRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='特性'&&r.coeff!=null);
+  const passiveRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
   if(passiveRows.length) _renderDmgRows('labDmgOutPassive',passiveRows);
   // 通常攻撃も更新
-  const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&r.coeff!=null);
+  const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
   if(normalRows.length) _renderDmgRows('labDmgOutNormal', normalRows);
   // ユナイトわざも更新
-  const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null);
+  const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description));
   if(uniteRows.length) _renderDmgRows('labDmgOutUnite', uniteRows);
 }
 
@@ -6330,6 +6335,7 @@ function _calcDmgHtml(r){
   if(!labCalcResult) return '';
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
+  if(coeff==null&&r.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
   if(coeff==null||(coeff<=0&&r.slot!=='特性')) return '';
   // ステータス種別（日本語・英語両対応）
   let base=0; let statLabel='';
@@ -6462,6 +6468,7 @@ function labRefreshCalcMedalSelect(){
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
+  if(r?.coeff==null&&r?.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
   if(!r||r.coeff==null||r.coeff<=0) return null;
   const st=r.stat||'攻撃';
   const isSpecial=/特攻|sp_?atk/i.test(st);
@@ -6600,7 +6607,7 @@ function dcUpdateSkillSelects(poke){
     const sel=document.getElementById(`dcSkill${slot}Sel`);
     const upgSel=document.getElementById(`dcSkill${slot}Upg`);
     if(!sel) continue;
-    const names=[...new Set(skills.filter(r=>r.slot==='わざ'+slot&&r.coeff!=null).map(r=>r.name))];
+    const names=[...new Set(skills.filter(r=>r.slot==='わざ'+slot&&(r.coeff!=null||r.description)).map(r=>r.name))];
     sel.innerHTML='<option value="">— わざを選択 —</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
     sel.value='';
     if(upgSel){ upgSel.innerHTML='<option value="">—</option>'; upgSel.style.display='none'; }
@@ -6620,7 +6627,7 @@ function dcSkillChanged(slot){
   const name=document.getElementById(`dcSkill${slot}Sel`)?.value;
   const upgSel=document.getElementById(`dcSkill${slot}Upg`);
   if(!upgSel) return;
-  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='わざ'+slot&&r.name===name&&(r.coeff!=null||r.description));
   const upgs=[...new Set(rows.map(r=>r.upg))];
   if(upgs.length>1){
     upgSel.innerHTML=upgs.map(u=>u?`<option value="${u}">Lv${u} アップグレード後</option>`:`<option value="">アップグレードなし</option>`).join('');
@@ -6649,7 +6656,7 @@ function dcUpdateDmgOutput(){
     if(!out) continue;
     if(!name){ out.innerHTML=''; continue; }
     let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
-    if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&r.coeff!=null);
+    if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&(r.coeff!=null||r.description));
     const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
     out.innerHTML=html||'<div class="empty" style="font-size:12px;">ダメージなし</div>';
   }
@@ -6660,7 +6667,7 @@ function dcUpdateDmgOutput(){
     ps.style.display=passiveRows.length?'block':'none';
     po.innerHTML=passiveRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
-  const normalRows=skills.filter(r=>r.slot==='通常攻撃'&&r.coeff!=null&&r.coeff>0);
+  const normalRows=skills.filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description)&&r.coeff>0);
   const ns=document.getElementById('dcNormalSection');
   const no=document.getElementById('dcDmgOutNormal');
   if(ns&&no){
@@ -6668,7 +6675,7 @@ function dcUpdateDmgOutput(){
     no.innerHTML=normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
   // ユナイトわざ
-  const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ'&&r.coeff!=null&&r.coeff>0);
+  const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description)&&r.coeff>0);
   const us=document.getElementById('dcUniteSection');
   const uo=document.getElementById('dcDmgOutUnite');
   if(us&&uo){

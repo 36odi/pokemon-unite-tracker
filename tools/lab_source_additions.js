@@ -1,5 +1,6 @@
 // 2026-09同期で追加された成分。行番号や並び順を使わず、出典の成分キーで接続する。
 module.exports=function(SK, source){
+  require('./lab_toxtricity')(SK,source);
   const num=v=>Number(String(v||0).replace(/,/g,''));
   const slots={'Passive':'特性','Basic':'通常攻撃','Move 1':'わざ1','Move 2':'わざ2','Unite Move':'ユナイトわざ'};
   const key=r=>[r.pokemon_en,r.skill_slot,r.move_en,r.source_object,r.ratio_component].join('|');

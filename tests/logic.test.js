@@ -287,8 +287,8 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
-eq(Object.keys(S).length, 100, 'LAB_STATUS contains 100 Pokemon including Morpeko');
-eq(Object.keys(K).length, 100, 'LAB_SKILLS contains 100 Pokemon including Morpeko');
+eq(Object.keys(S).length, 101, 'LAB_STATUS contains 101 Pokemon including Toxtricity');
+eq(Object.keys(K).length, 101, 'LAB_SKILLS contains 101 Pokemon including Toxtricity');
 eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
 eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
