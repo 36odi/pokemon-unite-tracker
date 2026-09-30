@@ -12,6 +12,7 @@
 <script src="js/lab-core.js"></script>
 <link rel="stylesheet" href="styles.css" />
 <link rel="manifest" href="manifest.json" />
+
 </head>
 <body>
 <div id="loading">読み込み中...</div>
@@ -699,8 +700,18 @@
       <div class="analysis-tab active" onclick="switchLab('calc')">🧮 ステータス計算</div>
       <div class="analysis-tab" onclick="switchLab('dmg')">⚔️ ダメージ計算</div>
       <div class="analysis-tab" onclick="switchLab('medal')">🎖️ メダルセット作成</div>
+      <div class="analysis-tab" onclick="switchLab('ratio')">📖 レシオ一覧</div>
     </div>
 
+    <div id="labRatioPanel" style="display:none;">
+      <div class="card">
+        <label for="ratioSearch">ポケモンを検索</label>
+        <input id="ratioSearch" class="lab-select" type="search" placeholder="名前を入力（ひらがな可）" oninput="ratioSearch()">
+        <div id="ratioChoices" class="ratio-choices" aria-label="ポケモン一覧"></div>
+      </div>
+      <div id="ratioResult" aria-live="polite"></div>
+      <p class="ratio-note">登録済みのラボデータを表示しています。式は持ち物・メダル・相手の防御による補正前です。未収録は効果がないことを意味しません。</p>
+    </div>
     <!-- ===== ステータス・ダメージ計算 パネル ===== -->
     <div id="labCalcPanel">
       <div class="card">
@@ -5912,11 +5923,13 @@ function labInitUI(){
 // ---- サブタブ切替 ----
 function switchLab(tab){
   document.querySelectorAll('#labPage .analysis-tab').forEach((t,i)=>{
-    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='dmg')||(i===2&&tab==='medal'));
+    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='dmg')||(i===2&&tab==='medal')||(i===3&&tab==='ratio'));
   });
   document.getElementById('labCalcPanel').style.display=tab==='calc'?'block':'none';
   document.getElementById('labDmgCalcPanel').style.display=tab==='dmg'?'block':'none';
   document.getElementById('labMedalPanel').style.display=tab==='medal'?'block':'none';
+  document.getElementById('labRatioPanel').style.display=tab==='ratio'?'block':'none';
+  if(tab==='ratio') ratioInit();
   if(tab==='dmg') dcInitUI();
 }
 
@@ -7132,6 +7145,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
+<script src="ratio-labels.js"></script>
+<script src="ratio.js"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

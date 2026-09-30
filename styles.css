@@ -713,3 +713,15 @@
   .update-toast-btn:hover{opacity:.85;}
   .update-toast-close{background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:2px 4px;}
   .update-toast-close:hover{color:var(--text);}
+
+
+.ratio-choices{display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto;margin-top:10px}
+.ratio-choices button,.ratio-jumps button{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer}
+.ratio-choices button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+.ratio-choices button{display:flex;align-items:center;gap:5px}
+.ratio-jumps{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.ratio-note,.ratio-meta{color:var(--text3);font-size:12px;line-height:1.7}
+.ratio-row{padding:10px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
+.ratio-formula{font-size:16px;font-weight:700;line-height:1.7;color:var(--accent)}
+.ratio-section{scroll-margin-top:70px}.ratio-section h3{font-size:16px}.ratio-section h4{margin:12px 0 4px}
+#labPage>.analysis-tabs{flex-wrap:wrap}#ratioSearch{margin-top:8px;width:100%;box-sizing:border-box}
