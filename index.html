@@ -472,7 +472,7 @@
     </div>
     <!-- マイピックアップ（要約カード） -->
     <div id="myPickupPanel">
-      <div class="mp-toolbar"><button class="mp-edit-btn" onclick="toggleMyPickupEdit()">⚙ 表示カードを編集</button></div>
+      <div class="mp-toolbar"><button class="btn-help" aria-label="マイピックアップのヘルプ" onclick="openHelp('mypickup')">？</button><button class="mp-edit-btn" onclick="toggleMyPickupEdit()">⚙ 表示カードを編集</button></div>
       <div id="myPickupEdit" class="card" style="display:none;"></div>
       <div id="myPickupContent"><div class="empty" style="padding:1.5rem 0;">読み込み中…</div></div>
     </div>
@@ -705,7 +705,7 @@
 
     <div id="labRatioPanel" style="display:none;">
       <div class="card">
-        <label for="ratioSearch">ポケモンを検索</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><label for="ratioSearch">ポケモンを検索</label><button class="btn-help" aria-label="レシオ一覧のヘルプ" onclick="openHelp('ratio')">？</button></div>
         <input id="ratioSearch" class="lab-select" type="search" placeholder="名前を入力（ひらがな可）" oninput="ratioSearch()">
         <div id="ratioChoices" class="ratio-choices" aria-label="ポケモン一覧"></div>
       </div>
@@ -1036,7 +1036,7 @@
           <div id="dcDmgOutUnite" class="lab-dmg-out"></div>
         </div>
         <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.6;">
-          実ダメ = ⌊生ダメ × 600 ÷ (600 + 防御 × (1 − 割合無視))⌋ × (1 − 被軽減)
+          物理は防御、特殊は特防で軽減した計算値です。条件・端数処理は「使い方」で確認できます。
         </div>
       </div>
 
@@ -1141,139 +1141,27 @@
 
 </div>
 
-<!-- メダルヘルプモーダル -->
+<!-- メダルセット作成 ヘルプモーダル -->
 <div class="help-overlay" id="medalHelpOverlay" style="display:none;" onclick="if(event.target===this)closeMedalHelp()">
   <div class="help-modal">
-    <div class="help-modal-header">
-      <div class="help-modal-title">🎖️ メダルセット作成 使い方</div>
-      <button class="help-modal-close" onclick="closeMedalHelp()">✕</button>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">メダルの追加</div>
-      <div class="help-row"><span class="help-icon">①</span><span>一覧から<strong>メダル名をクリック</strong>→ フィルターの「レアリティ」と同じ品質でセット（未設定時は金）</span></div>
-      <div class="help-row"><span class="help-icon">②</span><span>一覧の <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> を直接クリック → 品質を指定して追加</span></div>
-      <div class="help-tip">💡 レアリティフィルターを「銀以上」にしてメダルをクリックすると、全部まとめて銀でセットできます。</div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">レアリティの変更（セット済みメダル）</div>
-      <div class="help-row"><span class="help-icon">🔄</span><span>セット済みメダルの <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> をクリック → そのスロットのレアリティだけ変更（メダルは外れない）</span></div>
-      <div class="help-row"><span class="help-icon">🗑</span><span>セット済みメダルの<strong>名前エリアをクリック</strong> → スロットから解除</span></div>
-      <div class="help-row"><span class="help-icon">⚡</span><span>結果カードの「一括レアリティ設定」→ 全スロットをまとめて変更</span></div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">スロット操作</div>
-      <div class="help-row"><span class="help-icon">●</span><span>スロット（丸いボタン）をクリック → セット先を切り替え（青枠がアクティブ）</span></div>
-      <div class="help-row"><span class="help-icon">✕</span><span>スロット右上の ✕ → そのスロットを解除</span></div>
-      <div class="help-row"><span class="help-icon">🔢</span><span>メダルを追加すると自動的に次の空きスロットへ移動</span></div>
-      <div class="help-row"><span class="help-icon">🔴</span><span>スロット左上の <span class="help-tag bronze">銅</span><span class="help-tag silver">銀</span><span class="help-tag gold">金</span> バッジ → 現在のレアリティ表示</span></div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">セット効果</div>
-      <div class="help-row"><span class="help-icon">🎨</span><span>同じ色のメダルを複数セットすると色ボーナスが発動</span></div>
-      <div class="help-row"><span class="help-icon">📊</span><span>結果カードの「カラー内訳・セット効果」で現在の達成状況を確認（<span class="help-tag green">✓</span> が達成済み）</span></div>
-      <div class="help-tip">
-        主なセット効果（カッコ内は発動枚数）<br>
-        🤍 ホワイト(2/4/6枚): HP +1/2/4%　　🤎 ブラウン(2/4/6枚): 攻撃 +1/2/4%<br>
-        💙 ブルー(2/4/6枚): 防御 +2/4/8%　　💚 グリーン(2/4/6枚): 特攻 +1/2/4%<br>
-        💜 パープル(2/4/6枚): 特防 +2/4/8%　🖤 ブラック(3/5/7枚): わざの待ち時間 -1/2/4%
-      </div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">プリセット保存（8パターン）</div>
-      <div class="help-row"><span class="help-icon">💾</span><span><strong>保存</strong> → 現在の10スロット＋レアリティ設定を保存</span></div>
-      <div class="help-row"><span class="help-icon">📂</span><span><strong>読込</strong> → 保存したセットを復元</span></div>
-      <div class="help-row"><span class="help-icon">✏️</span><span><strong>名前</strong> → カード上部の名前（または「パターン番号」）を<strong>クリックで任意の名前を設定</strong>。ステータス/ダメージ計算のメダルセット選択にも反映されます</span></div>
-      <div class="help-row"><span class="help-icon">☁</span><span>Supabaseに自動同期されるため、<strong>別のブラウザ・端末でも同じプリセットを利用可能</strong></span></div>
-    </div>
+    <div class="help-modal-header"><div class="help-modal-title">メダルセット作成 使い方</div><button class="help-modal-close" onclick="closeMedalHelp()" aria-label="閉じる">✕</button></div>
+    <div class="help-section"><div class="help-section-title">追加・変更・解除</div><div class="help-item"><span>一覧でメダル名を押すと選択中のスロットに追加します。レアリティはフィルターに合わせ、未指定なら金です。「銀以上」を選んだ場合、名前を押すたびに銀で追加します。</span></div><div class="help-item"><span>一覧の銅・銀・金ボタンなら品質を指定して追加・変更できます。同じメダルは重複してセットできません。</span></div><div class="help-item"><span>丸いスロットを押すとセット先を変更できます。セット済みメダルの一覧の名前、またはスロットの「✕」で解除します。「クリア」は現在のセットを空にします。</span></div></div><div class="help-section"><div class="help-section-title">結果の見方</div><div class="help-item"><span>個別のステータス補正と、色の枚数に応じたセット効果を表示します。「カラー内訳・セット効果」で発動中の効果を確認できます。</span></div><div class="help-item"><span>「一括レアリティ設定」でセット中の品質をまとめて変更できます。</span></div></div><div class="help-section"><div class="help-section-title">保存と利用</div><div class="help-item"><span>8枠のプリセットに「保存」し、「読込」で復元できます。保存済みの名前を押すと名称を変更できます。ステータス計算・ダメージ計算から保存したセットを選べます。</span></div><div class="help-item"><span>ゲストの保存先は同じブラウザ内です。ログイン中はオンラインで同じアカウントの別端末とも同期します。ブラウザのデータを消すと端末内の保存内容は失われます。</span></div></div>
   </div>
 </div>
 
 <!-- ステータス計算 ヘルプモーダル -->
 <div class="help-overlay" id="calcHelpOverlay" style="display:none;" onclick="if(event.target===this)closeCalcHelp()">
   <div class="help-modal">
-    <div class="help-modal-header">
-      <div class="help-modal-title">📊 ステータス計算 使い方</div>
-      <button class="help-modal-close" onclick="closeCalcHelp()">✕</button>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">基本の使い方</div>
-      <div class="help-row"><span class="help-icon">①</span><span><strong>ポケモン</strong>を選択 → 基本ステータスが自動入力</span></div>
-      <div class="help-row"><span class="help-icon">②</span><span><strong>レベル</strong>スライダーで戦闘中のレベルを指定（1〜15）</span></div>
-      <div class="help-row"><span class="help-icon">③</span><span><strong>もちもの</strong>を最大3個選択し、グレードスライダー（G1〜G40）で強化段階を設定</span></div>
-      <div class="help-row"><span class="help-icon">④</span><span>「計算する」ボタンを押す、またはスライダーを動かすと<strong>リアルタイム更新</strong></span></div>
-      <div class="help-tip">💡 スライダーを動かすだけで即座に再計算されます。「計算する」ボタンは結果カードへ自動スクロールします。</div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">メダルセット（任意）</div>
-      <div class="help-row"><span class="help-icon">🎖</span><span>「メダルセット作成」で<strong>保存したプリセット</strong>をステータス計算に反映できます</span></div>
-      <div class="help-row"><span class="help-icon">📊</span><span>メダル補正（個別上昇値 ＋ 色セットボーナス）が「メダル補正」行に表示され<strong>合計に加算</strong></span></div>
-      <div class="help-tip">💡 色セットボーナスの %効果は「基本ステータス × %」で自動換算されます。</div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">結果の見方</div>
-      <div class="help-row"><span class="help-icon">⬜</span><span><strong>基本ステータス</strong>：レベルに応じたポケモン本来の値</span></div>
-      <div class="help-row"><span class="help-icon">🟢</span><span><strong>もちもの補正</strong>：選択したもちものグレードによる加算値</span></div>
-      <div class="help-row"><span class="help-icon">🟠</span><span><strong>メダル補正</strong>：選択したメダルセットの効果合計（選択時のみ表示）</span></div>
-      <div class="help-row"><span class="help-icon">🔵</span><span><strong>合計</strong>：実際の戦闘ステータス（基本 ＋ もちもの ＋ メダル）</span></div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">スキルダメージ</div>
-      <div class="help-row"><span class="help-icon">⚔</span><span><strong>わざ1 / わざ2</strong>を選択するとダメージ計算式と数値が表示</span></div>
-      <div class="help-row"><span class="help-icon">🔼</span><span><strong>アップグレード段階</strong>を切り替えて強化後のダメージを比較可能</span></div>
-      <div class="help-row"><span class="help-icon">🎯</span><span><strong>ユナイトわざ</strong>は自動表示（選択不要）</span></div>
-      <div class="help-row"><span class="help-icon">✕ ヒット</span><span>多段ヒット・継続ダメージのわざは <strong>1ヒット分 × 回数 → 合計</strong> も表示</span></div>
-      <div class="help-tip">💡 ダメージは「合計」ステータス（もちもの・メダル込み）を元に計算されます。</div>
-    </div>
+    <div class="help-modal-header"><div class="help-modal-title">ステータス計算 使い方</div><button class="help-modal-close" onclick="closeCalcHelp()" aria-label="閉じる">✕</button></div>
+    <div class="help-section"><div class="help-section-title">使い方</div><div class="help-item"><span>ポケモン・レベル（1～15）を選び、もちものを最大3個、グレード（G1～G40）を設定します。必要なら保存済みメダルセットや、もちものの追加条件を指定します。</span></div><div class="help-item"><span>設定を変えると再計算します。「計算する」は結果へ移動する操作にも使えます。</span></div></div><div class="help-section"><div class="help-section-title">結果と比較</div><div class="help-item"><span>基本ステータス、もちもの補正、メダル補正、合計を表示します。合計はここで設定した条件での計算値です。戦闘中のすべての効果を再現するものではありません。</span></div><div class="help-item"><span>「Aとして保存」で現在の合計を比較用に保持します。設定を変えるとAとの差を確認できます。これは比較用の一時保存です。</span></div></div><div class="help-section"><div class="help-section-title">わざ・特性の値</div><div class="help-item"><span>わざ1・わざ2とアップグレード段階を選ぶと、登録済みの式で計算します。通常攻撃・ユナイトわざ・特性はデータがある場合に表示します。</span></div><div class="help-item"><span>ダメージは相手の防御・特防による軽減前です。軽減後は「ダメージ計算」で確認してください。</span></div><div class="help-item"><span>回復・シールドは効果量を表示します。特性や条件付きの効果は、条件を満たしたときの値です。多段攻撃の合計は表示回数分が命中した場合の値で、条件の異なる行を無条件に足し合わせないでください。</span></div></div>
   </div>
 </div>
 
 <!-- ダメージ計算 ヘルプモーダル -->
 <div class="help-overlay" id="dmgHelpOverlay" style="display:none;" onclick="if(event.target===this)closeDmgHelp()">
   <div class="help-modal">
-    <div class="help-modal-header">
-      <div class="help-modal-title">⚔️ ダメージ計算 使い方</div>
-      <button class="help-modal-close" onclick="closeDmgHelp()">✕</button>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">基本の使い方</div>
-      <div class="help-row"><span class="help-icon">①</span><span><strong>攻撃側</strong>のポケモン・レベル・もちものを設定（任意でメダルセット）</span></div>
-      <div class="help-row"><span class="help-icon">②</span><span><strong>防御側</strong>のポケモン・レベル・もちものを設定</span></div>
-      <div class="help-row"><span class="help-icon">③</span><span>「<strong>計算する</strong>」ボタンを押すと結果カードへ自動スクロール</span></div>
-      <div class="help-row"><span class="help-icon">④</span><span>スライダーを動かすと<strong>リアルタイム再計算</strong></span></div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">結果の見方</div>
-      <div class="help-row"><span class="help-icon">⚔</span><span><strong>わざ1 / わざ2</strong>を選択するとダメージが表示</span></div>
-      <div class="help-row"><span class="help-icon">🔼</span><span><strong>アップグレード段階</strong>を切り替えて強化前後を比較可能</span></div>
-      <div class="help-row"><span class="help-icon">🎯</span><span><strong>通常攻撃・ユナイトわざ</strong>は自動表示（選択不要）</span></div>
-      <div class="help-row"><span class="help-icon">✕</span><span>多段ヒットわざは <strong>1ヒット × 回数 → 合計</strong> も表示</span></div>
-      <div class="help-tip">💡 ダメージは「生ダメ → 実ダメ」の形式で表示されます。</div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">特殊スライダー</div>
-      <div class="help-row"><span class="help-icon">📈</span><span>一部もちものはスタック数・ゴール数などの追加スライダーが表示されます</span></div>
-      <div class="help-tip">💡 もちものを選択すると自動で表示されます。</div>
-    </div>
-
-    <div class="help-section">
-      <div class="help-section-title">ダメージ計算式</div>
-      <div class="help-row" style="font-family:monospace;font-size:11px;line-height:1.8;word-break:break-all;">
-        実ダメ = ⌊生ダメ × 600 ÷ (600 + 防御 × (1 − 割合無視))⌋ × (1 − 被軽減)
-      </div>
-      <div class="help-tip">⚠️ プレビュー版のため、実際のゲーム内の値と差異が生じることがあります。</div>
-    </div>
+    <div class="help-modal-header"><div class="help-modal-title">ダメージ計算 使い方</div><button class="help-modal-close" onclick="closeDmgHelp()" aria-label="閉じる">✕</button></div>
+    <div class="help-section"><div class="help-section-title">使い方</div><div class="help-item"><span>攻撃側と防御側のポケモン・レベル・もちものを設定します。必要ならメダルセットと、もちものの追加条件も指定します。</span></div><div class="help-item"><span>「計算する」で結果へ移動します。設定変更でも再計算されます。わざ1・わざ2とアップグレード段階を選んで比較できます。</span></div></div><div class="help-section"><div class="help-section-title">結果の見方</div><div class="help-item"><span>「生ダメ」は防御による軽減前、「実ダメ」は軽減後の計算値です。物理ダメージは相手の防御、特殊ダメージは特防を使います。対応する貫通効果も反映します。</span></div><div class="help-item"><span>回復・シールドには相手の防御による軽減を適用しません。通常攻撃・ユナイトわざ・特性は、登録データがある場合に表示します。</span></div><div class="help-item"><span>多段攻撃は1回分と表示回数分の合計を表示します。条件付きの効果は条件成立時の値です。</span></div></div><div class="help-section"><div class="help-section-title">計算の範囲</div><div class="help-item"><span>防御による軽減後と追加の被ダメージ軽減後に小数点以下を切り捨て、ダメージは最低1とします。回復・シールドはこの処理の対象外です。</span></div><div class="help-item"><span>登録済みの式と設定した条件による試算です。未収録の効果やゲーム内の処理の違いにより、実際の値と異なる場合があります。</span></div></div>
   </div>
 </div>
 
@@ -2080,6 +1968,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.47',
+    date: '2026-09-30',
+    items: ['各画面のヘルプを見直し、集計条件・保存先・計算結果の見方を分かりやすく整理しました。', 'マイピックアップとレシオ一覧にヘルプを追加しました。']
+  },
   {
     version: 'v5.46',
     date: '2026-09-30',
@@ -2908,230 +2801,66 @@ async function exportCsv(){
   closeModal('csvModal');
 }
 const HELP_CONTENT = {
-  series: {
-    title: '❓ シリーズ管理',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">シリーズとは</div>
-        <div class="help-item"><span class="help-item-icon">📁</span><span>1シーズン分・1週間分など、まとめて管理したい単位で作成します。</span></div>
-        <div class="help-item"><span class="help-item-icon">💡</span><span>例：「第35シリーズ」「5月第1週」など自由に名前をつけられます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">操作方法</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">シリーズ名を入力して「<strong>追加</strong>」を押すと新しいシリーズが作られます。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">プルダウンからシリーズを選ぶと統計・対戦記録が表示されます。</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">シリーズ選択後に「<strong>✏️ 名前を変更</strong>」「<strong>📦 アーカイブ</strong>」「<strong>🗑 削除</strong>」ボタンが表示されます。</div></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">アーカイブ</div>
-        <div class="help-item"><span class="help-item-icon">📦</span><span>使わなくなったシリーズをアーカイブすると、プルダウンの一覧から非表示にできます。</span></div>
-        <div class="help-item"><span class="help-item-icon">👁</span><span>「アーカイブ済みを表示」チェックをオンにすると、アーカイブ済みシリーズも表示されます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">⚠️ 注意</div>
-        <div class="help-item"><span class="help-item-icon">⚠️</span><span>シリーズを削除するとそのシリーズの<strong>対戦記録もすべて削除</strong>されます。元に戻せません。</span></div>
-      </div>`
+  "series": {
+    "title": "❓ シリーズ管理",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>1シーズン分・1週間分など、まとめたい単位でシリーズを作成します。名前を入力して「追加」を押してください。</span></div><div class=\"help-item\"><span>一覧からシリーズを選ぶと、そのシリーズの統計・対戦履歴に切り替わります。選択後に名前変更・アーカイブ・削除ができます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">アーカイブと削除</div><div class=\"help-item\"><span>アーカイブは一覧から隠す操作です。「アーカイブ済みを表示」で再表示できます。記録は残り、通算成績にも含まれます。</span></div><div class=\"help-item\"><span>シリーズを削除すると、その中の対戦記録もすべて削除されます。元に戻せません。</span></div></div>"
   },
-  stats: {
-    title: '❓ 統計',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">📅 今日の成績</div>
-        <div class="help-item"><span class="help-item-icon">📅</span><span>選択中シリーズの<strong>今日の勝敗・勝率</strong>を統計カード上部に表示します（1日の区切りはAM9:00）。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">🤖 BOT戦の扱い</div>
-        <div class="help-item"><span class="help-item-icon">🤖</span><span>記録時に「BOT戦」を選んだ試合は、<strong>勝率・統計・分析から既定で除外</strong>されます（対人の実力が見やすくなります）。</span></div>
-        <div class="help-item"><span class="help-item-icon">☑</span><span>BOT戦の記録があるときだけ「<strong>BOT戦も統計に含める</strong>」チェックが表示され、含めた集計に切り替えられます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">モード別成績</div>
-        <div class="help-item"><span class="help-item-icon">📊</span><span><strong>トータル</strong>：選択中のシリーズの全試合数・勝利・敗北・勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">🎮</span><span><strong>ソロ</strong>：1人で参加した試合の成績</span></div>
-        <div class="help-item"><span class="help-item-icon">👥</span><span><strong>デュオ/トリオ</strong>：2〜3人パーティの成績</span></div>
-        <div class="help-item"><span class="help-item-icon">🏆</span><span><strong>フルパ</strong>：5人フルパーティの成績</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">ランク別成績</div>
-        <div class="help-item"><span class="help-item-icon">🥇</span><span>記録時にランク帯を選択した試合のみ集計されます。マスター以上はレートから<strong>マスター / レジェンド</strong>に自動で振り分けられます。</span></div>
-        <div class="help-item"><span class="help-item-icon">▼</span><span>「ランク別成績」「ポケモン別成績」はタイトルをタップで折りたためます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">🔥 連勝・連敗</div>
-        <div class="help-item"><span class="help-item-icon">🔥</span><span>現在の連勝/連敗数、シリーズ内の最大連勝/連敗数が確認できます。</span></div>
-        <div class="help-item"><span class="help-item-icon">▼</span><span>ラベルをタップすると展開・折りたたみができます。</span></div>
-      </div>`
+  "record": {
+    "title": "❓ 対戦を記録する",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">基本の記録</div><div class=\"help-item\"><span>シリーズを選び、使用ポケモン（任意）とマッチ種別を指定して「勝利」または「敗北」を押します。ポケモンは名前や型で絞り込めます。</span></div><div class=\"help-item\"><span>ランクは試合後のクラス・レートを入力します。マスター以上はレート1000以上をレジェンドとして扱います。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">詳細設定（任意）</div><div class=\"help-item\"><span>ポケモンを選ぶと詳細設定が開きます。わざ・もちもの・バトルアイテム・レーン・メモを記録できます。専用もちものは自動固定です。レーンは同じボタンを再度押すと解除できます。</span></div><div class=\"help-item\"><span>スタッツはゴール数・KO・アシスト・与ダメージ・被ダメージ・回復量を記録できます。分からない項目は空欄のままで構いません。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">前回の装備を使う</div><div class=\"help-item\"><span>ポケモンを切り替えると、直前のわざ・もちもの・バトルアイテムを記憶します。同じポケモンを選ぶと復元します。この設定は同じブラウザ内に保存されます。</span></div></div>"
   },
-  pokestats: {
-    title: '❓ ポケモン別成績',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">表示内容</div>
-        <div class="help-item"><span class="help-item-icon">🎯</span><span>使用ポケモンを記録した試合の成績を集計して表示します。</span></div>
-        <div class="help-item"><span class="help-item-icon">📊</span><span>トータルの成績が上部に表示され、下の折りたたみエリアでソロ・デュオ/トリオ・フルパ別に確認できます。</span></div>
-        <div class="help-item"><span class="help-item-icon">▼</span><span>各モードのラベルをタップすると展開・折りたたみができます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">詳細分析</div>
-        <div class="help-item"><span class="help-item-icon">🔍</span><span>技・もちもの別の詳細な成績は「分析」ページの「<strong>ポケモン別詳細</strong>」タブで確認できます。</span></div>
-      </div>`
+  "stats": {
+    "title": "❓ 統計",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>選択中シリーズの試合数・勝敗・勝率を、全体・ソロ・デュオ/トリオ・フルパ別に確認できます。</span></div><div class=\"help-item\"><span>今日の成績は午前9時を1日の区切りとします。連勝・連敗は現在の連続数とシリーズ内の最大数を表示します。</span></div><div class=\"help-item\"><span>ランク別・ポケモン別成績や連勝・連敗は、見出しを押すと開閉できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>ランク未入力の試合はランク別集計には含まれません。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  record: {
-    title: '❓ 対戦を記録する',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">基本の記録</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">使用ポケモンを選択（任意）。タップして検索またはタイプ別で絞り込めます。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">マッチ種別を選択（ソロ / デュオ/トリオ / フルパ）。</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">「<strong>✓ 勝利</strong>」または「<strong>✗ 敗北</strong>」を押して記録完了。</div></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">詳細設定（任意）</div>
-        <div class="help-item"><span class="help-item-icon">⚡</span><span>ポケモンを選択すると<strong>自動で展開</strong>されます。</span></div>
-        <div class="help-item"><span class="help-item-icon">⚔️</span><span><strong>わざ1・わざ2</strong>：使用した技セットを記録</span></div>
-        <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>もちもの①②③</strong>：装備したもちものを記録。専用もちものがあるポケモンは①が自動固定。</span></div>
-        <div class="help-item"><span class="help-item-icon">💊</span><span><strong>バトルアイテム</strong>：使用したバトルアイテムを記録</span></div>
-        <div class="help-item"><span class="help-item-icon">🛣️</span><span><strong>レーン</strong>：上/中央/下から選択（任意）。もう一度押すと解除</span></div>
-        <div class="help-item"><span class="help-item-icon">📊</span><span><strong>KO/アシスト/与ダメージ/被ダメージ</strong>：メモ欄の中に参考記録として入力できます（任意）</span></div>
-        <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ランク帯</strong>：ビギナー〜エキスパートは<strong>クラス</strong>、マスター以上は試合後の<strong>レート</strong>を記録できます（レート1000以上は自動でレジェンド扱い）</span></div>
-        <div class="help-item"><span class="help-item-icon">🤖</span><span><strong>BOT戦（CPU対戦）</strong>：チェックを入れて記録すると、<strong>統計の勝率から除外</strong>されます（履歴には🤖バッジで表示）</span></div>
-        <div class="help-item"><span class="help-item-icon">📝</span><span><strong>メモ</strong>：対戦の気づきや反省点などを自由に記入できます</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">💾 ロードアウト記憶</div>
-        <div class="help-item"><span class="help-item-icon">💾</span><span>ポケモンを切り替えると、直前のポケモンのわざ・もちもの・バトルアイテムが自動で保存されます。</span></div>
-        <div class="help-item"><span class="help-item-icon">🔄</span><span>同じポケモンを再度選択すると、前回の設定が自動で復元されます。</span></div>
-      </div>`
+  "pokestats": {
+    "title": "❓ ポケモン別成績",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>選択中シリーズで、使用ポケモンを記録した試合を集計します。全体とソロ・デュオ/トリオ・フルパ別を確認でき、モードの見出しで開閉できます。</span></div><div class=\"help-item\"><span>わざ・もちもの・レーンなどの内訳は「分析 → ポケモン別詳細」で確認できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  history: {
-    title: '❓ 対戦履歴',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">履歴の見方</div>
-        <div class="help-item"><span class="help-item-icon">🟢</span><span><strong>勝利</strong>／<strong>敗北</strong>バッジで結果を確認</span></div>
-        <div class="help-item"><span class="help-item-icon">🎮</span><span>ソロ・デュオ/トリオ・フルパのマッチ種別バッジ</span></div>
-        <div class="help-item"><span class="help-item-icon">🕐</span><span>記録した日付・時刻が右に表示されます</span></div>
-        <div class="help-item"><span class="help-item-icon">📝</span><span>メモを記入した試合はアイコンと共に内容が表示されます</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">フィルター</div>
-        <div class="help-item"><span class="help-item-icon">🔽</span><span>勝利／敗北・モード・<strong>ポケモン別</strong>でフィルタリングできます。組み合わせて絞り込みも可能です。</span></div>
-        <div class="help-item"><span class="help-item-icon">📄</span><span>20件ごとにページ分割されています。下のページボタンで切り替えられます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">操作</div>
-        <div class="help-item"><span class="help-item-icon">✏️</span><span><strong>✏️ ボタン</strong>：勝敗・ポケモン・技・もちもの・日時をあとから編集できます</span></div>
-        <div class="help-item"><span class="help-item-icon">✕</span><span><strong>✕ ボタン</strong>：その試合の記録を削除します（元に戻せません）</span></div>
-        <div class="help-item"><span class="help-item-icon">🗑</span><span><strong>全削除</strong>：このシリーズの全記録を一括削除します</span></div>
-      </div>`
+  "history": {
+    "title": "❓ 対戦履歴",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">探す・確認する</div><div class=\"help-item\"><span>選択中シリーズの記録を表示します。勝敗・マッチ種別・ポケモンの条件を組み合わせて絞り込めます。20件ずつのページで切り替えます。</span></div><div class=\"help-item\"><span>日時・装備・メモを確認できます。「平均対象外」は平均スタッツから除外した記録です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">編集・削除</div><div class=\"help-item\"><span>鉛筆ボタンで勝敗・ランク・マッチ種別・ポケモン・わざ・装備・日時・レーン・スタッツ・平均対象外の設定を変更できます。</span></div><div class=\"help-item\"><span>各記録の「✕」は1試合を削除します。「全削除」は選択中シリーズの全記録を削除します。絞り込み中でも対象はシリーズ全体で、元に戻せません。</span></div></div>"
   },
-  trend: {
-    title: '❓ 勝率推移グラフ',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">グラフの見方</div>
-        <div class="help-item"><span class="help-item-icon">📈</span><span>選択したシリーズの<strong>累積勝率の変化</strong>を折れ線グラフで表示します。</span></div>
-        <div class="help-item"><span class="help-item-icon">——</span><span>点線は<strong>50%ライン</strong>です。グラフがこのラインより上なら勝ち越しています。</span></div>
-        <div class="help-item"><span class="help-item-icon">📋</span><span>上のプルダウンでシリーズを切り替えられます。</span></div>
-      </div>`
+  "trend": {
+    "title": "❓ 勝率推移",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">グラフの見方</div><div class=\"help-item\"><span>シリーズを選び、「累積勝率」または「直近10戦」を選びます。累積は最初からその時点まで、直近10戦はその試合を含む直近10試合分（10試合未満なら記録済み分）の勝率です。</span></div><div class=\"help-item\"><span>点線は勝率50％です。表示点は最大20点にまとめているため、すべての試合が点として並ぶとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">日別・週間・曜日・時間帯</div><div class=\"help-item\"><span>日別・曜日別は午前9時を日付の区切りとし、週は月曜～日曜です。時間帯は対戦日時を端末の時刻で2時間ごとに集計します。</span></div><div class=\"help-item\"><span>「得意・苦手な曜日×時間帯」は3戦以上ある組み合わせが対象です。少数の記録の勝率だけで得意・不得意を断定しないようにしてください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  compare: {
-    title: '❓ シリーズ比較',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">表示内容</div>
-        <div class="help-item"><span class="help-item-icon">📊</span><span>全シリーズの勝率を<strong>棒グラフ</strong>で比較できます。</span></div>
-        <div class="help-item"><span class="help-item-icon">🟢</span><span>勝率50%以上のシリーズは<strong>緑</strong>、50%未満は<strong>赤</strong>で表示されます。</span></div>
-        <div class="help-item"><span class="help-item-icon">📋</span><span>グラフ下の表でシリーズごとの試合数・勝利数・勝率を一覧確認できます。</span></div>
-      </div>`
+  "compare": {
+    "title": "❓ シリーズ比較",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>全シリーズ（アーカイブ済みを含む）の勝率を棒グラフで比較します。50％以上は緑、50％未満は赤です。</span></div><div class=\"help-item\"><span>下の表で試合数・勝利数・勝率を確認できます。試合数が少ないシリーズでは、1試合で勝率が大きく変わります。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  total: {
-    title: '❓ 通算成績',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">表示内容</div>
-        <div class="help-item"><span class="help-item-icon">🏆</span><span><strong>全シリーズを合算</strong>した総試合数・通算勝率・総勝利・総敗北</span></div>
-        <div class="help-item"><span class="help-item-icon">🎮</span><span><strong>モード別通算</strong>：ソロ・デュオ/トリオ・フルパそれぞれの通算成績</span></div>
-        <div class="help-item"><span class="help-item-icon">🥇</span><span><strong>ポケモン別TOP5</strong>：全シリーズ合計で最も多く使ったポケモンの成績上位5体</span></div>
-      </div>`
+  "total": {
+    "title": "❓ 通算成績",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>全シリーズ（アーカイブ済みを含む）の試合数・勝敗・勝率を合算します。モード別の成績と、使用回数が多いポケモンTOP5も表示します。</span></div><div class=\"help-item\"><span>「画像でシェア」から成績画像を作成・保存できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">平均スタッツ</div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>全体・勝ち試合・負け試合を比較できます。表の件数は数値を1項目以上記録した対象試合数で、各項目の平均に使う件数とは異なる場合があります。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  seriesanal: {
-    title: '❓ シリーズ分析',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">使い方</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">プルダウンからシリーズを選択します。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">試合数・勝率のサマリー、レート推移、使用ポケモン（上位12体）が表示されます。</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">各分析セクションのラベルをタップすると詳細が展開されます。</div></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">📈 レート推移</div>
-        <div class="help-item"><span class="help-item-icon">📈</span><span>マスター以上で記録した<strong>レートの推移</strong>を記録順に折れ線で表示します（レート記録が2件以上で表示）。</span></div>
-        <div class="help-item"><span class="help-item-icon">——</span><span>レートが1000付近まで伸びると、レジェンドの目安となる<strong>1000ライン</strong>も表示されます。</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">分析セクション</div>
-        <div class="help-item"><span class="help-item-icon">🏅</span><span><strong>ランク帯別勝率</strong>：ランク帯ごとの勝敗とソロ・デュオ/トリオ・フルパ別の内訳</span></div>
-        <div class="help-item"><span class="help-item-icon">🔍</span><span><strong>ランク帯×ポケモン別勝率</strong>：各ランク帯で使用したポケモンの勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">✨</span><span><strong>技セット別勝率</strong>：ポケモンごとの技の組み合わせと採用率・勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>アイテム別勝率</strong>：もちものはポケモン別、バトルアイテムはシリーズ全体で集計</span></div>
-        <div class="help-item"><span class="help-item-icon">📅</span><span><strong>日別試合数</strong>：日ごとの勝利・敗北の棒グラフ（2日以上の記録が必要）</span></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">💡 活用のヒント</div>
-        <div class="help-item"><span class="help-item-icon">💡</span><span>ランク帯・技・もちものを詳しく記録するほど、より精度の高い分析ができます。</span></div>
-      </div>`
+  "seriesanal": {
+    "title": "❓ シリーズ分析",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>シリーズを選ぶと、成績の概要・レート推移・使用回数上位12匹を表示します。各分析の見出しを押して詳細を開閉できます。</span></div><div class=\"help-item\"><span>レート推移はマスター以上の記録が2件以上必要です。日別試合数のグラフには2日以上の記録が必要です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">確認できる内訳</div><div class=\"help-item\"><span>型別の平均スタッツ、勝ちパターン（組み合わせ別）、レーン別・型別・ランク帯別の勝率を確認できます。</span></div><div class=\"help-item\"><span>わざセット別の採用率・勝率、ポケモン別のもちもの成績、シリーズ全体のバトルアイテム成績も確認できます。</span></div><div class=\"help-item\"><span>勝ちパターンは記録から見た傾向です。使用者・対戦条件の違いもあるため、その組み合わせの強さを保証するものではありません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  pokedetail: {
-    title: '❓ ポケモン別詳細',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">使い方</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">プルダウンからポケモンを選択します（記録のあるポケモンのみ表示）。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">上のタブでトータル・ソロ・デュオ/トリオ・フルパを切り替えられます。</div></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">表示内容</div>
-        <div class="help-item"><span class="help-item-icon">⚔️</span><span><strong>わざ1・わざ2別</strong>の勝敗・勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">🎒</span><span><strong>もちもの別</strong>の勝敗・勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">💊</span><span><strong>バトルアイテム別</strong>の勝敗・勝率</span></div>
-        <div class="help-item"><span class="help-item-icon">💡</span><span>詳細設定を記録した試合が多いほど、より正確な分析ができます。</span></div>
-      </div>`
+  "pokedetail": {
+    "title": "❓ ポケモン別詳細",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>記録のあるポケモンを選び、全体・ソロ・デュオ/トリオ・フルパを切り替えます。全シリーズを横断した成績です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>わざ・もちものの組み合わせ別、バトルアイテム別、レーン別の成績と平均スタッツを確認できます。わざ・もちもの単体の内訳は見出しを押して開きます。</span></div><div class=\"help-item\"><span>各内訳は、その項目を記録した試合が対象です。試合数も合わせて確認してください。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
-  username: {
-    title: '❓ 表示名の変更',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">表示名とは</div>
-        <div class="help-item"><span class="help-item-icon">👤</span><span>アプリ右上に表示されるニックネームです。</span></div>
-        <div class="help-item"><span class="help-item-icon">🔑</span><span>ログインに使う<strong>プレイヤーIDとは別</strong>です。ログインIDは変更できません。</span></div>
-        <div class="help-item"><span class="help-item-icon">✅</span><span>いつでも変更できます。</span></div>
-      </div>`
+  "username": {
+    "title": "❓ 表示名の変更",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">変更方法</div><div class=\"help-item\"><span>表示名を入力して「保存する」を押します。アプリに表示される名前で、ログインに使うプレイヤーIDとは別です。プレイヤーIDは変更できません。</span></div></div>"
   },
-  password: {
-    title: '❓ パスワードの変更',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">変更方法</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">新しいパスワードを入力（6文字以上）。</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">確認欄に同じパスワードを再入力。</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">「変更する」を押して完了。</div></div>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title">⚠️ 注意</div>
-        <div class="help-item"><span class="help-item-icon">⚠️</span><span>パスワードを忘れた場合はログイン画面の「<strong>パスワードを忘れた方はこちら</strong>」からリセットできます（メールアドレス登録済みの場合のみ）。</span></div>
-        <div class="help-item"><span class="help-item-icon">👁</span><span>入力欄右端の目のアイコンでパスワードの表示・非表示を切り替えられます。</span></div>
-      </div>`
+  "password": {
+    "title": "❓ パスワードの変更",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">変更方法</div><div class=\"help-item\"><span>新しいパスワードを6文字以上で入力し、確認欄にも同じ内容を入力して「変更する」を押します。目のボタンで入力内容の表示・非表示を切り替えられます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">忘れた場合</div><div class=\"help-item\"><span>メールアドレスを登録済みなら、ログイン画面の「パスワードを忘れた方はこちら」からリセットできます。メール未登録の場合はこの方法で復旧できません。</span></div></div>"
   },
-  account: {
-    title: '❓ アカウント情報',
-    body: `
-      <div class="help-section">
-        <div class="help-section-title">各項目の説明</div>
-        <div class="help-item"><span class="help-item-icon">🔑</span><span><strong>プレイヤーID</strong>：ログインに使うIDです。登録後は変更できません。</span></div>
-        <div class="help-item"><span class="help-item-icon">📧</span><span><strong>登録メールアドレス</strong>：パスワードリセット用のメールアドレスです。未登録の場合はパスワードを忘れると復旧できません。</span></div>
-      </div>`
+  "account": {
+    "title": "❓ アカウント情報",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">確認できる項目</div><div class=\"help-item\"><span>プレイヤーIDはログインに使うIDです。登録後は変更できません。</span></div><div class=\"help-item\"><span>登録メールアドレスはパスワードのリセットに使います。未登録の場合、パスワードを忘れるとメールによる復旧はできません。</span></div></div>"
   },
+  "mypickup": {
+    "title": "❓ マイピックアップ",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>最も新しく作成したシリーズの成績を要約します。トラッカーで選択中のシリーズとは異なる場合があります。</span></div><div class=\"help-item\"><span>「表示カードを編集」で表示するカードを選べます。並び順は固定で、選択は同じブラウザ内に保存されます。</span></div><div class=\"help-item\"><span>カードの詳細へのボタンから、対応する分析画面を開けます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>記録が不足すると表示されない項目があります。3戦以上などの条件は各カードの表示を確認してください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+  },
+  "ratio": {
+    "title": "❓ レシオ一覧",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>名前（ひらがなでも可）で検索し、ポケモンを選びます。通常攻撃・わざ1・わざ2・ユナイトわざ・特性のボタンで各項目へ移動できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">式の読み方</div><div class=\"help-item\"><span>「特攻 × 40％ ＋ 120」なら、特攻の40％に120を加えます。「Lv − 1」はポケモンのレベルから1を引いた値です。</span></div><div class=\"help-item\"><span>多段攻撃などは1回分の式と、表示されている回数分の式を分けています。異なる攻撃箇所・発動条件の行を、無条件に足し合わせないでください。</span></div><div class=\"help-item\"><span>「通常版と同じ」は、表示している式と回数が同じという意味です。追加効果まで同じとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">表示の範囲</div><div class=\"help-item\"><span>登録済みの式を表示します。持ち物・メダル・相手の防御などの補正を加えた結果ではありません。設定を変えて数値を試すには「ステータス計算」「ダメージ計算」を使ってください。</span></div><div class=\"help-item\"><span>「未収録」はデータがない状態で、効果がない・数値が0という意味ではありません。「直接ダメージなし」とは区別しています。割合回復など、式に含まれない部分がある場合は注記を確認してください。</span></div></div>"
+  }
 };
 
 function openHelp(section){
