@@ -1970,6 +1970,10 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.49', date: '2026-10-01',
+    items: ['マイピックアップのカードを並び替えられるようにしました。', '勝率と最近の成績を整理し、直近の集計を10戦に統一しました。勝率順位の名称と対戦数の表示を見直しました。', 'マイピックアップの詳細で、同じ対象シリーズを開くようにしました。']
+  },
+  {
     version: 'v5.48',
     date: '2026-10-01',
     items: ['マイピックアップのヘルプボタンの位置を修正しました。', '対戦記録にレシオ一覧へのショートカットを追加しました。選択中のポケモンを直接確認できます。', 'レシオ一覧を型で絞り込めるようにし、ラボの先頭・初期表示に移動しました。']
@@ -2861,7 +2865,7 @@ const HELP_CONTENT = {
   },
   "mypickup": {
     "title": "❓ マイピックアップ",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>最も新しく作成したシリーズの成績を要約します。トラッカーで選択中のシリーズとは異なる場合があります。</span></div><div class=\"help-item\"><span>「表示カードを編集」で表示するカードを選べます。並び順は固定で、選択は同じブラウザ内に保存されます。</span></div><div class=\"help-item\"><span>カードの詳細へのボタンから、対応する分析画面を開けます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>記録が不足すると表示されない項目があります。3戦以上などの条件は各カードの表示を確認してください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>最も新しく作成したシリーズの成績を要約します。トラッカーで選択中のシリーズとは異なる場合があります。</span></div><div class=\"help-item\"><span>「表示カードを編集」で表示するカードを選べます。↑ ↓で並び順を変更できます。表示設定と並び順は同じブラウザ内に保存されます。</span></div><div class=\"help-item\"><span>カードの「詳細」から、同じ対象シリーズの分析画面を開けます。シリーズ勝率は全試合、直近10戦は最近の最大10試合が対象です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>記録が不足すると表示されない項目があります。3戦以上などの条件は各カードの表示を確認してください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
   "ratio": {
     "title": "❓ レシオ一覧",
@@ -2949,7 +2953,7 @@ async function loadAnalysis(){
 function switchAnalysis(tab){
   navId++; // ナビゲーションガード
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
-  document.querySelectorAll('.analysis-tab').forEach((t,i)=>t.classList.toggle('active',
+  document.querySelectorAll('#analysisPage .analysis-tab').forEach((t,i)=>t.classList.toggle('active',
     (i===0&&tab==='mypickup')||(i===1&&tab==='trend')||(i===2&&tab==='seriesanal')||(i===3&&tab==='total')||(i===4&&tab==='pokedetail')));
   document.getElementById('myPickupPanel').style.display=tab==='mypickup'?'block':'none';
   document.getElementById('trendPanel').style.display=tab==='trend'?'block':'none';
@@ -3280,18 +3284,16 @@ function renderTotalStats(){
 // 各カードは{ render(all) }で要約HTMLを返す。detailで対応する既存タブへジャンプ。
 // フェーズ3でユーザーが表示カードを選べるようにする（getMyPickupSelectionを差し替え）。
 const MY_PICKUP_CARDS = [
-  { id:'winrate', name:'勝率', title:'📈 勝率', detail:'trend',
+  { id:'winrate', name:'シリーズ勝率', title:'📈 シリーズ勝率', detail:'trend',
     render(all){
       const t=all.length, w=winCount(all);
       const wr=t>0?((w/t)*100).toFixed(1):'—';
-      const recent=all.slice(-10), rw=winCount(recent), rt=recent.length;
       const col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div>
-        <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>
-        <div class="mp-sub">直近10戦：${rt>0?`<span style="color:var(--win)">${rw}勝</span> <span style="color:var(--loss)">${rt-rw}敗</span>`:'—'}</div>`;
+        <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
     }
   },
-  { id:'rate', name:'レート', title:'🏅 レート', detail:'seriesanal', detailAction:'openRateDetail()',
+  { id:'rate', name:'レート', title:'🏅 レート', detail:'seriesanal',
     render(all){
       // レートはシリーズが変わるとリセットされるため、最新シリーズ内のみで扱う（all=最新シリーズの battles・時系列昇順）
       const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
@@ -3303,28 +3305,28 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">最新レート（最新シリーズ内・記録${rates.length}件）</div>`;
     }
   },
-  { id:'pokewr', name:'得意ポケモン', title:'🔍 得意ポケモン（3戦以上の上位）', detail:'pokedetail',
+  { id:'pokewr', name:'勝率上位のポケモン', title:'🔍 勝率上位のポケモン（3戦以上の上位）', detail:'seriesanal',
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
       return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
-        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
+        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;
       }).join('');
     }
   },
-  { id:'modewr', name:'モード別勝率', title:'🎮 モード別勝率', detail:'total',
+  { id:'modewr', name:'モード別勝率', title:'🎮 モード別勝率', detail:'seriesanal',
     render(all){
       return [['solo','ソロ'],['duo','デュオ/トリオ'],['full','フルパ']].map(([k,lbl])=>{
         const m=all.filter(b=>b.match_type===k), w=winCount(m), t=m.length;
         const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text3)';
-        return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}/${t}</span></div>`;
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${lbl}</span><span class="mp-poke-wr" style="color:${col}">${wr}${t>0?'%':''}</span><span class="mp-poke-gt">${w}勝 / ${t}戦</span></div>`;
       }).join('');
     }
   },
-  { id:'recent', name:'直近20戦', title:'🕐 直近20戦の成績', detail:'trend',
+  { id:'recent', name:'直近10戦', title:'🕐 直近10戦の成績', detail:'trend',
     render(all){
-      const r=all.slice(-20), w=winCount(r), t=r.length;
+      const r=all.slice(-10), w=winCount(r), t=r.length;
       const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
     }
@@ -3335,7 +3337,7 @@ const MY_PICKUP_CARDS = [
       const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
       return rows.map(([l,m])=>{const w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
-        return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}勝 / ${t}戦</span></div>`;}).join('');
     }
   },
   { id:'role', name:'型（ロール）別勝率', title:'🎭 型（ロール）別勝率', detail:'seriesanal',
@@ -3346,7 +3348,7 @@ const MY_PICKUP_CARDS = [
       const rows=ROLE_ORDER.filter(r=>map[r]);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
       return rows.map(r=>{const m=map[r],w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
-        return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}/${t}</span></div>`;}).join('');
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}勝 / ${t}戦</span></div>`;}).join('');
     }
   },
   { id:'streak', name:'現在の連勝/連敗', title:'🔥 現在の連勝・連敗', detail:'trend',
@@ -3359,17 +3361,17 @@ const MY_PICKUP_CARDS = [
         <div class="mp-sub">直近の連続${win?'勝利':'敗北'}数</div>`;
     }
   },
-  { id:'worstpoke', name:'苦手ポケモン', title:'⚠️ 苦手ポケモン（3戦以上の下位）', detail:'pokedetail',
+  { id:'worstpoke', name:'勝率下位のポケモン', title:'⚠️ 勝率下位のポケモン（3戦以上の下位）', detail:'seriesanal',
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const low=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>a.wr-b.wr).slice(0,3);
       if(!low.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
       return low.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
-        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;
+        return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;
       }).join('');
     }
   },
-  { id:'timeband', name:'時間帯別', title:'⏰ 得意な時間帯（3戦以上の上位）', detail:'trend',
+  { id:'timeband', name:'時間帯別', title:'⏰ 勝率上位の時間帯（3戦以上の上位）', detail:'trend',
     render(all){
       // 通算成績タブと同じ基準：端末ローカル時刻を2時間刻みのバケットに集計
       const labels=['0-2時','2-4時','4-6時','6-8時','8-10時','10-12時','12-14時','14-16時','16-18時','18-20時','20-22時','22-24時'];
@@ -3378,10 +3380,10 @@ const MY_PICKUP_CARDS = [
       const top=Object.entries(m).map(([bi,s])=>({bi:+bi,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の時間帯記録がありません</div>`;
       return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
-        return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;}).join('');
     }
   },
-  { id:'weekday', name:'曜日別', title:'📅 得意な曜日（3戦以上の上位）', detail:'trend',
+  { id:'weekday', name:'曜日別', title:'📅 勝率上位の曜日（3戦以上の上位）', detail:'trend',
     render(all){
       // 通算成績タブと同じ基準：AM9:00を日の切り替えとして曜日を判定
       const wd=['日','月','火','水','木','金','土'];
@@ -3390,27 +3392,41 @@ const MY_PICKUP_CARDS = [
       const rows=Object.entries(m).map(([d,s])=>({d:+d,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
       if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の曜日記録がありません</div>`;
       return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
-        return `<div class="mp-poke-row"><span class="mp-poke-name">${wd[p.d]}曜</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}/${p.t}</span></div>`;}).join('');
+        return `<div class="mp-poke-row"><span class="mp-poke-name">${wd[p.d]}曜</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;}).join('');
     }
   },
 ];
 const MP_DEFAULT=['winrate','rate','pokewr']; // 既定表示（コア3）
 function getMyPickupSelection(){
-  try{ const v=JSON.parse(localStorage.getItem('mp_cards')); if(Array.isArray(v)) return v; }catch(e){}
+  try{
+    const v=JSON.parse(localStorage.getItem('mp_cards'));
+    if(Array.isArray(v)) return [...new Set(v)].filter(id=>MY_PICKUP_CARDS.some(c=>c.id===id));
+  }catch(e){}
   return MP_DEFAULT.slice();
 }
+function saveMyPickupSelection(sel){
+  localStorage.setItem('mp_cards',JSON.stringify(sel));
+  renderMyPickup();renderMyPickupEdit();
+}
 function toggleMyPickupCard(id){
-  const cur=new Set(getMyPickupSelection());
-  cur.has(id)?cur.delete(id):cur.add(id);
-  const sel=MY_PICKUP_CARDS.map(c=>c.id).filter(x=>cur.has(x)); // 定義順に正規化
-  localStorage.setItem('mp_cards', JSON.stringify(sel));
-  renderMyPickup(); renderMyPickupEdit();
+  const sel=getMyPickupSelection();
+  saveMyPickupSelection(sel.includes(id)?sel.filter(x=>x!==id):[...sel,id]);
+}
+function moveMyPickupCard(id,step){
+  const sel=getMyPickupSelection(),i=sel.indexOf(id),j=i+step;
+  if(i<0||j<0||j>=sel.length)return;
+  [sel[i],sel[j]]=[sel[j],sel[i]];
+  saveMyPickupSelection(sel);
+  document.querySelector(`[data-mp-move="${id}:${step}"]`)?.focus();
 }
 function renderMyPickupEdit(){
-  const e=document.getElementById('myPickupEdit'); if(!e) return;
-  const sel=new Set(getMyPickupSelection());
-  e.innerHTML='<div class="mp-edit-hint">表示するカードを選択（並び順は固定）</div>'+
-    MY_PICKUP_CARDS.map(c=>`<label class="mp-edit-row"><input type="checkbox" ${sel.has(c.id)?'checked':''} onchange="toggleMyPickupCard('${c.id}')"><span>${c.name}</span></label>`).join('');
+  const e=document.getElementById('myPickupEdit');if(!e)return;
+  const sel=getMyPickupSelection();
+  const ids=[...sel,...MY_PICKUP_CARDS.map(c=>c.id).filter(id=>!sel.includes(id))];
+  e.innerHTML='<div class="mp-edit-hint">表示するカードを選び、↑ ↓で順番を変更できます。設定はこのブラウザに保存されます。</div>'+ids.map(id=>{
+    const c=MY_PICKUP_CARDS.find(c=>c.id===id),i=sel.indexOf(id);
+    return `<div class="mp-edit-row"><label><input type="checkbox" ${i>=0?'checked':''} onchange="toggleMyPickupCard('${id}')"><span>${c.name}</span></label>${i>=0?`<div class="mp-move-buttons"><button type="button" data-mp-move="${id}:-1" aria-label="${c.name}を上へ" ${i===0?'disabled':''} onclick="moveMyPickupCard('${id}',-1)">↑</button><button type="button" data-mp-move="${id}:1" aria-label="${c.name}を下へ" ${i===sel.length-1?'disabled':''} onclick="moveMyPickupCard('${id}',1)">↓</button></div>`:''}</div>`;
+  }).join('');
 }
 function toggleMyPickupEdit(){
   const e=document.getElementById('myPickupEdit'); if(!e) return;
@@ -3426,30 +3442,28 @@ function renderMyPickup(){
   const all=(latest?latest.battles:[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">最新シリーズにまだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
   const sel=getMyPickupSelection();
-  const cards=MY_PICKUP_CARDS.filter(c=>sel.includes(c.id));
+  const cards=sel.map(id=>MY_PICKUP_CARDS.find(c=>c.id===id));
   if(!cards.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">表示するカードがありません。「⚙ 表示カードを編集」から選んでください。</div>'; return; }
   const scope=`<div class="mp-sub" style="margin:-2px 0 8px;font-size:12px;color:var(--text2);">対象シリーズ：${escapeHtml(latest.name||'最新')}</div>`;
   cont.innerHTML=scope+cards.map(c=>
-    `<div class="card mp-card">
+    `<div class="card mp-card" data-mp-card="${c.id}">
       <div class="mp-card-head">
         <div class="card-title" style="margin-bottom:0;">${c.title}</div>
-        <button class="mp-detail-link" onclick="${c.detailAction ? c.detailAction : `switchAnalysis('${c.detail}')`}">詳細 →</button>
+        <button class="mp-detail-link" onclick="openMyPickupDetail('${c.id}')">詳細 →</button>
       </div>
       <div class="mp-card-body">${c.render(all)}</div>
     </div>`).join('');
 }
 
-// マイピックアップ「レート」カードの詳細→：シリーズ分析を開き、最新シリーズを明示選択して表示する
-// （レートはシリーズ内のみで連続するため、最新シリーズのレート推移を直接見せる）
-function openRateDetail(){
-  switchAnalysis('seriesanal');
-  // loadAnalysis 完了後（キャッシュ時も解決）にセレクトが整うので、最新シリーズを選び直して描画
-  loadAnalysis().then(()=>{
-    const sel=document.getElementById('seriesanalSelect');
-    if(!sel||!allSeriesData.length) return;
-    const latest=allSeriesData.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
-    if(latest && sel.querySelector(`option[value="${latest.id}"]`)){ sel.value=String(latest.id); renderSeriesAnalysis(); }
-  });
+// カードと同じ最新シリーズを詳細画面でも表示する。
+function openMyPickupDetail(id){
+  const card=MY_PICKUP_CARDS.find(c=>c.id===id);
+  const latest=allSeriesData.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
+  if(!card||!latest)return;
+  const select=document.getElementById(card.detail==='trend'?'trendSeriesSelect':'seriesanalSelect');
+  select.value=String(latest.id);
+  if(card.detail==='trend') switchTrendMode(id==='recent'?'recent':'cum');
+  switchAnalysis(card.detail);
 }
 
 // ---- ポケモン別詳細 ----
