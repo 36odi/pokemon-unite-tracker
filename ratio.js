@@ -1,14 +1,34 @@
 // 読み取り専用のレシオ一覧。計算画面と同じデータ・アップグレード補完を使用する。
 let ratioPokemon='';
+let ratioType='all';
+function openRecordRatio(){
+  ratioPokemon=Object.hasOwn(LAB_SKILLS,selectedPoke)?selectedPoke:'';
+  ratioType='all';
+  document.getElementById('ratioSearch').value='';
+  document.getElementById('ratioResult').replaceChildren();
+  showPage('lab');
+  switchLab('ratio');
+  if(ratioPokemon) ratioRender();
+}
+function ratioRenderTypes(){
+  const el=document.getElementById('ratioTypes');el.replaceChildren();
+  for(const [key,label] of [['all','すべて'],...Object.entries(POKEMON_DATA).map(([k,v])=>[k,v.label])]){
+    const b=document.createElement('button');b.type='button';b.textContent=label;
+    b.className='type-tab '+key+(ratioType===key?' active':'');
+    b.setAttribute('aria-pressed',String(ratioType===key));
+    b.onclick=()=>{ratioType=key;ratioRenderTypes();ratioSearch();};el.appendChild(b);
+  }
+}
 const ratioSlots=['通常攻撃','わざ1','わざ2','ユナイトわざ','特性'];
 function ratioNormalize(s){return s.normalize('NFKC').replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 function ratioInit(){
+  ratioRenderTypes();
   ratioSearch();
   if(!ratioPokemon) document.getElementById('ratioResult').textContent='ポケモンを選ぶと、全わざのレシオを表示します。';
 }
 function ratioSearch(){
   const q=ratioNormalize(document.getElementById('ratioSearch').value.trim());
-  const names=Object.keys(LAB_SKILLS).sort((a,b)=>a.localeCompare(b,'ja')).filter(n=>ratioNormalize(n).includes(q));
+  const names=Object.keys(LAB_SKILLS).sort((a,b)=>a.localeCompare(b,'ja')).filter(n=>ratioNormalize(n).includes(q)&&(ratioType==='all'||POKEMON_DATA[ratioType]?.pokemon.includes(n)));
   const el=document.getElementById('ratioChoices');el.replaceChildren();
   for(const n of names){
     const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(n===ratioPokemon));

@@ -148,7 +148,7 @@
     <div class="card" id="inputCard" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div class="card-title" style="margin-bottom:0;">対戦を記録する</div>
-        <button class="btn-help" onclick="openHelp('record')">？</button>
+        <div class="record-actions"><button type="button" class="ratio-shortcut" onclick="openRecordRatio()">レシオ一覧</button><button class="btn-help" aria-label="対戦記録のヘルプ" onclick="openHelp('record')">？</button></div>
       </div>
       <div class="input-row">
         <div class="input-group">
@@ -697,23 +697,24 @@
 
     <!-- サブタブ -->
     <div class="analysis-tabs">
-      <div class="analysis-tab active" onclick="switchLab('calc')">🧮 ステータス計算</div>
-      <div class="analysis-tab" onclick="switchLab('dmg')">⚔️ ダメージ計算</div>
-      <div class="analysis-tab" onclick="switchLab('medal')">🎖️ メダルセット作成</div>
-      <div class="analysis-tab" onclick="switchLab('ratio')">📖 レシオ一覧</div>
+      <div class="analysis-tab active" data-lab-tab="ratio" onclick="switchLab('ratio')">📖 レシオ一覧</div>
+      <div class="analysis-tab" data-lab-tab="calc" onclick="switchLab('calc')">🧮 ステータス計算</div>
+      <div class="analysis-tab" data-lab-tab="dmg" onclick="switchLab('dmg')">⚔️ ダメージ計算</div>
+      <div class="analysis-tab" data-lab-tab="medal" onclick="switchLab('medal')">🎖️ メダルセット作成</div>
     </div>
 
-    <div id="labRatioPanel" style="display:none;">
+    <div id="labRatioPanel">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><label for="ratioSearch">ポケモンを検索</label><button class="btn-help" aria-label="レシオ一覧のヘルプ" onclick="openHelp('ratio')">？</button></div>
         <input id="ratioSearch" class="lab-select" type="search" placeholder="名前を入力（ひらがな可）" oninput="ratioSearch()">
+        <div id="ratioTypes" class="ratio-types" role="group" aria-label="型で絞り込み"></div>
         <div id="ratioChoices" class="ratio-choices" aria-label="ポケモン一覧"></div>
       </div>
       <div id="ratioResult" aria-live="polite"></div>
       <p class="ratio-note">登録済みのラボデータを表示しています。式は持ち物・メダル・相手の防御による補正前です。未収録は効果がないことを意味しません。</p>
     </div>
     <!-- ===== ステータス・ダメージ計算 パネル ===== -->
-    <div id="labCalcPanel">
+    <div id="labCalcPanel" style="display:none;">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">ポケモン設定</div>
@@ -1969,6 +1970,11 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.48',
+    date: '2026-10-01',
+    items: ['マイピックアップのヘルプボタンの位置を修正しました。', '対戦記録にレシオ一覧へのショートカットを追加しました。選択中のポケモンを直接確認できます。', 'レシオ一覧を型で絞り込めるようにし、ラボの先頭・初期表示に移動しました。']
+  },
+  {
     version: 'v5.47',
     date: '2026-09-30',
     items: ['各画面のヘルプを見直し、集計条件・保存先・計算結果の見方を分かりやすく整理しました。', 'マイピックアップとレシオ一覧にヘルプを追加しました。']
@@ -2859,7 +2865,7 @@ const HELP_CONTENT = {
   },
   "ratio": {
     "title": "❓ レシオ一覧",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>名前（ひらがなでも可）で検索し、ポケモンを選びます。通常攻撃・わざ1・わざ2・ユナイトわざ・特性のボタンで各項目へ移動できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">式の読み方</div><div class=\"help-item\"><span>「特攻 × 40％ ＋ 120」なら、特攻の40％に120を加えます。「Lv − 1」はポケモンのレベルから1を引いた値です。</span></div><div class=\"help-item\"><span>多段攻撃などは1回分の式と、表示されている回数分の式を分けています。異なる攻撃箇所・発動条件の行を、無条件に足し合わせないでください。</span></div><div class=\"help-item\"><span>「通常版と同じ」は、表示している式と回数が同じという意味です。追加効果まで同じとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">表示の範囲</div><div class=\"help-item\"><span>登録済みの式を表示します。持ち物・メダル・相手の防御などの補正を加えた結果ではありません。設定を変えて数値を試すには「ステータス計算」「ダメージ計算」を使ってください。</span></div><div class=\"help-item\"><span>「未収録」はデータがない状態で、効果がない・数値が0という意味ではありません。「直接ダメージなし」とは区別しています。割合回復など、式に含まれない部分がある場合は注記を確認してください。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>名前（ひらがなでも可）と型で絞り込み、ポケモンを選びます。対戦記録の「レシオ一覧」からは、選択中のポケモンを直接確認できます。通常攻撃・わざ1・わざ2・ユナイトわざ・特性のボタンで各項目へ移動できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">式の読み方</div><div class=\"help-item\"><span>「特攻 × 40％ ＋ 120」なら、特攻の40％に120を加えます。「Lv − 1」はポケモンのレベルから1を引いた値です。</span></div><div class=\"help-item\"><span>多段攻撃などは1回分の式と、表示されている回数分の式を分けています。異なる攻撃箇所・発動条件の行を、無条件に足し合わせないでください。</span></div><div class=\"help-item\"><span>「通常版と同じ」は、表示している式と回数が同じという意味です。追加効果まで同じとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">表示の範囲</div><div class=\"help-item\"><span>登録済みの式を表示します。持ち物・メダル・相手の防御などの補正を加えた結果ではありません。設定を変えて数値を試すには「ステータス計算」「ダメージ計算」を使ってください。</span></div><div class=\"help-item\"><span>「未収録」はデータがない状態で、効果がない・数値が0という意味ではありません。「直接ダメージなし」とは区別しています。割合回復など、式に含まれない部分がある場合は注記を確認してください。</span></div></div>"
   }
 };
 
@@ -5626,6 +5632,7 @@ function loadLabData(){
   const msg=document.getElementById('labLoadingMsg');
   if(msg) msg.style.display='none';
   labInitUI();
+  switchLab('ratio');
 }
 
 // ---- UI 初期化（lab_data.js ロード後に同期実行）----
@@ -5660,8 +5667,8 @@ function labInitUI(){
 
 // ---- サブタブ切替 ----
 function switchLab(tab){
-  document.querySelectorAll('#labPage .analysis-tab').forEach((t,i)=>{
-    t.classList.toggle('active',(i===0&&tab==='calc')||(i===1&&tab==='dmg')||(i===2&&tab==='medal')||(i===3&&tab==='ratio'));
+  document.querySelectorAll('#labPage .analysis-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.labTab===tab);
   });
   document.getElementById('labCalcPanel').style.display=tab==='calc'?'block':'none';
   document.getElementById('labDmgCalcPanel').style.display=tab==='dmg'?'block':'none';

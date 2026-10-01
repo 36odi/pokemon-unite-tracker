@@ -13,7 +13,20 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await context.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.fulfill({status:200,body:'',contentType:'application/javascript'}));
   await context.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('guest_series',JSON.stringify([{id:'lab-fixture',name:'ラボ検証',created_at:'2026-09-09T00:00:00Z'}]));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);
-  await page.evaluate(()=>{showPage('lab');switchLab('ratio');});
+  await page.evaluate(()=>showPage('lab'));
+  eq(await page.locator('#labRatioPanel').isVisible(),true,'ratio is initial lab panel');
+  eq(await page.locator('#labPage .analysis-tab').first().innerText(),'📖 レシオ一覧','ratio first');
+  for(const role of ['atk','bal','spd','def','sup']){
+    await page.locator('#ratioTypes .'+role).click();
+    const expected=await page.evaluate(r=>Object.keys(LAB_SKILLS).filter(n=>POKEMON_DATA[r].pokemon.includes(n)).sort(),role);
+    eq((await page.locator('#ratioChoices button').allTextContents()).sort(),expected,role+' roster');
+  }
+  await page.locator('#ratioTypes .atk').click();
+  await page.locator('#ratioSearch').fill('すとりんだー');
+  eq(await page.locator('#ratioChoices button').count(),1,'combined name and role');
+  await page.locator('#ratioTypes .def').click();
+  eq(await page.locator('#ratioChoices button').count(),0,'combined role excludes name');
+  await page.locator('#ratioTypes .all').click();
   await page.locator('#ratioSearch').fill('すとりんだー');
   eq(await page.locator('#ratioChoices button').count(),1,'hiragana search');
   await page.locator('#ratioChoices button').click();
@@ -57,6 +70,31 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.evaluate(()=>switchLab('calc'));
   eq(await page.locator('#labCalcPanel').isVisible(),true,'calculator preserved');
   eq(await page.locator('#labRatioPanel').isVisible(),false,'ratio hidden');
+  for(const width of [390,1100]){
+    await page.setViewportSize({width,height:844});
+    await page.evaluate(()=>{showPage('tracker');document.getElementById('inputCard').style.display='block';selectPoke('ストリンダー');document.getElementById('matchType').value='duo';});
+    await page.locator('.ratio-shortcut').click();
+    eq((await page.locator('#ratioResult').innerText()).includes('ストリンダー'),true,'shortcut selected Pokemon');
+    eq(await page.locator('#ratioSearch').inputValue(),'','shortcut clears old search');
+    eq(await page.locator('#ratioTypes .all').getAttribute('aria-pressed'),'true','shortcut clears old role');
+    eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'role filters fit '+width);
+    await page.evaluate(()=>showPage('tracker'));
+    eq(await page.evaluate(()=>selectedPoke),'ストリンダー','draft Pokemon retained');
+    eq(await page.locator('#matchType').inputValue(),'duo','draft mode retained');
+    const shortcut=await page.locator('.ratio-shortcut').boundingBox(),help=await page.locator('#inputCard .btn-help').boundingBox();
+    eq(shortcut.x+shortcut.width<=help.x,true,'record buttons separated');
+    await page.evaluate(()=>{showPage('analysis');switchAnalysis('mypickup');});
+    const a=await page.locator('.mp-toolbar .btn-help').boundingBox(),b=await page.locator('.mp-edit-btn').boundingBox();
+    eq(a.x+a.width+7<=b.x,true,'help gap '+width);
+    eq(Math.abs(a.y+a.height/2-b.y-b.height/2)<1,true,'help centered '+width);
+  }
+  await page.evaluate(()=>{showPage('tracker');clearPoke();openRecordRatio();});
+  eq(await page.locator('#ratioResult').innerText(),'ポケモンを選ぶと、全わざのレシオを表示します。','shortcut without Pokemon clears stale result');
+  for(const [tab,panel] of [['calc','labCalcPanel'],['dmg','labDmgCalcPanel'],['medal','labMedalPanel'],['ratio','labRatioPanel']]){
+    await page.locator('[data-lab-tab="'+tab+'"]').click();
+    eq(await page.locator('#'+panel).isVisible(),true,tab+' panel');
+    eq(await page.locator('#labPage .analysis-tab.active').getAttribute('data-lab-tab'),tab,tab+' active tab');
+  }
   eq(errors,[],'no browser errors');
   console.log('ALL PASS — '+checks+' browser checks');
 }catch(e){console.error(e);process.exitCode=1;}
