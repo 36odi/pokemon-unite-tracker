@@ -463,9 +463,10 @@
 
   <!-- 分析ページ -->
   <div id="analysisPage" style="display:none;">
+    <p class="analysis-guide">勝率・試合数と平均スタッツでは対象が異なる場合があります。BOT戦の扱いはトラッカーの設定に従います。</p>
     <div class="analysis-tabs">
       <div class="analysis-tab active" onclick="switchAnalysis('mypickup')">🏠 マイピックアップ</div>
-      <div class="analysis-tab" onclick="switchAnalysis('trend')">📈 勝率推移</div>
+      <div class="analysis-tab" onclick="switchAnalysis('trend')">📈 推移・傾向</div>
       <div class="analysis-tab" onclick="switchAnalysis('seriesanal')">📋 シリーズ分析</div>
       <div class="analysis-tab" onclick="switchAnalysis('total')">🏆 通算成績</div>
       <div class="analysis-tab" onclick="switchAnalysis('pokedetail')">🔍 ポケモン別詳細</div>
@@ -478,6 +479,7 @@
     </div>
     <!-- 勝率推移 -->
     <div id="trendPanel" style="display:none;">
+      <p class="analysis-guide">選択したシリーズの勝率推移と、日・週・曜日・時間帯ごとの傾向を確認できます。</p>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">シリーズ別 勝率推移</div>
@@ -505,7 +507,7 @@
       </div>
       <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">週間別勝率</div>
+          <div class="card-title" style="margin-bottom:0;">週別勝率</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
         <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
@@ -535,7 +537,7 @@
       </div>
       <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">🎯 得意・苦手な曜日×時間帯</div>
+          <div class="card-title" style="margin-bottom:0;">🎯 曜日×時間帯の勝率上位・下位</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
         <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
@@ -546,6 +548,7 @@
     </div>
     <!-- 通算成績 -->
     <div id="totalPanel" style="display:none;">
+      <p class="analysis-guide">全シリーズを合計した成績です。シリーズごとの比較は「シリーズ分析」で確認できます。</p>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">全シリーズ 通算成績</div>
@@ -562,18 +565,21 @@
         </div>
         <div class="divider"></div>
         <div class="card-title">モード別 通算</div>
+        <div class="series-compare-row header"><div>モード</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
         <div id="ttModeStats"></div>
         <div class="divider"></div>
-        <div class="card-title">通算 ポケモン別TOP5</div>
+        <div class="card-title">使用回数上位5匹の成績</div>
+        <div class="series-compare-row header"><div>ポケモン</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
         <div id="ttPokeStats"></div>
       </div>
       <div class="card" style="margin-top:12px;">
-        <div class="card-title">⚔️ 平均スタッツ（KO/アシスト/与ダメ/被ダメ）</div>
+        <div class="card-title">⚔️ 1試合あたりの平均スタッツ</div>
         <div id="ttStatsSummary"><div class="empty" style="padding:0.8rem 0;">記録がありません</div></div>
       </div>
     </div>
     <!-- A5: シリーズ分析パネル -->
     <div id="seriesanalPanel" style="display:none;">
+      <p class="analysis-guide">選択したシリーズの成績を、レーン・型・ランク・わざやもちもの別に確認できます。</p>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">シリーズ分析</div>
@@ -585,7 +591,7 @@
       <!-- シリーズ比較（旧・比較タブから統合） -->
       <div class="card" style="margin-top:12px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">シリーズ比較</div>
+          <div class="card-title" style="margin-bottom:0;">全シリーズの比較</div>
           <button class="btn-help" onclick="openHelp('compare')">？</button>
         </div>
         <div class="chart-wrap" style="height:180px;margin-bottom:12px;"><canvas id="compareChart"></canvas></div>
@@ -597,6 +603,7 @@
     </div>
     <!-- ポケモン別詳細 -->
     <div id="pokedetailPanel" style="display:none;">
+      <p class="analysis-guide">全シリーズが対象です。ポケモンと対戦モードを選び、わざ・もちもの・レーン別の成績を確認できます。</p>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-title" style="margin-bottom:0;">ポケモン別詳細</div>
@@ -608,7 +615,7 @@
           </select>
         </div>
         <div class="detail-mode-tabs">
-          <div class="detail-mode-tab active" onclick="switchDetailMode('all')">トータル</div>
+          <div class="detail-mode-tab active" onclick="switchDetailMode('all')">全モード</div>
           <div class="detail-mode-tab" onclick="switchDetailMode('solo')">ソロ</div>
           <div class="detail-mode-tab" onclick="switchDetailMode('duo')">デュオ/トリオ</div>
           <div class="detail-mode-tab" onclick="switchDetailMode('full')">フルパ</div>
@@ -1970,6 +1977,10 @@ function showPage(page){
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
   {
+    version: 'v5.50', date: '2026-10-01',
+    items: ['分析の各タブに集計対象と用途を表示し、勝率推移タブを「推移・傾向」に変更しました。', 'シリーズ分析を目的別に整理し、勝率順位・組み合わせ・使用回数の表記を明確にしました。']
+  },
+  {
     version: 'v5.49', date: '2026-10-01',
     items: ['マイピックアップのカードを並び替えられるようにしました。', '勝率と最近の成績を整理し、直近の集計を10戦に統一しました。勝率順位の名称と対戦数の表示を見直しました。', 'マイピックアップの詳細で、同じ対象シリーズを開くようにしました。']
   },
@@ -2832,8 +2843,8 @@ const HELP_CONTENT = {
     "body": "<div class=\"help-section\"><div class=\"help-section-title\">探す・確認する</div><div class=\"help-item\"><span>選択中シリーズの記録を表示します。勝敗・マッチ種別・ポケモンの条件を組み合わせて絞り込めます。20件ずつのページで切り替えます。</span></div><div class=\"help-item\"><span>日時・装備・メモを確認できます。「平均対象外」は平均スタッツから除外した記録です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">編集・削除</div><div class=\"help-item\"><span>鉛筆ボタンで勝敗・ランク・マッチ種別・ポケモン・わざ・装備・日時・レーン・スタッツ・平均対象外の設定を変更できます。</span></div><div class=\"help-item\"><span>各記録の「✕」は1試合を削除します。「全削除」は選択中シリーズの全記録を削除します。絞り込み中でも対象はシリーズ全体で、元に戻せません。</span></div></div>"
   },
   "trend": {
-    "title": "❓ 勝率推移",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">グラフの見方</div><div class=\"help-item\"><span>シリーズを選び、「累積勝率」または「直近10戦」を選びます。累積は最初からその時点まで、直近10戦はその試合を含む直近10試合分（10試合未満なら記録済み分）の勝率です。</span></div><div class=\"help-item\"><span>点線は勝率50％です。表示点は最大20点にまとめているため、すべての試合が点として並ぶとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">日別・週間・曜日・時間帯</div><div class=\"help-item\"><span>日別・曜日別は午前9時を日付の区切りとし、週は月曜～日曜です。時間帯は対戦日時を端末の時刻で2時間ごとに集計します。</span></div><div class=\"help-item\"><span>「得意・苦手な曜日×時間帯」は3戦以上ある組み合わせが対象です。少数の記録の勝率だけで得意・不得意を断定しないようにしてください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+    "title": "❓ 推移・傾向",
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">グラフの見方</div><div class=\"help-item\"><span>シリーズを選び、「累積勝率」または「直近10戦」を選びます。累積は最初からその時点まで、直近10戦はその試合を含む直近10試合分（10試合未満なら記録済み分）の勝率です。</span></div><div class=\"help-item\"><span>点線は勝率50％です。表示点は最大20点にまとめているため、すべての試合が点として並ぶとは限りません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">日別・週間・曜日・時間帯</div><div class=\"help-item\"><span>日別・曜日別は午前9時を日付の区切りとし、週は月曜～日曜です。時間帯は対戦日時を端末の時刻で2時間ごとに集計します。</span></div><div class=\"help-item\"><span>「曜日×時間帯の勝率上位・下位」は3戦以上ある組み合わせが対象です。少数の記録の勝率だけで得意・不得意を断定しないようにしてください。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
   "compare": {
     "title": "❓ シリーズ比較",
@@ -2845,7 +2856,7 @@ const HELP_CONTENT = {
   },
   "seriesanal": {
     "title": "❓ シリーズ分析",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>シリーズを選ぶと、成績の概要・レート推移・使用回数上位12匹を表示します。各分析の見出しを押して詳細を開閉できます。</span></div><div class=\"help-item\"><span>レート推移はマスター以上の記録が2件以上必要です。日別試合数のグラフには2日以上の記録が必要です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">確認できる内訳</div><div class=\"help-item\"><span>型別の平均スタッツ、勝ちパターン（組み合わせ別）、レーン別・型別・ランク帯別の勝率を確認できます。</span></div><div class=\"help-item\"><span>わざセット別の採用率・勝率、ポケモン別のもちもの成績、シリーズ全体のバトルアイテム成績も確認できます。</span></div><div class=\"help-item\"><span>勝ちパターンは記録から見た傾向です。使用者・対戦条件の違いもあるため、その組み合わせの強さを保証するものではありません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>シリーズを選ぶと、成績の概要・レート推移・使用回数上位12匹を表示します。各分析の見出しを押して詳細を開閉できます。</span></div><div class=\"help-item\"><span>レート推移はマスター以上の記録が2件以上必要です。日別試合数のグラフには2日以上の記録が必要です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">確認できる内訳</div><div class=\"help-item\"><span>型別の平均スタッツ、組み合わせ別の勝率、レーン別・型別・ランク帯別の勝率を確認できます。</span></div><div class=\"help-item\"><span>わざセット別の採用率・勝率、ポケモン別のもちもの成績、シリーズ全体のバトルアイテム成績も確認できます。</span></div><div class=\"help-item\"><span>組み合わせ別の勝率は記録から見た傾向です。使用者・対戦条件の違いもあるため、その組み合わせの強さを保証するものではありません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
   "pokedetail": {
     "title": "❓ ポケモン別詳細",
@@ -3186,8 +3197,8 @@ function renderBestWorstSlots(battles){
   const worst=[...arr].sort((a,b)=>a.wr-b.wr||b.total-a.total).slice(0,3);
   const row=(m,good)=>`<div class="bw-row"><span class="bw-slot">${fmt(m)}</span><span class="bw-wr" style="color:${good?'var(--win)':'var(--loss)'}">${Math.round(m.wr*100)}%</span><span class="bw-n">${m.win}勝${m.total-m.win}敗</span></div>`;
   el.innerHTML=
-    `<div class="bw-col"><div class="bw-head" style="color:var(--win)">🏆 得意 TOP3</div>${best.map(m=>row(m,true)).join('')}</div>`+
-    `<div class="bw-col"><div class="bw-head" style="color:var(--loss)">⚠️ 苦手 WORST3</div>${worst.map(m=>row(m,false)).join('')}</div>`;
+    `<div class="bw-col"><div class="bw-head" style="color:var(--win)">勝率上位3件</div>${best.map(m=>row(m,true)).join('')}</div>`+
+    `<div class="bw-col"><div class="bw-head" style="color:var(--loss)">勝率下位3件</div>${worst.map(m=>row(m,false)).join('')}</div>`;
 }
 
 function renderCompareChart(){
@@ -5111,7 +5122,7 @@ async function renderSeriesAnalysis(){
   }).join('');
   const b1HTML=b1Rows?tblWrap(tblHead([
     {label:'ランク帯',left:true},{label:'試合'},{label:'勝'},{label:'敗'},
-    {label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}
+    {label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}
   ])+`<tbody>${b1Rows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">ランク記録なし</div>';
 
   // ── B2: ランク帯×ポケモン別勝率 ──
@@ -5143,7 +5154,7 @@ async function renderSeriesAnalysis(){
       <div style="font-size:11px;color:var(--text3);padding:4px 0 2px;">${rankBadge(r)}</div>
       ${tblWrap(tblHead([
         {label:'ポケモン',left:true},{label:'試合'},{label:'勝'},
-        {label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}
+        {label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}
       ])+`<tbody>${rows}</tbody>`)}
     </div>`;
   }).join('');
@@ -5293,7 +5304,7 @@ async function renderSeriesAnalysis(){
   const LANES=['上','中央','下'];
   const laneMap={};
   bs.forEach(b=>{ if(!b.lane)return; (laneMap[b.lane]=laneMap[b.lane]||[]).push(b); });
-  const laneCols=[{label:'レーン',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}];
+  const laneCols=[{label:'レーン',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}];
   const laneRows=LANES.filter(l=>laneMap[l]).map(l=>{
     const arr=laneMap[l], lw=winCount(arr), lt=arr.length, lwr=wrPct(lw,lt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
@@ -5323,7 +5334,7 @@ async function renderSeriesAnalysis(){
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
     return `<tr><td style="padding:4px 6px;">${r}</td><td style="padding:4px 6px;text-align:center;">${rt}</td><td style="padding:4px 6px;text-align:center;">${rw}</td><td style="padding:4px 6px;text-align:center;">${rt-rw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
   }).join('');
-  const roleHTML=roleRows?tblWrap(tblHead([{label:'型',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ'},{label:'フルパ'}])+`<tbody>${roleRows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">記録なし</div>';
+  const roleHTML=roleRows?tblWrap(tblHead([{label:'型',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}])+`<tbody>${roleRows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">記録なし</div>';
 
   // ── 新B10: 勝ちパターン（ポケモン×レーンの組み合わせ別）──
   const baseWR=t>0?w/t:0, MINP=3;
@@ -5335,9 +5346,9 @@ async function renderSeriesAnalysis(){
     if(!ent.length) return `<div class="empty" style="padding:0.4rem 0;">${MINP}戦以上の組み合わせなし</div>`;
     const best=ent.filter(e=>e.wr>=baseWR).slice(0,6), worst=ent.filter(e=>e.wr<baseWR).slice(-6).reverse();
     return `${hdrRow}
-      <div style="font-size:12px;font-weight:600;color:var(--win);margin:6px 0 2px;">😊 勝てる組み合わせ</div>
+      <div style="font-size:12px;font-weight:600;color:var(--win);margin:6px 0 2px;">シリーズ勝率以上の組み合わせ</div>
       ${best.length?best.map(fmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}
-      <div style="font-size:12px;font-weight:600;color:var(--loss);margin:8px 0 2px;">😣 苦手な組み合わせ</div>
+      <div style="font-size:12px;font-weight:600;color:var(--loss);margin:8px 0 2px;">シリーズ勝率未満の組み合わせ</div>
       ${worst.length?worst.map(fmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}`;
   };
   // ポケモン×レーン
@@ -5352,7 +5363,7 @@ async function renderSeriesAnalysis(){
   const c3Rows=Object.values(c3).map(s=>({...s,t:s.w+s.l,wr:s.w/(s.w+s.l)}));
   const c3Fmt=(e)=>wpRow(`${escapeHtml(e.role)} <span style="color:var(--text3);">・${escapeHtml(e.lane)}・${MODE_LBL[e.mode]||escapeHtml(e.mode)}</span>`,e);
   const winPatternHTML=(c2Rows.some(e=>e.t>=MINP)||c3Rows.some(e=>e.t>=MINP))
-    ?`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${MINP}戦以上の組み合わせを勝率順に。全体勝率 ${(baseWR*100).toFixed(1)}%（右端は基準との差）</div>
+    ?`<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${MINP}戦以上の組み合わせを勝率順に。全体勝率 ${(baseWR*100).toFixed(1)}%（右端はシリーズ勝率との差・単位はポイント）</div>
       <div style="font-size:12px;font-weight:700;margin:8px 0 4px;">🐾 ポケモン × レーン</div>
       ${comboBlock(c2Rows,c2Fmt)}
       <div style="font-size:12px;font-weight:700;margin:14px 0 4px;">🎭 型 × レーン × モード</div>
@@ -5383,14 +5394,18 @@ async function renderSeriesAnalysis(){
     }).join('')}
     `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
     <div style="margin-top:4px;">
-      ${makeAccordion('⚔️ 平均スタッツ（型別）',roleStatsHTML)}
-      ${makeAccordion('🏆 勝ちパターン（組み合わせ別）',winPatternHTML)}
+<h3 class="analysis-group-title">対戦条件ごとの成績</h3>
       ${makeAccordion('🛣️ レーン別勝率',laneHTML)}
       ${makeAccordion('🎭 型（ロール）別勝率',roleHTML)}
       ${makeAccordion('🏅 ランク帯別勝率（モード内訳付き）',b1HTML)}
       ${makeAccordion('🔍 ランク帯×ポケモン別勝率',b2HTML)}
-      ${makeAccordion('✨ 技セット別勝率',b3HTML)}
+<h3 class="analysis-group-title">わざ・もちものの成績</h3>
+      ${makeAccordion('✨ わざセット別勝率',b3HTML)}
       ${makeAccordion('🎒 アイテム別勝率',b4HTML)}
+<h3 class="analysis-group-title">組み合わせ・平均スタッツ</h3>
+      ${makeAccordion('🏆 組み合わせ別の勝率',winPatternHTML)}
+      ${makeAccordion('⚔️ 1試合あたりの平均スタッツ（型別）',roleStatsHTML)}
+      <h3 class="analysis-group-title">記録した試合数の推移</h3>
       ${makeAccordion('📅 日別試合数',b7HTML)}
     </div>
   `;

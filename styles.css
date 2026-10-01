@@ -735,3 +735,6 @@
 .mp-move-buttons{display:flex;gap:6px;}
 .mp-move-buttons button{min-width:32px;min-height:32px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);cursor:pointer;}
 .mp-move-buttons button:disabled{opacity:.35;cursor:default;}
+
+.analysis-guide{font-size:12px;line-height:1.7;color:var(--text2);margin:0 0 12px;}
+.analysis-group-title{font-size:13px;color:var(--text2);margin:18px 0 8px;}
