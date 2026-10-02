@@ -46,6 +46,7 @@ function normBattles(arr){
     if(!b) continue;
     if(b.pokemon) b.pokemon = normPokeName(b.pokemon);
     b.exclude_from_avg_stats = b.exclude_from_avg_stats === true;
+    if('medal_set' in b) b.medal_set = parseMedalSet(b.medal_set);
   }
   return arr || [];
 }
@@ -181,4 +182,62 @@ function buildPlayedTierMap(seriesBattles){
 // ランク未記録や map 不在の場合は記録どおりの rankTier。
 function aggRankTier(b, playedMap){
   return (playedMap && playedMap.has(b)) ? playedMap.get(b) : rankTier(b.rank);
+}
+
+// ===== 対戦記録のメダルセット =====
+// 対戦には、記録した時点のメダルセットの中身をそのまま保存する（後でプリセットを上書き・削除しても過去の記録は変わらない）。
+// 形式: {label:'白6+茶6+青2', slots:[メダル名|null ×10], rarities:['gold'|'silver'|'bronze' ×10]}
+const MEDAL_RARITY_JA={gold:'金',silver:'銀',bronze:'銅'};
+// DBの値（jsonb）／旧データ／文字列を正規化。中身のメダルが1枚もなければ null。
+function parseMedalSet(v){
+  let o=v;
+  if(typeof o==='string'){ try{ o=JSON.parse(o); }catch(e){ return null; } }
+  if(!o||typeof o!=='object'||!Array.isArray(o.slots)) return null;
+  const slots=o.slots.slice(0,10).map(s=>(typeof s==='string'&&s)?s:null);
+  while(slots.length<10) slots.push(null);
+  const rar=Array.isArray(o.rarities)?o.rarities:[];
+  const rarities=slots.map((_,i)=>MEDAL_RARITY_JA[rar[i]]?rar[i]:'gold');
+  if(!slots.some(Boolean)) return null;
+  const label=(typeof o.label==='string'&&o.label.trim())?o.label.trim().slice(0,40):'メダルセット';
+  return {label,slots,rarities};
+}
+// メダルセット作成のプリセット（旧形式の配列にも対応）から、対戦に保存する形を作る。
+function medalSetFromPreset(preset,idx){
+  if(!preset) return null;
+  const obj=Array.isArray(preset)?{slots:preset,rarities:[],name:null}:preset;
+  return parseMedalSet({label:(obj.name&&String(obj.name).trim())||`パターン${idx+1}`,slots:obj.slots,rarities:obj.rarities});
+}
+// 中身が同じかどうかの判定用キー。並び順に関係なく同じセットは同じキー（並べ替えてから連結）。
+function medalSetKey(ms){
+  const o=parseMedalSet(ms);
+  if(!o) return '';
+  return o.slots.map((s,i)=>s?`${s}:${o.rarities[i]}`:null).filter(Boolean).sort((a,b)=>a.localeCompare(b,'ja')).join(',');
+}
+// 「ピジョット(金)、オニドリル(金)…」形式の一覧
+function medalSetDetail(ms){
+  const o=parseMedalSet(ms);
+  if(!o) return '';
+  return o.slots.map((s,i)=>s?`${s}(${MEDAL_RARITY_JA[o.rarities[i]]})`:null).filter(Boolean).join('、');
+}
+// 集計用：中身ごとにまとめ、表示名を決める（同じ中身は最新の名前。名前が同じで中身が違うものは「(2)」等で区別し、表示名は必ず一意）。
+// 戻り値: Map(キー → 表示名)
+function medalSetGroupLabels(battles){
+  const latest=new Map();
+  for(const b of battles||[]){
+    const o=parseMedalSet(b&&b.medal_set);
+    if(!o) continue;
+    const k=medalSetKey(o);
+    const t=Date.parse(b.created_at)||0;
+    const cur=latest.get(k);
+    if(!cur||t>=cur.t) latest.set(k,{label:o.label,t});
+  }
+  // 表示名は必ず重複させない（元から「セット (2)」という名前があっても、番号を進めて別名にする）
+  const used=new Set();
+  [...latest.entries()].sort((a,b)=>b[1].t-a[1].t).forEach(([k,v])=>{
+    let name=v.label,n=1;
+    while(used.has(name)){ n++; name=`${v.label} (${n})`; }
+    used.add(name);
+    latest.set(k,{...v,label:name});
+  });
+  return new Map([...latest.entries()].map(([k,v])=>[k,v.label]));
 }

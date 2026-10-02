@@ -23,13 +23,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=81"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=81" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=81" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=81"></script>
-<script src="js/utils.js?v=81"></script>
-<script src="js/lab-core.js?v=81"></script>
-<link rel="stylesheet" href="styles.css?v=81" />
+<script src="vendor/supabase.min.js?v=82"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=82" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=82" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=82"></script>
+<script src="js/utils.js?v=82"></script>
+<script src="js/lab-core.js?v=82"></script>
+<link rel="stylesheet" href="styles.css?v=82" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -348,7 +348,7 @@ SOFTWARE.
       <!-- 詳細設定（任意） -->
       <div class="detail-toggle" onclick="toggleDetail()">
         <span class="detail-arrow" id="detailArrow">▶</span>
-        <span>詳細設定（任意）— 技セット / もちもの / バトルアイテム</span>
+        <span>詳細設定（任意）— 技セット / もちもの / バトルアイテム / メダル</span>
       </div>
       <div class="detail-section" id="detailSection">
         <div class="detail-grid">
@@ -406,6 +406,11 @@ SOFTWARE.
             <div class="item-picker-dropdown" id="ipBdrop"></div>
           </div>
           <button class="item-clear-btn" id="ipBclear" style="display:none;" onclick="clearItemPicker('ipB',0)">✕ 解除</button>
+        </div>
+        <div id="medalSetField">
+          <label class="detail-label" for="medalSetSelect">メダルセット</label>
+          <select class="detail-select" id="medalSetSelect"><option value="">— なし —</option></select>
+          <div class="medal-set-hint" id="medalSetHint"></div>
         </div>
         <div>
           <div class="detail-label">レーン（任意）</div>
@@ -1529,6 +1534,10 @@ SOFTWARE.
         <select id="editBattleItem" onchange="updateItemIcon('editBattleItem','editBattleItemImg')"><option value="">— 選択 —</option></select>
       </div>
     </div>
+    <div class="modal-field" id="editMedalSetField">
+      <label for="editMedalSet">メダルセット</label>
+      <select id="editMedalSet"><option value="">— なし —</option></select>
+    </div>
     <div class="modal-field">
       <label>レーン</label>
       <div class="lane-btn-row" id="editLaneBtnRow">
@@ -1574,6 +1583,10 @@ function isFakeEmail(email){ return email && email.endsWith('@'+MAIL_DOMAIN); }
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 const LAST_SERIES_KEY='lastSeriesId';
+// 対戦記録のメダルセット：DBの battles に medal_set 列があるか（null=未確認）。ゲストは常に記録できる
+let medalSetColumnReady=null;
+let medalSetColumnCheck=null;
+let recordMedalPresetsLoaded=false;
 // 対戦記録の削除（取り消し猶予つき）の状態
 const UNDO_DELETE_MS=5000;
 const PENDING_DELETE_KEY='pendingBattleDeletes';
@@ -1691,6 +1704,8 @@ function updateDetailForPoke(pokeName){
       if(lo.ip3)setItemPickerValue('ip3',lo.ip3);
       if(lo.ipB)setItemPickerValue('ipB',lo.ipB);
     }
+    // メダルセット：前回と同じ中身のプリセットがあれば選ぶ（なければ「なし」）
+    setRecordMedalSetByKey(saved?(JSON.parse(saved).medalKey||''):'');
   }catch{}
 }
 
@@ -1701,6 +1716,8 @@ function resetDetail(){
   });
   // アイテムピッカーリセット
   resetAllItemPickers();
+  // メダルセットリセット
+  const ms=document.getElementById('medalSetSelect');if(ms)ms.value='';
   // 専用もちもの表示リセット
   const fw=document.getElementById('item1Fixed');
   const nw=document.getElementById('item1Normal');
@@ -1962,9 +1979,14 @@ function deleteGuestData(){
 
 // ===== ゲスト → アカウント データ移行 =====
 async function migrateGuestData(){
+  await ensureMedalSetColumnChecked();
   const {data:{user},error:ue}=await db.auth.getUser();
   if(ue||!user) return {error:'no-user'};
   const series=guestGetSeries();
+  // メダルセット付きの記録があるのに、アカウント側（DB）に保存先の列が無い・確認できないときは、
+  // 何も書き込まずに中止する（メダル情報を捨てて移行し、元のゲストデータを消すのを防ぐ）
+  const hasMedalSet=series.some(s=>guestGetBattles(s.id).some(b=>parseMedalSet(b.medal_set)));
+  if(hasMedalSet&&medalSetColumnReady!==true) return {blocked:'medal_set'};
   let seriesCount=0,battleCount=0,presetCount=0,failed=false;
   // 古いシリーズが先に作られるよう、作成日昇順で移行
   const ordered=series.slice().sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
@@ -1983,6 +2005,7 @@ async function migrateGuestData(){
         items:b.items||null, battle_item:b.battle_item||null, lane:b.lane||null, note:b.note||null,
         kills:b.kills??null, assists:b.assists??null, dmg_dealt:b.dmg_dealt??null, dmg_taken:b.dmg_taken??null, heal:b.heal??null, goals:b.goals??null,
         exclude_from_avg_stats:b.exclude_from_avg_stats===true,
+        ...(parseMedalSet(b.medal_set)?{medal_set:parseMedalSet(b.medal_set)}:{}),
         created_at:b.created_at||new Date().toISOString()
       }));
       const {error:be}=await db.from('battles').insert(rows);
@@ -2036,6 +2059,12 @@ function offerGuestMigration(){
       if(!ok){ localStorage.removeItem(GUEST_PRESET_SNAP_KEY); return; }
       showToast('移行中です…','success');
       const r=await migrateGuestData();
+      if(r.blocked==='medal_set'){
+        // 次回ログイン時にもう一度案内できるよう、移行待ちの印を戻す（ゲストデータは何も変えていない）
+        localStorage.setItem(GUEST_MIGRATE_KEY,'1');
+        showToast('メダルセット付きの記録を今は移行できないため、移行を中止しました。ゲストのデータはそのまま残っています。','warn');
+        return;
+      }
       if(r.error){ showToast('移行に失敗しました。通信状態を確認して、もう一度ログイン手順をお試しください。','error'); return; }
       if(r.failed){ showToast('一部のデータを移行できませんでした。ゲストデータは保持しています。時間をおいて再度お試しください。','warn'); return; }
       const msg=[`シリーズ${r.seriesCount}件`,`対戦${r.battleCount}件`];
@@ -2085,7 +2114,7 @@ db.auth.onAuthStateChange(async(event,session)=>{
     if(isGuest()){ enterGuestMode(); return; }
     document.getElementById('authSection').style.display='flex';
     document.getElementById('appSection').style.display='none';
-    currentSeriesId=null;battles=[];seriesRestoreTried=false;storedDeletesFinalized=false;
+    currentSeriesId=null;battles=[];seriesRestoreTried=false;storedDeletesFinalized=false;medalSetColumnReady=null;medalSetColumnCheck=null;recordMedalPresetsLoaded=false;
   }
 });
 
@@ -2116,6 +2145,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.56', date: '2026-10-03',
+    items: ['対戦記録でメダルセットを記録できるようにしました（詳細設定）。ラボの「メダルセット作成」で保存したセットから選びます。記録した時点の中身を保存するので、後でセットを変えても過去の記録は変わりません。', 'ポケモンごとに前回のメダルセットを自動で選びます。履歴・編集・CSVにも表示します。', '分析の「シリーズ分析」と「ポケモン別詳細」に、メダルセット別の勝率を追加しました。']
+  },
   {
     version: 'v5.55', date: '2026-10-03',
     items: ['更新を配信した直後に、新しい画面に古い見た目（CSS）が組み合わさって表示が崩れることがある問題を修正しました。']
@@ -2944,7 +2977,7 @@ async function exportCsv(){
     return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   };
 
-  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','レーン','KO','アシスト','与ダメージ','被ダメージ','回復','ゴール数','平均スタッツから除外'];
+  const header=['日時','シリーズ名','結果','マッチ種別','ランク帯','ポケモン','わざ1','わざ2','もちもの','バトルアイテム','メダルセット','メダル構成','レーン','KO','アシスト','与ダメージ','被ダメージ','回復','ゴール数','平均スタッツから除外'];
   const rows=allBattles.map(b=>[
     formatDate(b.created_at),
     selectedNames[b.series_id]||'',
@@ -2956,6 +2989,8 @@ async function exportCsv(){
     b.skill2||'',
     b.items||'',
     b.battle_item||'',
+    parseMedalSet(b.medal_set)?.label||'',
+    medalSetDetail(b.medal_set),
     b.lane||'',
     b.kills??'',
     b.assists??'',
@@ -2987,7 +3022,7 @@ const HELP_CONTENT = {
   },
   "record": {
     "title": "❓ 対戦を記録する",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">基本の記録</div><div class=\"help-item\"><span>シリーズを選び、使用ポケモン（任意）とマッチ種別を指定して「勝利」または「敗北」を押します。ポケモンは名前や型で絞り込めます。</span></div><div class=\"help-item\"><span>ランクは試合後のクラス・レートを入力します。マスター以上はレート1000以上をレジェンドとして扱います。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">詳細設定（任意）</div><div class=\"help-item\"><span>ポケモンを選ぶと詳細設定が開きます。わざ・もちもの・バトルアイテム・レーン・メモを記録できます。専用もちものは自動固定です。レーンは同じボタンを再度押すと解除できます。</span></div><div class=\"help-item\"><span>スタッツはゴール数・KO・アシスト・与ダメージ・被ダメージ・回復量を記録できます。分からない項目は空欄のままで構いません。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">前回の装備を使う</div><div class=\"help-item\"><span>ポケモンを切り替えると、直前のわざ・もちもの・バトルアイテムを記憶します。同じポケモンを選ぶと復元します。この設定は同じブラウザ内に保存されます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">基本の記録</div><div class=\"help-item\"><span>シリーズを選び、使用ポケモン（任意）とマッチ種別を指定して「勝利」または「敗北」を押します。ポケモンは名前や型で絞り込めます。</span></div><div class=\"help-item\"><span>ランクは試合後のクラス・レートを入力します。マスター以上はレート1000以上をレジェンドとして扱います。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">詳細設定（任意）</div><div class=\"help-item\"><span>ポケモンを選ぶと詳細設定が開きます。わざ・もちもの・バトルアイテム・メダルセット・レーン・メモを記録できます。メダルセットは、ラボの「メダルセット作成」で保存したセットから選びます（記録時点の中身を保存するので、後でセットを変えても過去の記録は変わりません）。専用もちものは自動固定です。レーンは同じボタンを再度押すと解除できます。</span></div><div class=\"help-item\"><span>スタッツはゴール数・KO・アシスト・与ダメージ・被ダメージ・回復量を記録できます。分からない項目は空欄のままで構いません。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">前回の装備を使う</div><div class=\"help-item\"><span>ポケモンを切り替えると、直前のわざ・もちもの・バトルアイテム・メダルセットを記憶します。同じポケモンを選ぶと復元します。この設定は同じブラウザ内に保存されます。</span></div></div>"
   },
   "stats": {
     "title": "❓ 統計",
@@ -3057,6 +3092,96 @@ function openFeedbackModal(){document.getElementById('feedbackModal').classList.
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
 
 // ---- 分析 ----
+// ==================== 対戦記録のメダルセット ====================
+// DBに medal_set 列があるかを1回だけ確認する（列の追加前に新しい画面を公開しても、記録・読込が壊れないように）
+function ensureMedalSetColumnChecked(){
+  if(isGuest()) return Promise.resolve(true);
+  if(medalSetColumnReady!==null) return Promise.resolve(medalSetColumnReady);
+  if(!medalSetColumnCheck){
+    medalSetColumnCheck=(async()=>{
+      try{
+        const {error}=await db.from('battles').select('medal_set').limit(1);
+        medalSetColumnReady=!error;
+        if(error) console.warn('medal_set column not available:',error.message||error);
+      }catch(e){ medalSetColumnReady=false; }
+      refreshRecordMedalSelects();
+      return medalSetColumnReady;
+    })();
+  }
+  return medalSetColumnCheck;
+}
+function withMedalSetCol(cols){ return (!isGuest()&&medalSetColumnReady)?cols+',medal_set':cols; }
+function medalSetRecordable(){ return isGuest()||medalSetColumnReady===true; }
+
+// 記録フォーム用にプリセットを読み込む（端末の保存分→ログイン中ならアカウントの保存分）
+async function initRecordMedalSets(){
+  try{
+    const saved=localStorage.getItem(PRESET_KEY);
+    if(saved){ const p=JSON.parse(saved); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
+  }catch(e){}
+  refreshRecordMedalSelects();
+  if(isGuest()) return;
+  const ok=await _loadPresetsFromSupabase();
+  if(ok){ refreshRecordMedalSelects(); if(labDataReady) labRenderMedalPresets(); }
+}
+// 保存済みプリセットの一覧 [{idx,label,count}]
+function recordMedalPresetOptions(){
+  return labMedalPresets.map((p,i)=>{
+    const ms=medalSetFromPreset(p,i);
+    return ms?{idx:i,label:ms.label,count:ms.slots.filter(Boolean).length,key:medalSetKey(ms)}:null;
+  }).filter(Boolean);
+}
+function refreshRecordMedalSelects(){
+  const field=document.getElementById('medalSetField');
+  const sel=document.getElementById('medalSetSelect');
+  const hint=document.getElementById('medalSetHint');
+  if(!field||!sel) return;
+  const can=medalSetRecordable();
+  field.style.display=(isGuest()||medalSetColumnReady!==false)?'':'none'; // DBの列がまだない間は表示しない
+  const prevKey=medalSetKey(getRecordMedalSet());
+  const opts=recordMedalPresetOptions();
+  sel.innerHTML='<option value="">— なし —</option>'+opts.map(o=>`<option value="${o.idx}">${escapeHtml(o.label)}（${o.count}枚）</option>`).join('');
+  sel.disabled=!can;
+  if(prevKey){ const m=opts.find(o=>o.key===prevKey); sel.value=m?String(m.idx):''; }
+  if(hint){
+    hint.innerHTML=opts.length
+      ?'ラボの「メダルセット作成」で保存したセットから選べます。'
+      :'保存済みのセットがありません。<button type="button" class="link-btn" onclick="openMedalLab()">メダルセットを作る</button>';
+  }
+}
+// 選択中のメダルセット（記録時点の中身）。未選択・記録不可なら null
+function getRecordMedalSet(){
+  const sel=document.getElementById('medalSetSelect');
+  if(!sel||sel.value===''||!medalSetRecordable()) return null;
+  const i=Number(sel.value);
+  return medalSetFromPreset(labMedalPresets[i],i);
+}
+// 前回使ったセット（中身のキー）と同じプリセットを選ぶ
+function setRecordMedalSetByKey(key){
+  const sel=document.getElementById('medalSetSelect');
+  if(!sel) return;
+  const m=key?recordMedalPresetOptions().find(o=>o.key===key):null;
+  sel.value=m?String(m.idx):'';
+}
+function openMedalLab(){
+  showPage('lab');
+  whenLibReady('lab').then(()=>{ if(labDataReady) switchLab('medal'); }).catch(()=>{});
+}
+// 編集画面：「記録時のまま」＋保存済みプリセット
+function fillEditMedalSetSelect(battle){
+  const field=document.getElementById('editMedalSetField');
+  const sel=document.getElementById('editMedalSet');
+  if(!field||!sel) return;
+  field.style.display=medalSetRecordable()?'':'none';
+  const cur=parseMedalSet(battle&&battle.medal_set);
+  const opts=recordMedalPresetOptions();
+  sel.innerHTML='<option value="">— なし —</option>'
+    +(cur?`<option value="__keep">記録時のまま：${escapeHtml(cur.label)}</option>`:'')
+    +opts.map(o=>`<option value="${o.idx}">${escapeHtml(o.label)}（${o.count}枚）</option>`).join('');
+  sel.value=cur?'__keep':'';
+  if(cur) sel.title=medalSetDetail(cur); else sel.removeAttribute('title');
+}
+
 // ---- 後から読み込むスクリプト（Chart.js・ラボデータ）の準備待ち ----
 // 表示を速くするため defer で読み込む。読み込み完了前にそのページが開かれた場合は、
 // ページ全体を操作できない状態（inert）にして「読み込み中」を表示し、完了後に初期化する。
@@ -3139,7 +3264,7 @@ async function loadAnalysis(){
       .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
     // 全シリーズ横断の全件取得。1000行上限があるため sbFetchAll でページング（orderはページ整合用の安定ソート）
     const {data:allBattles,error:e2}=await sbFetchAll((f,t)=>db.from('battles')
-      .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id')
+      .select(withMedalSetCol('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id'))
       .order('created_at',{ascending:true}).order('id',{ascending:true}).range(f,t));
     if(e1||e2){ console.error(e1||e2); return; }
     normBattles(allBattles||[]);
@@ -3783,6 +3908,9 @@ function renderPokeDetail(){
     return sorted.join(' / ');
   });
   const biMap       = makeSetMap(b=>b.battle_item||null);
+  const medalLabels = medalSetGroupLabels(bs);
+  // 中身の識別キーで集計してから表示名に置き換える（表示名が同じでも中身の違うセットを混ぜない）
+  const medalMap    = Object.fromEntries(Object.entries(makeSetMap(b=>medalSetKey(b.medal_set)||null)).map(([k,v])=>[medalLabels.get(k),v]));
 
   // 個別の集計
   const skill1Indiv = makeIndivTable(b=>[b.skill1].filter(Boolean));
@@ -3790,7 +3918,7 @@ function renderPokeDetail(){
   const itemIndiv   = makeIndivTable(b=>b.items?b.items.split(',').filter(Boolean):[]);
   const laneMap     = makeSetMap(b=>b.lane||null); // レーン別（上/中央/下）
 
-  const hasSet=Object.keys(skillSetMap).length||Object.keys(itemSetMap).length||Object.keys(biMap).length;
+  const hasSet=Object.keys(skillSetMap).length||Object.keys(itemSetMap).length||Object.keys(biMap).length||Object.keys(medalMap).length;
 
   content.innerHTML=`
     <!-- 基本成績 -->
@@ -3803,7 +3931,7 @@ function renderPokeDetail(){
 
     <div class="detail-subsection"><div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>平均スタッツ</div>${statsSummaryHTML(bs)}</div>
 
-    ${!hasSet?'<div class="empty u-p-1rem-0">技・もちもの・バトルアイテムの記録がありません</div>':''}
+    ${!hasSet?'<div class="empty u-p-1rem-0">技・もちもの・バトルアイテム・メダルセットの記録がありません</div>':''}
 
     <!-- 技セット別 -->
     <div class="detail-subsection">
@@ -3821,6 +3949,12 @@ function renderPokeDetail(){
     <div class="detail-subsection">
       <div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-pill"></use></svg>バトルアイテム別</div>
       ${makeSetTable(biMap)}
+    </div>
+
+    <!-- メダルセット別 -->
+    <div class="detail-subsection">
+      <div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-award"></use></svg>メダルセット別</div>
+      ${Object.keys(medalMap).length?makeSetTable(medalMap):'<div class="poke-mode-empty">メダルセットの記録がありません</div>'}
     </div>
 
     <!-- レーン別 -->
@@ -3938,9 +4072,10 @@ function saveCurrentLoadout(){
       ip1:getItemPickerValue('ip1'),
       ip2:getItemPickerValue('ip2'),
       ip3:getItemPickerValue('ip3'),
-      ipB:getItemPickerValue('ipB')
+      ipB:getItemPickerValue('ipB'),
+      medalKey:medalSetKey(getRecordMedalSet())
     };
-    if(lo.skill1||lo.skill2||lo.ip1||lo.ip2||lo.ip3||lo.ipB){
+    if(lo.skill1||lo.skill2||lo.ip1||lo.ip2||lo.ip3||lo.ipB||lo.medalKey){
       localStorage.setItem('pokeLoadout_'+selectedPoke,JSON.stringify(lo));
     }
   }catch{}
@@ -3975,6 +4110,9 @@ function filterType(e,type){activeTypeFilter=type;document.querySelectorAll('.ty
 async function loadSeries(){
   // 前回の起動中に確定できなかった削除を先に確定する
   await finalizeStoredDeletes();
+  // メダルセット：DBの列の有無を確認し、記録フォームの選択肢（メダルセット作成のプリセット）を用意する
+  if(!isGuest()) await ensureMedalSetColumnChecked();
+  if(!recordMedalPresetsLoaded){ recordMedalPresetsLoaded=true; initRecordMedalSets(); }
   // S1: 並び順, S2: アーカイブ表示
   const showArchived=document.getElementById('showArchivedCheck')?.checked||false;
   const sortAsc=seriesSortMode==='name';
@@ -4211,6 +4349,7 @@ function openEditModal(id){
   const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[1]||'';
   const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[2]||'';
   const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
+  fillEditMedalSetSelect(battle);
   editSelectedLane=battle.lane||null;
   highlightLane('editLaneBtnRow', editSelectedLane);
   fillStatInputs('editStat', battle);
@@ -4238,6 +4377,11 @@ async function saveEdit(){
   const rank=getEditRankValue();
   const lane=editSelectedLane||null;
   const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,...readStatInputs('editStat')};
+  // メダルセット（ゲスト、またはDBに列がある場合だけ更新）
+  if(isGuest()||medalSetColumnReady){
+    const v=document.getElementById('editMedalSet')?.value||'';
+    if(v!=='__keep') update.medal_set=v===''?null:medalSetFromPreset(labMedalPresets[Number(v)],Number(v));
+  }
   if(created_at)update.created_at=created_at;
   if(isGuest()){
     // ゲスト: localStorageの該当試合を更新（is_bot/メモ等の未編集項目は保持）
@@ -4575,7 +4719,7 @@ async function loadBattles(){
   }
   // P1: 必要列のみ取得。1シリーズでも1000戦超に備え sbFetchAll でページング
   const {data}=await sbFetchAll((f,t)=>db.from('battles')
-    .select('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id')
+    .select(withMedalSetCol('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id'))
     .eq('series_id',currentSeriesId)
     .order('created_at',{ascending:false}).order('id',{ascending:false}).range(f,t));
   battles=filterPendingDeletes(normBattles(data||[]));
@@ -4608,10 +4752,11 @@ async function record(result){
       const note=document.getElementById('noteInput')?.value.trim()||null;
       const is_bot=document.getElementById('isBotCheck')?.checked||false;
       const lane=selectedLane||null;
-      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats(),created_at:new Date().toISOString(),series_id:currentSeriesId};
+      const medal_set=getRecordMedalSet();
+      const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,medal_set,lane,note,is_bot,...readBattleStats(),created_at:new Date().toISOString(),series_id:currentSeriesId};
       const list=guestGetBattles(currentSeriesId);list.unshift(battle);
       guestSaveBattles(currentSeriesId,list);
-      if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item}));}catch{}}
+      if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item,medalKey:medalSetKey(medal_set)}));}catch{}}
       const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';clearBattleStats();
       persistForm();
       await loadBattles();
@@ -4641,12 +4786,14 @@ async function record(result){
     const note=document.getElementById('noteInput')?.value.trim()||null;
     const is_bot=document.getElementById('isBotCheck')?.checked||false;
     const lane=selectedLane||null;
-    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats()});
+    // メダルセットはDBに列がある場合だけ送る（列の追加前でも記録自体は保存できるように）
+    const medal_set=medalSetColumnReady?getRecordMedalSet():null;
+    const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats(),...(medal_set?{medal_set}:{})});
     if(error){showToast('記録の保存に失敗しました。通信状態を確認してください。','error');return;}
     // ポケモン別ロードアウトをlocalStorageに保存
     if(pokemon){
       try{
-        const lo={skill1,skill2,ip1:getItemPickerValue('ip1'),ip2:i2,ip3:i3,ipB:battle_item};
+        const lo={skill1,skill2,ip1:getItemPickerValue('ip1'),ip2:i2,ip3:i3,ipB:battle_item,medalKey:medalSetKey(medal_set)};
         localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify(lo));
       }catch{}
     }
@@ -5037,7 +5184,10 @@ function renderHistory(){
           b.goals!=null?`ゴール${b.goals}`:null
         ].filter(Boolean).join(' / ')}</div>`
       :'';
-
+    const msObj=parseMedalSet(b.medal_set);
+    const medalHtml=msObj
+      ?`<div class="h-medal" title="${escapeHtml(medalSetDetail(msObj))}"><svg class="ico ico-l" aria-hidden="true"><use href="#i-award"></use></svg>${escapeHtml(msObj.label)}</div>`
+      :'';
     const items=b.items?b.items.split(',').filter(Boolean):[];
     const itemBoxes=[0,1,2].map(idx=>{
       const item=items[idx];
@@ -5065,6 +5215,7 @@ function renderHistory(){
           ${pokeNameHtml}
           ${skillHtml}
           ${statsHtml}
+          ${medalHtml}
           ${noteHtml}
         </div>
         ${(items.length||b.battle_item)?`<div class="h-items-row">${itemBoxes}<div class="h-item-sep"></div>${biBox}</div>`:''}
@@ -5665,6 +5816,24 @@ async function renderSeriesAnalysis(){
   }).join('');
   const b3HTML=b3Sections||'<div class="empty u-p-0_8rem-0">技記録なし</div>';
 
+  // ── メダルセット別勝率（中身ごとに集計。並び順は試合数の多い順） ──
+  const mLabels=medalSetGroupLabels(bs);
+  const mGroups=new Map();
+  bs.forEach(b=>{const k=medalSetKey(b.medal_set);if(!k)return;if(!mGroups.has(k))mGroups.set(k,[]);mGroups.get(k).push(b);});
+  const mRows=[...mGroups.entries()].sort((a,b)=>b[1].length-a[1].length).map(([k,arr])=>{
+    const sw=winCount(arr),st=arr.length,swr=wrPct(sw,st);
+    const pokes=[...new Set(arr.map(b=>b.pokemon).filter(Boolean))].slice(0,3).join('・');
+    return `<tr>
+        <td class="u-p-4px-8px u-fs-fs-xs" title="${escapeHtml(medalSetDetail(arr[0].medal_set))}">${escapeHtml(mLabels.get(k))}${pokes?`<div class="u-c-text3">${escapeHtml(pokes)}</div>`:''}</td>
+        <td class="u-p-4px-6px u-ta-center">${st}</td>
+        <td class="u-p-4px-6px u-ta-center">${sw}</td>
+        <td class="u-p-4px-6px u-ta-center">${st-sw}</td>
+        <td style="padding:4px 6px;text-align:center;color:${wrColor(swr)};font-weight:600;">${swr}</td>
+      </tr>`;
+  }).join('');
+  const bMedalHTML=mRows?tblWrap(tblHead([{label:'メダルセット',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'}])+`<tbody>${mRows}</tbody>`)
+    :'<div class="empty u-p-0_8rem-0">メダルセットの記録なし</div>';
+
   // ── B4: アイテム別勝率 ──
   // itemsはDB形式によりarray/JSON文字列/nullの場合がある
   const parseItems=(v)=>{
@@ -5864,6 +6033,7 @@ async function renderSeriesAnalysis(){
 <h3 class="analysis-group-title">わざ・もちものの成績</h3>
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-sparkles"></use></svg>わざセット別勝率',b3HTML)}
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-backpack"></use></svg>アイテム別勝率',b4HTML)}
+      ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-award"></use></svg>メダルセット別勝率',bMedalHTML)}
 <h3 class="analysis-group-title">組み合わせ・平均スタッツ</h3>
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-trophy"></use></svg>組み合わせ別の勝率',winPatternHTML)}
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>1試合あたりの平均スタッツ（型別）',roleStatsHTML)}
@@ -7238,6 +7408,7 @@ async function _savePresetsToSupabase(){
 }
 
 function labRenderMedalPresets(){
+  refreshRecordMedalSelects(); // 対戦記録のメダルセット選択肢も最新にする
   const grid = document.getElementById('medalPresetGrid');
   if(!grid) return;
   grid.innerHTML = labMedalPresets.map((preset, i)=>{
@@ -7404,8 +7575,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=81"></script>
-<script src="ratio.js?v=81"></script>
+<script src="ratio-labels.js?v=82"></script>
+<script src="ratio.js?v=82"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

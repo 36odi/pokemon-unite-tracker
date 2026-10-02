@@ -1,0 +1,9 @@
+-- 原則はアプリを旧版へ戻すだけとし、列と保存済みのメダルセットは残す（旧版はこの列を読まないだけで動作する）。
+-- 下記は記録済みのメダルセットを失うためコメント化した最終手段。
+-- 実行条件: 新コードのクライアントを停止して旧版へ戻し、id と medal_set を安全な場所に退避し、列削除の明示承認を得る。
+-- CASCADE は使用しない。依存があれば停止して再検討する。
+-- BEGIN;
+-- ALTER TABLE public.battles DROP CONSTRAINT battles_medal_set_shape;
+-- ALTER TABLE public.battles DROP COLUMN medal_set;
+-- NOTIFY pgrst, 'reload schema';
+-- COMMIT;

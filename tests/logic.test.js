@@ -48,10 +48,41 @@ const body = `
     pctItems:LAB_PCT_ITEMS, dmgStackItems:LAB_DMG_STACK_ITEMS,
     stackItems:LAB_STACK_ITEMS, goalItems:LAB_GOAL_ITEMS, medalBonus:labCalcMedalBonus,
   };
-  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS, aggBattleStats, normBattles,
+  return {escapeHtml, rankTier, rankRate, rankLabel, gradeTier, gameDayKey, gameDayDate, wrColor, winCount, wrPct, buildSeriesAnalysisOverview, buildPlayedTierMap, aggRankTier, sbFetchAll, dcCalcActual, computeStats, LAB_STATUS, LAB_SKILLS, aggBattleStats, normBattles, parseMedalSet, medalSetFromPreset, medalSetKey, medalSetDetail, medalSetGroupLabels,
           LAB_STATS_DEPS, ICON_ID, POKEMON_DATA, SKILLS, GENERAL_ITEMS, DEDICATED_ITEMS, RANK_STYLE, RANKS};
 `;
 const F = new Function(body)();
+
+section('medal set on battles');
+{
+  const preset={name:'白6+茶6+青2',slots:['ピジョット','オニドリル',null,null,null,null,null,null,null,'ホウオウ'],rarities:['gold','silver','gold','gold','gold','gold','gold','gold','gold','bronze']};
+  const ms=F.medalSetFromPreset(preset,0);
+  eq(ms.label,'白6+茶6+青2','preset name becomes the label');
+  eq(ms.slots.length,10,'snapshot keeps 10 slots');
+  eq(F.medalSetFromPreset({slots:['ポッポ'],rarities:[]},2).label,'パターン3','unnamed preset uses pattern number');
+  eq(F.medalSetFromPreset(['ポッポ','ピジョン'],0).rarities.slice(0,2),['gold','gold'],'legacy array preset defaults to gold');
+  eq(F.medalSetFromPreset({slots:Array(10).fill(null)},0),null,'empty preset is not recorded');
+  eq(F.parseMedalSet(JSON.stringify(ms)),ms,'parses JSON string');
+  eq(F.parseMedalSet(null),null,'null stays null');
+  const reordered={label:'別名',slots:['ホウオウ','ピジョット','オニドリル'],rarities:['bronze','gold','silver']};
+  eq(F.medalSetKey(reordered),F.medalSetKey(ms),'same medals in a different order share a key');
+  ok(F.medalSetKey({...ms,rarities:['silver','silver',...ms.rarities.slice(2)]})!==F.medalSetKey(ms),'different rarity is a different set');
+  eq(F.medalSetDetail(ms),'ピジョット(金)、オニドリル(銀)、ホウオウ(銅)','detail lists medals with rarity');
+  const labels=F.medalSetGroupLabels([
+    {medal_set:{label:'A',slots:['ポッポ'],rarities:['gold']},created_at:'2026-10-01T00:00:00Z'},
+    {medal_set:{label:'A2',slots:['ポッポ'],rarities:['gold']},created_at:'2026-10-02T00:00:00Z'},
+    {medal_set:{label:'A2',slots:['ピジョン'],rarities:['gold']},created_at:'2026-09-01T00:00:00Z'},
+    {medal_set:null}
+  ]);
+  eq([...labels.values()].sort(),['A2','A2 (2)'],'groups by contents, latest name wins, duplicate names are numbered');
+  const tricky=F.medalSetGroupLabels([
+    {medal_set:{label:'セット',slots:['ポッポ'],rarities:['gold']},created_at:'2026-10-03T00:00:00Z'},
+    {medal_set:{label:'セット',slots:['ピジョン'],rarities:['gold']},created_at:'2026-10-02T00:00:00Z'},
+    {medal_set:{label:'セット (2)',slots:['ピジョット'],rarities:['gold']},created_at:'2026-10-01T00:00:00Z'},
+  ]);
+  eq(new Set(tricky.values()).size,3,'labels stay unique even when a real name looks like a numbered one');
+  eq(tricky.size,3,'three different contents stay three groups');
+}
 
 section('average stats exclusion');
 const avgFixture=[

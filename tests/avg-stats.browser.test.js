@@ -196,7 +196,7 @@ async function csvCheck(page,expected,tag){
   equal(parsed[0].at(-1),'平均スタッツから除外',tag+' CSV flag column');
   equal(parsed.length-1,expected.length,tag+' CSV keeps every battle');
   const expectedRows=expected.map(b=>[...statsKeys.map(k=>b[k]==null?'':String(b[k])),String(b.exclude_from_avg_stats===true)].join('|')).sort();
-  const actualRows=parsed.slice(1).map(r=>r.slice(11).join('|')).sort();
+  const actualRows=parsed.slice(1).map(r=>r.slice(13).join('|')).sort();
   equal(actualRows,expectedRows,tag+' CSV retains all stats and flags');
 }
 async function recordAndEdit(mode){
@@ -256,7 +256,7 @@ async function recordAndEdit(mode){
       equal(await page.locator('#editStatExcludeAvgStats').isChecked(),true,'failed edit retains flag input');
       equal(state.battles.find(b=>b.id===saved.id).exclude_from_avg_stats,false,'failed edit does not change stored flag');
       await page.evaluate(()=>closeModal('editModal'));
-      const projections=state.reads.filter(r=>r.table==='battles'&&r.columns!=='*');
+      const projections=state.reads.filter(r=>r.table==='battles'&&r.columns!=='*'&&r.columns!=='medal_set'); // medal_set は列の有無の確認だけ
       truth(projections.some(r=>r.columns.includes('note'))&&projections.some(r=>!r.columns.includes('note')),'both explicit read paths exercised');
       truth(projections.every(r=>r.columns.split(',').includes('exclude_from_avg_stats')),'all explicit reads project new flag');
       truth(state.writes.filter(w=>w.table==='battles').every(w=>typeof w.data.exclude_from_avg_stats==='boolean'),'record and edit send boolean flag');
