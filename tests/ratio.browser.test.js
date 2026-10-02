@@ -15,7 +15,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);
   await page.evaluate(()=>showPage('lab'));
   eq(await page.locator('#labRatioPanel').isVisible(),true,'ratio is initial lab panel');
-  eq(await page.locator('#labPage .analysis-tab').first().innerText(),'📖 レシオ一覧','ratio first');
+  eq((await page.locator('#labPage .analysis-tab').first().innerText()).trim(),'レシオ一覧','ratio first');
   for(const role of ['atk','bal','spd','def','sup']){
     await page.locator('#ratioTypes .'+role).click();
     const expected=await page.evaluate(r=>Object.keys(LAB_SKILLS).filter(n=>POKEMON_DATA[r].pokemon.includes(n)).sort(),role);
