@@ -1191,7 +1191,7 @@ SOFTWARE.
       </div>
 
       <!-- スロット -->
-      <div class="card">
+      <div class="card medal-slot-card">
         <div class="u-d-flex u-items-center u-justify-space-between u-mb-10px">
           <div class="card-title u-mb-0">メダルスロット <span class="u-fs-fs-xs u-c-text3" id="medalSlotCount">0/10</span></div>
           <button onclick="labClearAllMedals()" style="font-size:var(--fs-xs);padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;">クリア</button>
@@ -2115,6 +2115,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.54', date: '2026-10-03',
+    items: ['メダルセット作成のメダルスロットを見やすくしました。スロットごとにメダル名を省略せずに表示し、レアリティ（金・銀・銅）とメダルの色（2色のメダルは2色）を分けて表示します。', 'スマホでは2列の横長表示にして、名前が読めるようにしました。外すボタンを目立ちすぎない表示にしました。']
+  },
   {
     version: 'v5.53', date: '2026-10-03',
     items: ['初回表示を速くしました。グラフとラボのデータを、画面の表示を待たせない読み込み方に変更しています（通信が遅い環境の測定で、最初の表示まで約7.1秒→約3.9秒）。', '画面の見た目の指定を整理しました（表示は変わりません）。']
@@ -7023,27 +7027,46 @@ function labRenderMedalSlots(){
   document.getElementById('medalSlotCount').textContent = `${filled}/10`;
 
   bar.innerHTML = '';
+  const RAR_LABEL={bronze:'銅',silver:'銀',gold:'金'};
   labMedalSlots.forEach((name, i) => {
+    // 1スロット = カード（スロット番号・メダルの色・名前・レアリティ）。外すボタンはカードの外側に置く（ボタンの入れ子を避ける）
+    const wrap = document.createElement('div');
+    wrap.className = 'medal-slot' + (i===labActiveMedalSlot?' is-active':'') + (name?' is-filled':'');
     const btn = document.createElement('button');
     btn.type='button';
-    btn.className='medal-slot-btn' + (i===labActiveMedalSlot?' active-slot':'') + (name?' filled':'');
+    btn.className='medal-slot-btn';
     btn.onclick = () => labSelectMedalSlot(i);
+    if(i===labActiveMedalSlot) btn.setAttribute('aria-current','true');
 
     if(name){
       const m = LAB_MEDALS.find(x=>x.name===name);
-      const hex = m ? (MEDAL_COLOR_HEX[m.c1]||'#9399b2') : '#9399b2';
-      const short = name.length>4 ? name.slice(0,3)+'…' : name;
+      const c1 = m ? (MEDAL_COLOR_HEX[m.c1]||'#9399b2') : '#9399b2';
+      const c2 = m&&m.c2 ? (MEDAL_COLOR_HEX[m.c2]||c1) : c1;
       const rar = labMedalRarities[i]||'gold';
-      const rarLabel = rar==='bronze'?'銅':rar==='silver'?'銀':'金';
+      const colors = m ? [m.c1,m.c2].filter(Boolean).join('・') : '';
+      btn.setAttribute('aria-label',`スロット${i+1}：${name}（${RAR_LABEL[rar]}${colors?'・'+colors:''}）`);
+      btn.title = `${name}（${RAR_LABEL[rar]}）${colors?' '+colors:''}`;
       btn.innerHTML = `
-        <div class="medal-slot-icon" style="background:${hex};">${short}</div>
-        <div class="medal-slot-idx">${i+1}</div>
-        <div class="medal-slot-del" onclick="event.stopPropagation();labRemoveMedalFromSlot(${i})">✕</div>
-        <div class="medal-slot-rar ${rar}">${rarLabel}</div>`;
+        <span class="ms-top"><span class="ms-num">${i+1}</span><span class="ms-rar ${rar}">${RAR_LABEL[rar]}</span></span>
+        <span class="ms-disk" style="--c1:${c1};--c2:${c2};" aria-hidden="true"></span>
+        <span class="ms-name">${escapeHtml(name)}</span>`;
+      const del = document.createElement('button');
+      del.type='button';
+      del.className='medal-slot-del';
+      del.setAttribute('aria-label',`スロット${i+1}の${name}を外す`);
+      del.title='外す';
+      del.textContent='✕';
+      del.onclick = () => labRemoveMedalFromSlot(i);
+      wrap.append(btn, del);
     } else {
-      btn.innerHTML = `<div class="u-fs-fs-xs u-c-text3">${i+1}</div>`;
+      btn.setAttribute('aria-label',`スロット${i+1}：空き`);
+      btn.innerHTML = `
+        <span class="ms-top"><span class="ms-num">${i+1}</span></span>
+        <span class="ms-disk ms-empty" aria-hidden="true">+</span>
+        <span class="ms-name ms-name-empty">空き</span>`;
+      wrap.append(btn);
     }
-    bar.appendChild(btn);
+    bar.appendChild(wrap);
   });
 
   // ヒント更新（アクティブスロットにメダルがあればレアリティ切替を表示）
