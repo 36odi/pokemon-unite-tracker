@@ -1,32 +1,34 @@
-const CACHE = 'unite-tracker-v80';
+const CACHE = 'unite-tracker-v81';
 
 // オフラインで動作させるために必要なアプリシェル一式（ローカル資産）。
+// JS/CSS は index.html と同じ ?v=版数 付きURLで持つ（版数は CACHE の数字と同じ。更新のたびに両方を上げる）。
 // Supabase / Chart.js は CDN から vendor/ に同梱済みなのでここでキャッシュする。
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
+  './styles.css?v=81',
   './manifest.json',
-  './lab_data.js',
-  './ratio.js',
-  './ratio-labels.js',
-  './js/constants.js',
-  './js/utils.js',
-  './js/lab-core.js',
+  './lab_data.js?v=81',
+  './ratio.js?v=81',
+  './ratio-labels.js?v=81',
+  './js/constants.js?v=81',
+  './js/utils.js?v=81',
+  './js/lab-core.js?v=81',
   './images/pokemon/25.png',
   './images/app-icon-192.png',
   './images/app-icon-512.png',
   './images/app-icon-maskable-512.png',
   './images/apple-touch-icon.png',
   './images/brand-mark.svg',
-  './vendor/supabase.min.js',
-  './vendor/chart.umd.min.js',
+  './vendor/supabase.min.js?v=81',
+  './vendor/chart.umd.min.js?v=81',
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
+      // cache:'reload' でブラウザのHTTPキャッシュを使わず、必ずサーバーから最新を取る（古いCSSを取り込まない）
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -56,7 +58,8 @@ self.addEventListener('fetch', e => {
   // まずキャッシュを即返し、裏で取得して次回に備える。オフラインでもキャッシュから起動できる。
   e.respondWith(
     caches.match(req).then(cached => {
-      const network = fetch(req)
+      // 裏での取り直しはHTTPキャッシュを再検証させる（max-age中の古い内容を掴まない）
+      const network = fetch(req, { cache: 'no-cache' })
         .then(res => {
           if (res && res.ok) {
             const copy = res.clone();

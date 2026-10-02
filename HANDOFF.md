@@ -1,6 +1,16 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-10-03 / ローカル更新: v5.54・SW v80（公開準備済み） / 公開状態とは区別する
+> 最終更新: 2026-10-03 / ローカル更新: v5.55・SW v81（公開準備済み） / 公開状態とは区別する
+
+## 2026-10-03 更新直後の表示崩れ（新HTML＋旧CSS）の修正 v5.55 / SW v81
+
+- 症状：v5.54 を push 後、ユーザー環境でメダルスロットが新しいHTML（.ms-* 構造）に古い styles.css（丸型 .medal-slot-btn）が当たった状態で表示された。
+- 原因：GitHub Pages は全ファイル `Cache-Control: max-age=600`。sw.js は同一オリジン資産を stale-while-revalidate で返し、`install` の `addAll` と裏の取り直しがHTTPキャッシュ／CDNの古い内容を取り込み得るため、HTMLとCSSの版が別々に更新されることがある。CDNのURL単位キャッシュを模擬した検証で、公開中の版（29e96a0）で「HTML=新・CSS=旧」を4回連続で再現。
+- 対応：①index.html のローカルJS/CSS（9件）を `?v=版数` 付きURLで読み込む（版数＝sw.js の CACHE の数字）。②sw.js の ASSETS も同じURL。③install は `cache:'reload'`、裏の取り直しは `cache:'no-cache'` で取得。HTMLが参照するCSS/JSのURL自体が版ごとに変わるため、混在しない。
+- **今後の更新手順**：sw.js の `CACHE = 'unite-tracker-vNN'` を上げるとき、index.html と sw.js の `?v=NN` もすべて同じ数字に置き換える。`tests/logic.test.js` が不一致を検出する（?v= の付け忘れ・数字違い・SW側の不一致）。
+- 追加テスト `tests/sw-update.browser.test.js`：現版と次版の一時コピーを作り、CDNの反映待ち（既存URLは8秒間古い内容）を模擬して5回再読み込み。修正版は全回で版一致・最終的に新版表示、公開中の版では不一致を検出して失敗。
+- ユーザー環境の現状は、時間経過と再読み込みで解消する見込み（推測）。確実には Ctrl+Shift+R。
+- 2026-10-03: Edgeで更新切り替えテスト4項目が通過（AA BB BB BB BB）。反映待ちなしの追加条件でも4項目通過。logic 197項目通過。ユーザー指示によりコミット・push承認済み。公開結果はGit履歴・配信状態を参照。
 
 ## 2026-10-03 メダルスロットの見やすさ改善 v5.54 / SW v80
 

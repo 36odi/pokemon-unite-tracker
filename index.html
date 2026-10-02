@@ -22,13 +22,14 @@
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
-<script src="vendor/supabase.min.js"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/lab-core.js"></script>
-<link rel="stylesheet" href="styles.css" />
+<!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
+<script src="vendor/supabase.min.js?v=81"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=81" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=81" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=81"></script>
+<script src="js/utils.js?v=81"></script>
+<script src="js/lab-core.js?v=81"></script>
+<link rel="stylesheet" href="styles.css?v=81" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2115,6 +2116,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.55', date: '2026-10-03',
+    items: ['更新を配信した直後に、新しい画面に古い見た目（CSS）が組み合わさって表示が崩れることがある問題を修正しました。']
+  },
   {
     version: 'v5.54', date: '2026-10-03',
     items: ['メダルセット作成のメダルスロットを見やすくしました。スロットごとにメダル名を省略せずに表示し、レアリティ（金・銀・銅）とメダルの色（2色のメダルは2色）を分けて表示します。', 'スマホでは2列の横長表示にして、名前が読めるようにしました。外すボタンを目立ちすぎない表示にしました。']
@@ -7399,8 +7404,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js"></script>
-<script src="ratio.js"></script>
+<script src="ratio-labels.js?v=81"></script>
+<script src="ratio.js?v=81"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

@@ -363,20 +363,28 @@ eq(F.SKILLS['ソルガレオ'], {s1:['アイアンヘッド'], s2:['サイコシ
 // ---- アプリシェル資産の整合性（ファイル分割後の参照切れ検知） ----
 section('app shell assets');
 const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-const labCoreTag = '<script src="js/lab-core.js"></script>';
-ok(indexSrc.includes(labCoreTag) && indexSrc.indexOf(labCoreTag) < indexSrc.indexOf('<script>'),
+const labCoreTag = (indexSrc.match(/<script src="js\/lab-core\.js(?:\?v=\d+)?"><\/script>/) || [])[0];
+ok(labCoreTag && indexSrc.indexOf(labCoreTag) < indexSrc.indexOf('<script>'),
   'lab-core.js loads before the inline application script');
 ok(!/function\s+(?:computeStats|dcCalcActual)\s*\(/.test(indexSrc),
   'lab core functions are not duplicated in index.html');
 // index.html が参照するローカル資産（js/css/json）が実在し、SW のプリキャッシュにも載っていること
 const localRefs = [...indexSrc.matchAll(/(?:src|href)="(?!https?:|\/\/|data:|#)([^"]+)"/g)]
   .map(m => m[1])
-  .filter(p => /\.(js|css|json)$/.test(p));
+  .filter(p => /\.(js|css|json)(\?v=\d+)?$/.test(p));
 ok(localRefs.length >= 4, `found local asset refs (got: ${localRefs.length})`);
-const missingFiles = localRefs.filter(p => !fs.existsSync(path.join(ROOT, p)));
+const missingFiles = localRefs.filter(p => !fs.existsSync(path.join(ROOT, p.split('?')[0])));
 ok(missingFiles.length === 0, `all local asset refs exist (missing: ${missingFiles.join(', ')})`);
 const notCached = localRefs.filter(p => !swSrc.includes(p));
 ok(notCached.length === 0, `all local assets precached in sw.js (not cached: ${notCached.join(', ')})`);
+// JS/CSS は ?v=版数 付きで読み込み、版数は sw.js の CACHE と一致させる（HTMLと古いCSS/JSの混在防止）
+const swVer = ((swSrc.match(/CACHE\s*=\s*'unite-tracker-v(\d+)'/) || [])[1]) || '';
+const unversioned = localRefs.filter(p => /\.(js|css)(\?|$)/.test(p) && !/\?v=\d+$/.test(p));
+ok(unversioned.length === 0, `local JS/CSS refs carry ?v= (missing: ${unversioned.join(', ')})`);
+const wrongVer = localRefs.filter(p => /\?v=\d+$/.test(p) && p.split('?v=')[1] !== swVer);
+ok(wrongVer.length === 0, `asset ?v= matches sw.js CACHE version v${swVer} (mismatch: ${wrongVer.join(', ')})`);
+const swAssetVers = [...swSrc.matchAll(/\?v=(\d+)'/g)].map(m => m[1]);
+ok(swAssetVers.length > 0 && swAssetVers.every(v => v === swVer), `sw.js ASSETS ?v= all match CACHE version v${swVer}`);
 // CSS が抽出済みで index.html に巨大 <style> ブロックが残っていないこと
 ok(fs.existsSync(path.join(ROOT, 'styles.css')) && fs.statSync(path.join(ROOT, 'styles.css')).size > 10000, 'styles.css exists and non-trivial');
 ok(!/^<style>$/m.test(indexSrc), 'no extracted <style> block left in index.html');
