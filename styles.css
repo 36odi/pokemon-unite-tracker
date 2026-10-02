@@ -115,9 +115,12 @@
   .btn-modal-cancel:hover{border-color:var(--loss);color:var(--loss);}
 
   /* PWAインストールバナー */
-  #pwaBar{display:none;background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:1rem;align-items:center;gap:10px;}
+  #pwaBar{display:none;background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:1rem;flex-direction:column;gap:6px;}
   #pwaBar.show{display:flex;}
-  #pwaBar span{flex:1;font-size:var(--fs-xs);color:var(--accent);}
+  #pwaBar .pwa-main{display:flex;align-items:center;gap:10px;}
+  #pwaBar .pwa-main span{flex:1;font-size:var(--fs-xs);color:var(--accent);}
+  #pwaBar .pwa-never{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:var(--fs-xs);color:var(--text2);cursor:pointer;}
+  #pwaBar .pwa-never input{width:16px;height:16px;accent-color:var(--accent);margin:0;}
   .btn-pwa{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 14px;font-size:var(--fs-xs);font-weight:600;cursor:pointer;white-space:nowrap;}
   .btn-pwa-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:var(--fs-lg);padding:0 4px;}
 

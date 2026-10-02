@@ -23,13 +23,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=82"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=82" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=82" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=82"></script>
-<script src="js/utils.js?v=82"></script>
-<script src="js/lab-core.js?v=82"></script>
-<link rel="stylesheet" href="styles.css?v=82" />
+<script src="vendor/supabase.min.js?v=83"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=83" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=83" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=83"></script>
+<script src="js/utils.js?v=83"></script>
+<script src="js/lab-core.js?v=83"></script>
+<link rel="stylesheet" href="styles.css?v=83" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -235,9 +235,12 @@ SOFTWARE.
   <div id="trackerPage">
     <!-- PWAインストールバナー -->
     <div id="pwaBar">
-      <span><svg class="ico ico-l" aria-hidden="true"><use href="#i-smartphone"></use></svg>ホーム画面に追加するとアプリのように使えます</span>
-      <button class="btn-pwa" onclick="pwaInstall()">追加する</button>
-      <button class="btn-pwa-close" onclick="pwaDismiss()" aria-label="閉じる">✕</button>
+      <div class="pwa-main">
+        <span><svg class="ico ico-l" aria-hidden="true"><use href="#i-smartphone"></use></svg>ホーム画面に追加するとアプリのように使えます</span>
+        <button class="btn-pwa" onclick="pwaInstall()">追加する</button>
+        <button class="btn-pwa-close" onclick="pwaDismiss()" aria-label="閉じる">✕</button>
+      </div>
+      <label class="pwa-never"><input type="checkbox" id="pwaNeverCheck" onchange="pwaSetNever(this.checked)">次回から表示しない</label>
     </div>
 
     <div class="card series-card" id="seriesCard">
@@ -2145,6 +2148,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.57', date: '2026-10-03',
+    items: ['「ホーム画面に追加」の案内に「次回から表示しない」を追加しました。', 'ラボのレシオ一覧などで、ストライクの画像が表示されない問題を修正しました。']
+  },
   {
     version: 'v5.56', date: '2026-10-03',
     items: ['対戦記録でメダルセットを記録できるようにしました（詳細設定）。ラボの「メダルセット作成」で保存したセットから選びます。記録した時点の中身を保存するので、後でセットを変えても過去の記録は変わりません。', 'ポケモンごとに前回のメダルセットを自動で選びます。履歴・編集・CSVにも表示します。', '分析の「シリーズ分析」と「ポケモン別詳細」に、メダルセット別の勝率を追加しました。']
@@ -4430,10 +4437,18 @@ document.addEventListener('click',e=>{
 
 // ---- PWA ----
 let pwaPrompt=null;
+const PWA_HIDE_KEY='pwaBarHidden';
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();pwaPrompt=e;
-  document.getElementById('pwaBar').classList.add('show');
+  // 「次回から表示しない」を選んだ人には出さない（ホーム画面への追加は、ブラウザのメニューからいつでもできる）
+  let hidden=false;try{hidden=localStorage.getItem(PWA_HIDE_KEY)==='1';}catch(err){}
+  if(!hidden) document.getElementById('pwaBar').classList.add('show');
 });
+// 「次回から表示しない」：チェックした時点で保存し、案内を閉じる。外せば次回からまた表示する
+function pwaSetNever(on){
+  try{ if(on) localStorage.setItem(PWA_HIDE_KEY,'1'); else localStorage.removeItem(PWA_HIDE_KEY); }catch(err){}
+  if(on) pwaDismiss();
+}
 function pwaInstall(){
   if(!pwaPrompt)return;
   pwaPrompt.prompt();
@@ -7575,8 +7590,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=82"></script>
-<script src="ratio.js?v=82"></script>
+<script src="ratio-labels.js?v=83"></script>
+<script src="ratio.js?v=83"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>

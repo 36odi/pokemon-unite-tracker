@@ -1,6 +1,14 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-10-03 / v5.56・SW v82（コミット b123792 をpush済み、DB列 medal_set は本番に適用済み）
+> 最終更新: 2026-10-03 / v5.57・SW v83（レビュー・Edge検証済み。push結果はGit履歴を参照）
+
+## 2026-10-03 PWA案内の「次回から表示しない」・ストライク画像 v5.57 / SW v83
+
+- 公開済みの be214f6（v5.56、メダルセット記録とDB列 medal_set 適用済み）を元に実装。
+- 「ホーム画面に追加」案内（#pwaBar）に「次回から表示しない」チェックを追加。チェックした時点で `localStorage.pwaBarHidden='1'` を保存して閉じる。以後 beforeinstallprompt が来ても表示しない。✕は今回だけ閉じる（従来どおり）。
+- ストライクの画像：ラボの対象100体のうちストライクだけ ICON_ID に無く、🎮の代替表示になっていた。PokeAPI で全国図鑑123（Scyther／ストライク）を確認し、既存と同じ PokeAPI sprites の通常フォルム（sprites/pokemon/123.png、96×96）を images/pokemon/123.png に同梱、ICON_ID に追加。他にアイコンの無いラボ対象・実体の無い ICON_ID は無いことを確認。
+- 追加テスト tests/pwa-icon.browser.test.js（8項目）。全テストPASS（Chromium）。
+- 2026-10-03: 差分レビューで問題なし。Edgeで追加8項目、logic 210項目が通過。ストライク画像を目視確認。実DB書き込み0件。ユーザー依頼によりpush対象。
 
 ## 2026-10-03 対戦記録にメダルセットを追加 v5.56 / SW v82（DB適用済み）
 
