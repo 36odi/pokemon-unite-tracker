@@ -12,7 +12,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await context.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.fulfill({status:200,body:'',contentType:'application/javascript'}));
   await context.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('guest_series',JSON.stringify([{id:'lab-fixture',name:'ラボ検証',created_at:'2026-09-09T00:00:00Z'}]));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);
-  await page.evaluate(()=>showPage('lab'));await page.selectOption('#labPokeSelect','モルペコ');
+  await page.evaluate(()=>{showPage('lab');switchLab('calc');});await page.selectOption('#labPokeSelect','モルペコ');
   eq(await page.locator('#labPassiveSection').isVisible(),true,'Morpeko passive visible');
   for(const lv of [1,9,15]){
     await page.locator('#labLvSlider').fill(String(lv));await page.locator('#labLvSlider').dispatchEvent('input');

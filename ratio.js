@@ -2,6 +2,8 @@
 let ratioPokemon='';
 let ratioType='all';
 function openRecordRatio(){
+  // ラボデータ読み込み前：ラボを開いて「読み込み中」を表示し、完了後にもう一度実行する
+  if(!libReady('lab')){showPage('lab');whenLibReady('lab').then(openRecordRatio).catch(()=>{});return;}
   ratioPokemon=Object.hasOwn(LAB_SKILLS,selectedPoke)?selectedPoke:'';
   ratioType='all';
   document.getElementById('ratioSearch').value='';
@@ -27,6 +29,7 @@ function ratioInit(){
   if(!ratioPokemon) document.getElementById('ratioResult').textContent='ポケモンを選ぶと、全わざのレシオを表示します。';
 }
 function ratioSearch(){
+  if(!libReady('lab'))return;
   const q=ratioNormalize(document.getElementById('ratioSearch').value.trim());
   const names=Object.keys(LAB_SKILLS).sort((a,b)=>a.localeCompare(b,'ja')).filter(n=>ratioNormalize(n).includes(q)&&(ratioType==='all'||POKEMON_DATA[ratioType]?.pokemon.includes(n)));
   const el=document.getElementById('ratioChoices');el.replaceChildren();

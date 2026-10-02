@@ -813,3 +813,72 @@
   .site-footer{font-size:var(--fs-xs);color:var(--text3);line-height:1.7;text-align:center;margin:var(--sp-5) auto var(--sp-4);max-width:36em;}
   .auth-footer{margin-top:var(--sp-4);}
   .site-footer a{color:var(--text3);}
+
+  /* ── ユーティリティ（旧インラインstyleから移設。2重クラスで既存の単一クラス規則より優先） ── */
+  .u-accent-accent.u-accent-accent{accent-color:var(--accent);}
+  .u-bb-1px-solid-border.u-bb-1px-solid-border{border-bottom:1px solid var(--border);}
+  .u-bg-bg3.u-bg-bg3{background:var(--bg3);}
+  .u-bg-border.u-bg-border{background:var(--border);}
+  .u-c-accent.u-c-accent{color:var(--accent);}
+  .u-c-loss.u-c-loss{color:var(--loss);}
+  .u-c-text2.u-c-text2{color:var(--text2);}
+  .u-c-text3.u-c-text3{color:var(--text3);}
+  .u-c-win.u-c-win{color:var(--win);}
+  .u-col-span-2.u-col-span-2{grid-column:span 2;}
+  .u-cursor-pointer.u-cursor-pointer{cursor:pointer;}
+  .u-d-flex.u-d-flex{display:flex;}
+  .u-flex-1.u-flex-1{flex:1;}
+  .u-fs-fs-sm.u-fs-fs-sm{font-size:var(--fs-sm);}
+  .u-fs-fs-xs.u-fs-fs-xs{font-size:var(--fs-xs);}
+  .u-fw-600.u-fw-600{font-weight:600;}
+  .u-fw-700.u-fw-700{font-weight:700;}
+  .u-gap-6px.u-gap-6px{gap:6px;}
+  .u-gap-8px.u-gap-8px{gap:8px;}
+  .u-h-1px.u-h-1px{height:1px;}
+  .u-h-200px.u-h-200px{height:200px;}
+  .u-items-center.u-items-center{align-items:center;}
+  .u-justify-space-between.u-justify-space-between{justify-content:space-between;}
+  .u-lh-1_6.u-lh-1_6{line-height:1.6;}
+  .u-lh-1_7.u-lh-1_7{line-height:1.7;}
+  .u-m-10px-0-6px.u-m-10px-0-6px{margin:10px 0 6px;}
+  .u-m-12px-0-4px.u-m-12px-0-4px{margin:12px 0 4px;}
+  .u-mb-0.u-mb-0{margin-bottom:0;}
+  .u-mb-10px.u-mb-10px{margin-bottom:10px;}
+  .u-mb-12px.u-mb-12px{margin-bottom:12px;}
+  .u-mb-16px.u-mb-16px{margin-bottom:16px;}
+  .u-mb-1rem.u-mb-1rem{margin-bottom:1rem;}
+  .u-mb-4px.u-mb-4px{margin-bottom:4px;}
+  .u-mb-6px.u-mb-6px{margin-bottom:6px;}
+  .u-mb-8px.u-mb-8px{margin-bottom:8px;}
+  .u-mt-0.u-mt-0{margin-top:0;}
+  .u-mt-10px.u-mt-10px{margin-top:10px;}
+  .u-mt-12px.u-mt-12px{margin-top:12px;}
+  .u-mt-2px.u-mt-2px{margin-top:2px;}
+  .u-mt-4px.u-mt-4px{margin-top:4px;}
+  .u-mt-6px.u-mt-6px{margin-top:6px;}
+  .u-mt-8px.u-mt-8px{margin-top:8px;}
+  .u-ov-hidden.u-ov-hidden{overflow:hidden;}
+  .u-p-0.u-p-0{padding:0;}
+  .u-p-0-1_25rem-1rem.u-p-0-1_25rem-1rem{padding:0 1.25rem 1rem;}
+  .u-p-0_4rem-0.u-p-0_4rem-0{padding:0.4rem 0;}
+  .u-p-0_8rem-0.u-p-0_8rem-0{padding:0.8rem 0;}
+  .u-p-1_5rem-0.u-p-1_5rem-0{padding:1.5rem 0;}
+  .u-p-1rem-0.u-p-1rem-0{padding:1rem 0;}
+  .u-p-1rem-1_25rem.u-p-1rem-1_25rem{padding:1rem 1.25rem;}
+  .u-p-2px-8px.u-p-2px-8px{padding:2px 8px;}
+  .u-p-4px-0.u-p-4px-0{padding:4px 0;}
+  .u-p-4px-6px.u-p-4px-6px{padding:4px 6px;}
+  .u-p-4px-8px.u-p-4px-8px{padding:4px 8px;}
+  .u-p-5px-8px.u-p-5px-8px{padding:5px 8px;}
+  .u-p-6px-0.u-p-6px-0{padding:6px 0;}
+  .u-r-radius-sm.u-r-radius-sm{border-radius:var(--radius-sm);}
+  .u-select-none.u-select-none{user-select:none;}
+  .u-shrink-0.u-shrink-0{flex-shrink:0;}
+  .u-ta-center.u-ta-center{text-align:center;}
+  .u-w-100pct.u-w-100pct{width:100%;}
+  .u-ws-nowrap.u-ws-nowrap{white-space:nowrap;}
+
+  /* 後読みスクリプトの準備待ち（ラボ・分析） */
+  .is-gated{opacity:.45;pointer-events:none;}
+  .page-gate-msg{margin-bottom:var(--sp-4);}
+  .page-gate-msg.is-error{color:var(--loss);border-color:var(--loss);}

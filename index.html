@@ -23,8 +23,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <script src="vendor/supabase.min.js"></script>
-<script src="vendor/chart.umd.min.js"></script>
-<script src="lab_data.js"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
 <script src="js/constants.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/lab-core.js"></script>
@@ -186,14 +186,14 @@ SOFTWARE.
         <span class="email-toggle-label"><svg class="ico ico-l" aria-hidden="true"><use href="#i-mail"></use></svg>メールアドレスを登録する（任意）</span>
       </label>
       <div class="email-section" id="emailInputArea">
-        <div class="announce-box info" style="margin-bottom:8px;">
+        <div class="announce-box info u-mb-8px">
           <svg class="ico ico-l" aria-hidden="true"><use href="#i-lightbulb"></use></svg>メールアドレスを登録するとパスワードリセットが可能になります。<br>
           登録後に<strong>確認メールが送信されます</strong>。届いたメール内の <strong>「Change Email」</strong> を押してアドレス確認をお願いします。<br>
           <br>
           <svg class="ico ico-l" aria-hidden="true"><use href="#i-send"></use></svg>送信元：<strong>unitetracker.notify@gmail.com</strong><br>
           迷惑メールフォルダに入る場合があるため、届かない場合はご確認ください。
         </div>
-        <div class="field" style="margin-bottom:0;">
+        <div class="field u-mb-0">
           <label>メールアドレス</label>
           <input type="email" id="emailInput" placeholder="your@email.com" />
         </div>
@@ -204,13 +204,13 @@ SOFTWARE.
       <button class="btn-primary" id="authBtn" onclick="authAction()">ログイン</button>
     </div>
     <div class="auth-msg" id="authMsg"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px;">
-      <div style="flex:1;height:1px;background:var(--border);"></div>
-      <span style="font-size:var(--fs-xs);color:var(--text3);white-space:nowrap;">または</span>
-      <div style="flex:1;height:1px;background:var(--border);"></div>
+    <div class="u-d-flex u-items-center u-gap-8px" style="margin:14px 0 10px;">
+      <div class="u-flex-1 u-h-1px u-bg-border"></div>
+      <span class="u-fs-fs-xs u-c-text3 u-ws-nowrap">または</span>
+      <div class="u-flex-1 u-h-1px u-bg-border"></div>
     </div>
     <button class="btn-guest" onclick="loginAsGuest()">ゲストとして試す</button>
-    <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:6px;text-align:center;">登録不要・すべての機能をお試しいただけます</div>
+    <div class="u-fs-fs-xs u-c-text3 u-mt-6px u-ta-center">登録不要・すべての機能をお試しいただけます</div>
   </div>
   <p class="site-footer auth-footer">非公式のファンツールです。ゲームの運営・開発元とは関係ありません。ゲーム内の名称・画像の権利は各権利者に帰属します。</p>
 </div>
@@ -241,7 +241,7 @@ SOFTWARE.
 
     <div class="card series-card" id="seriesCard">
       <div class="series-head">
-        <div class="card-title" style="margin-bottom:0;">シリーズ</div>
+        <div class="card-title u-mb-0">シリーズ</div>
         <div class="series-head-actions">
           <button type="button" class="btn-series-manage" id="seriesManageBtn" onclick="toggleSeriesManage()" aria-expanded="true" aria-controls="seriesManage" style="display:none;">管理 <span aria-hidden="true">▾</span></button>
           <button class="btn-help" onclick="openHelp('series')" aria-label="シリーズ管理のヘルプ">？</button>
@@ -275,8 +275,8 @@ SOFTWARE.
     </div>
 
     <div class="card" id="inputCard" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">対戦を記録する</div>
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+        <div class="card-title u-mb-0">対戦を記録する</div>
         <div class="record-actions"><button type="button" class="ratio-shortcut" onclick="openRecordRatio()">レシオ一覧</button><button class="btn-help" aria-label="対戦記録のヘルプ" onclick="openHelp('record')">？</button></div>
       </div>
       <div class="input-row">
@@ -320,7 +320,7 @@ SOFTWARE.
             <option value="エキスパート">エキスパート</option>
             <option value="マスター以上">マスター以上（レート）</option>
           </select>
-          <select id="rankClass" onchange="persistForm()" style="display:none;margin-top:6px;">
+          <select class="u-mt-6px" id="rankClass" onchange="persistForm()" style="display:none;">
             <option value="">クラス —</option>
             <option value="5">クラス5</option>
             <option value="4">クラス4</option>
@@ -328,7 +328,7 @@ SOFTWARE.
             <option value="2">クラス2</option>
             <option value="1">クラス1</option>
           </select>
-          <div id="rankRateWrap" style="display:none;margin-top:6px;">
+          <div class="u-mt-6px" id="rankRateWrap" style="display:none;">
             <input id="rankRate" class="rate-input" type="number" inputmode="numeric" min="0" max="99999" placeholder="例: 320" oninput="onRankRateInput()" />
             <div class="rate-steprow">
               <button type="button" class="rate-step" onclick="stepRate('rankRate',-10)">−10</button>
@@ -337,11 +337,11 @@ SOFTWARE.
               <button type="button" class="rate-step" onclick="stepRate('rankRate',10)">+10</button>
             </div>
           </div>
-          <div id="rankRateHint" style="display:none;font-size:var(--fs-xs);color:var(--text3);margin-top:4px;"></div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-4px" id="rankRateHint" style="display:none;"></div>
         </div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--text2);margin:2px 0 4px;cursor:pointer;user-select:none;">
-        <input type="checkbox" id="isBotCheck" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;" />
+      <label class="u-d-flex u-items-center u-gap-8px u-fs-fs-sm u-c-text2 u-cursor-pointer u-select-none" style="margin:2px 0 4px;">
+        <input class="u-accent-accent u-cursor-pointer u-shrink-0" type="checkbox" id="isBotCheck" style="width:16px;height:16px;" />
         <span class="bot-label"><span><svg class="ico ico-l" aria-hidden="true"><use href="#i-bot"></use></svg>BOT戦（CPU対戦）として記録</span><span class="bot-hint">統計の勝率には含めません</span></span>
       </label>
       <!-- 詳細設定（任意） -->
@@ -443,17 +443,17 @@ SOFTWARE.
     </div>
 
     <div class="card" id="statsCard" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">統計 — <span id="statsTitle"></span></div>
-        <div style="display:flex;gap:6px;align-items:center;">
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+        <div class="card-title u-mb-0">統計 — <span id="statsTitle"></span></div>
+        <div class="u-d-flex u-gap-6px u-items-center">
           <button class="btn-share-icon" onclick="openShareModal()" title="シェア画像を生成">画像でシェア</button>
           <button class="btn-help" onclick="openHelp('stats')">？</button>
         </div>
       </div>
       <div id="todayStat" class="today-stat" style="display:none;"></div>
-      <div id="botToggleWrap" style="display:none;margin-bottom:10px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text3);cursor:pointer;user-select:none;">
-          <input type="checkbox" id="statBotToggle" onchange="toggleStatBot(this.checked)" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;" />
+      <div class="u-mb-10px" id="botToggleWrap" style="display:none;">
+        <label class="u-d-flex u-items-center u-gap-6px u-fs-fs-xs u-c-text3 u-cursor-pointer u-select-none">
+          <input class="u-accent-accent u-cursor-pointer" type="checkbox" id="statBotToggle" onchange="toggleStatBot(this.checked)" style="width:14px;height:14px;" />
           <svg class="ico ico-l" aria-hidden="true"><use href="#i-bot"></use></svg>BOT戦も統計に含める（既定は除外）
         </label>
       </div>
@@ -493,7 +493,7 @@ SOFTWARE.
       <div id="rankSection" style="display:none;">
         <div class="divider"></div>
         <div class="stat-section-head" onclick="toggleStatSection(this)">
-          <span class="card-title" style="margin-bottom:0;">ランク別成績</span>
+          <span class="card-title u-mb-0">ランク別成績</span>
           <span class="poke-mode-arrow open">▼</span>
         </div>
         <div class="stat-section-body open">
@@ -520,15 +520,15 @@ SOFTWARE.
       <div id="pokeSection" style="display:none;">
         <div class="divider"></div>
         <div class="stat-section-head" onclick="toggleStatSection(this)">
-          <span class="card-title" style="margin-bottom:0;">ポケモン別成績（トータル）</span>
-          <span style="display:flex;align-items:center;gap:8px;">
+          <span class="card-title u-mb-0">ポケモン別成績（トータル）</span>
+          <span class="u-d-flex u-items-center u-gap-8px">
             <button class="btn-help" onclick="event.stopPropagation();openHelp('pokestats')">？</button>
             <span class="poke-mode-arrow open">▼</span>
           </span>
         </div>
         <div class="stat-section-body open">
         <!-- U6: ポケモン統計並び替え -->
-        <div class="sort-bar" style="margin-top:0;margin-bottom:8px;">
+        <div class="sort-bar u-mt-0 u-mb-8px">
           <span class="sort-label">並び順：</span>
           <button class="sort-btn active" id="pokeSortGames" onclick="pokeSort('games')">試合数</button>
           <button class="sort-btn" id="pokeSortWR" onclick="pokeSort('wr')">勝率</button>
@@ -538,21 +538,21 @@ SOFTWARE.
         <div class="poke-mode-sections">
           <div class="poke-mode-block">
             <div class="poke-mode-header" onclick="toggleMode('solo')">
-              <span class="poke-mode-title"><span class="badge badge-solo" style="font-size:var(--fs-xs);padding:2px 8px;">ソロ</span>ポケモン別</span>
+              <span class="poke-mode-title"><span class="badge badge-solo u-fs-fs-xs u-p-2px-8px">ソロ</span>ポケモン別</span>
               <span class="poke-mode-arrow" id="arrow-solo">▼</span>
             </div>
             <div class="poke-mode-body" id="body-solo"><div class="poke-mode-grid" id="grid-solo"></div></div>
           </div>
           <div class="poke-mode-block">
             <div class="poke-mode-header" onclick="toggleMode('duo')">
-              <span class="poke-mode-title"><span class="badge badge-duo" style="font-size:var(--fs-xs);padding:2px 8px;">デュオ/トリオ</span>ポケモン別</span>
+              <span class="poke-mode-title"><span class="badge badge-duo u-fs-fs-xs u-p-2px-8px">デュオ/トリオ</span>ポケモン別</span>
               <span class="poke-mode-arrow" id="arrow-duo">▼</span>
             </div>
             <div class="poke-mode-body" id="body-duo"><div class="poke-mode-grid" id="grid-duo"></div></div>
           </div>
           <div class="poke-mode-block">
             <div class="poke-mode-header" onclick="toggleMode('full')">
-              <span class="poke-mode-title"><span class="badge badge-full" style="font-size:var(--fs-xs);padding:2px 8px;">フルパ</span>ポケモン別</span>
+              <span class="poke-mode-title"><span class="badge badge-full u-fs-fs-xs u-p-2px-8px">フルパ</span>ポケモン別</span>
               <span class="poke-mode-arrow" id="arrow-full">▼</span>
             </div>
             <div class="poke-mode-body" id="body-full"><div class="poke-mode-grid" id="grid-full"></div></div>
@@ -564,8 +564,8 @@ SOFTWARE.
 
     <div class="card" id="historyCard" style="display:none;">
       <div class="history-header">
-        <div class="card-title" style="margin-bottom:0;">対戦履歴</div>
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div class="card-title u-mb-0">対戦履歴</div>
+        <div class="u-d-flex u-items-center u-gap-8px">
           <button class="btn-help" onclick="openHelp('history')">？</button>
           <button class="btn-clear" onclick="clearAll()">全削除</button>
         </div>
@@ -575,13 +575,13 @@ SOFTWARE.
         <button class="filter-btn filterResult-btn active" onclick="setHistoryFilter('result','all',this)">すべて</button>
         <button class="filter-btn filterResult-btn" onclick="setHistoryFilter('result','win',this)">✓ 勝利</button>
         <button class="filter-btn filterResult-btn" onclick="setHistoryFilter('result','loss',this)">✗ 敗北</button>
-        <span style="width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;align-self:center;"></span>
+        <span class="u-bg-border u-shrink-0" style="width:1px;height:18px;margin:0 2px;align-self:center;"></span>
         <button class="filter-btn filterMode-btn active" onclick="setHistoryFilter('mode','all',this)">全モード</button>
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','solo',this)">ソロ</button>
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','duo',this)">デュオ/トリオ</button>
         <button class="filter-btn filterMode-btn" onclick="setHistoryFilter('mode','full',this)">フルパ</button>
-        <span style="width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;align-self:center;"></span>
-        <select id="historyPokeFilter" onchange="setHistoryPokeFilter(this.value)" style="width:auto;margin-top:0;padding:4px 8px;font-size:var(--fs-xs);flex-shrink:0;max-width:150px;">
+        <span class="u-bg-border u-shrink-0" style="width:1px;height:18px;margin:0 2px;align-self:center;"></span>
+        <select class="u-mt-0 u-p-4px-8px u-fs-fs-xs u-shrink-0" id="historyPokeFilter" onchange="setHistoryPokeFilter(this.value)" style="width:auto;max-width:150px;">
           <option value="all">全ポケモン</option>
         </select>
       </div>
@@ -604,74 +604,74 @@ SOFTWARE.
     <div id="myPickupPanel">
       <div class="mp-toolbar"><button class="btn-help" aria-label="マイピックアップのヘルプ" onclick="openHelp('mypickup')">？</button><button class="mp-edit-btn" onclick="toggleMyPickupEdit()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-sliders-horizontal"></use></svg>表示カードを編集</button></div>
       <div id="myPickupEdit" class="card" style="display:none;"></div>
-      <div id="myPickupContent"><div class="empty" style="padding:1.5rem 0;">読み込み中…</div></div>
+      <div id="myPickupContent"><div class="empty u-p-1_5rem-0">読み込み中…</div></div>
     </div>
     <!-- 勝率推移 -->
     <div id="trendPanel" style="display:none;">
       <p class="analysis-guide">選択したシリーズの勝率推移と、日・週・曜日・時間帯ごとの傾向を確認できます。</p>
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">シリーズ別 勝率推移</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">シリーズ別 勝率推移</div>
           <button class="btn-help" onclick="openHelp('trend')">？</button>
         </div>
-        <div style="margin-bottom:10px;">
-          <select id="trendSeriesSelect" onchange="renderTrendChart()" style="margin-top:0;"></select>
+        <div class="u-mb-10px">
+          <select class="u-mt-0" id="trendSeriesSelect" onchange="renderTrendChart()"></select>
         </div>
         <div class="trend-mode-tabs">
           <button class="trend-mode-btn active" data-mode="cum" onclick="switchTrendMode('cum')">累積勝率</button>
           <button class="trend-mode-btn" data-mode="recent" onclick="switchTrendMode('recent')">直近10戦</button>
         </div>
         <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-        <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;text-align:center;">ボタンで「累積勝率」と「直近10戦（最近の調子）」を切り替え</div>
+        <div class="u-fs-fs-xs u-c-text3 u-mt-8px u-ta-center">ボタンで「累積勝率」と「直近10戦（最近の調子）」を切り替え</div>
       </div>
-      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">日別勝率</div>
+      <div class="card u-mt-12px u-p-0 u-ov-hidden">
+        <div class="u-d-flex u-items-center u-justify-space-between u-p-1rem-1_25rem u-cursor-pointer u-select-none" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title u-mb-0">日別勝率</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
-        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+        <div class="poke-mode-body open u-p-0-1_25rem-1rem">
           <div id="dailyWrList"><div class="empty">データなし</div></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-8px">※ 1日の切り替わりはAM9:00</div>
         </div>
       </div>
-      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">週別勝率</div>
+      <div class="card u-mt-12px u-p-0 u-ov-hidden">
+        <div class="u-d-flex u-items-center u-justify-space-between u-p-1rem-1_25rem u-cursor-pointer u-select-none" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title u-mb-0">週別勝率</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
-        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+        <div class="poke-mode-body open u-p-0-1_25rem-1rem">
           <div id="weeklyWrList"><div class="empty">データなし</div></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00 / 週は月曜〜日曜</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-8px">※ 1日の切り替わりはAM9:00 / 週は月曜〜日曜</div>
         </div>
       </div>
-      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">時間帯別勝率</div>
+      <div class="card u-mt-12px u-p-0 u-ov-hidden">
+        <div class="u-d-flex u-items-center u-justify-space-between u-p-1rem-1_25rem u-cursor-pointer u-select-none" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title u-mb-0">時間帯別勝率</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
-        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+        <div class="poke-mode-body open u-p-0-1_25rem-1rem">
           <div id="hourlyWrList"><div class="empty">データなし</div></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;">※ 対戦した実時刻（端末の時刻）で集計</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-8px">※ 対戦した実時刻（端末の時刻）で集計</div>
         </div>
       </div>
-      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;">曜日別勝率</div>
+      <div class="card u-mt-12px u-p-0 u-ov-hidden">
+        <div class="u-d-flex u-items-center u-justify-space-between u-p-1rem-1_25rem u-cursor-pointer u-select-none" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title u-mb-0">曜日別勝率</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
-        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+        <div class="poke-mode-body open u-p-0-1_25rem-1rem">
           <div id="weekdayWrList"><div class="empty">データなし</div></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;">※ 1日の切り替わりはAM9:00</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-8px">※ 1日の切り替わりはAM9:00</div>
         </div>
       </div>
-      <div class="card" style="margin-top:12px;padding:0;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-          <div class="card-title" style="margin-bottom:0;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-target"></use></svg>曜日×時間帯の勝率上位・下位</div>
+      <div class="card u-mt-12px u-p-0 u-ov-hidden">
+        <div class="u-d-flex u-items-center u-justify-space-between u-p-1rem-1_25rem u-cursor-pointer u-select-none" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
+          <div class="card-title u-mb-0"><svg class="ico ico-l" aria-hidden="true"><use href="#i-target"></use></svg>曜日×時間帯の勝率上位・下位</div>
           <span class="poke-mode-arrow open">▼</span>
         </div>
-        <div class="poke-mode-body open" style="padding:0 1.25rem 1rem;">
+        <div class="poke-mode-body open u-p-0-1_25rem-1rem">
           <div id="bestWorstSlots" class="bw-wrap"><div class="empty">データなし</div></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:8px;">※ 3戦以上の「曜日×2時間帯」だけを対象に集計</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mt-8px">※ 3戦以上の「曜日×2時間帯」だけを対象に集計</div>
         </div>
       </div>
     </div>
@@ -679,9 +679,9 @@ SOFTWARE.
     <div id="totalPanel" style="display:none;">
       <p class="analysis-guide">全シリーズを合計した成績です。シリーズごとの比較は「シリーズ分析」で確認できます。</p>
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">全シリーズ 通算成績</div>
-          <div style="display:flex;gap:6px;align-items:center;">
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">全シリーズ 通算成績</div>
+          <div class="u-d-flex u-gap-6px u-items-center">
             <button class="btn-share-icon" onclick="openTotalShareModal()" title="通算成績をシェア">画像でシェア</button>
             <button class="btn-help" onclick="openHelp('total')">？</button>
           </div>
@@ -701,29 +701,29 @@ SOFTWARE.
         <div class="series-compare-row header"><div>ポケモン</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
         <div id="ttPokeStats"></div>
       </div>
-      <div class="card" style="margin-top:12px;">
+      <div class="card u-mt-12px">
         <div class="card-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>1試合あたりの平均スタッツ</div>
-        <div id="ttStatsSummary"><div class="empty" style="padding:0.8rem 0;">記録がありません</div></div>
+        <div id="ttStatsSummary"><div class="empty u-p-0_8rem-0">記録がありません</div></div>
       </div>
     </div>
     <!-- A5: シリーズ分析パネル -->
     <div id="seriesanalPanel" style="display:none;">
       <p class="analysis-guide">選択したシリーズの成績を、レーン・型・ランク・わざやもちもの別に確認できます。</p>
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">シリーズ分析</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">シリーズ分析</div>
           <button class="btn-help" onclick="openHelp('seriesanal')">？</button>
         </div>
-        <select id="seriesanalSelect" onchange="renderSeriesAnalysis()" style="margin-top:0;"></select>
-        <div id="seriesanalContent"><div class="empty" style="padding:1.5rem 0;">シリーズを選択してください</div></div>
+        <select class="u-mt-0" id="seriesanalSelect" onchange="renderSeriesAnalysis()"></select>
+        <div id="seriesanalContent"><div class="empty u-p-1_5rem-0">シリーズを選択してください</div></div>
       </div>
       <!-- シリーズ比較（旧・比較タブから統合） -->
-      <div class="card" style="margin-top:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">全シリーズの比較</div>
+      <div class="card u-mt-12px">
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">全シリーズの比較</div>
           <button class="btn-help" onclick="openHelp('compare')">？</button>
         </div>
-        <div class="chart-wrap" style="height:180px;margin-bottom:12px;"><canvas id="compareChart"></canvas></div>
+        <div class="chart-wrap u-mb-12px" style="height:180px;"><canvas id="compareChart"></canvas></div>
         <div class="series-compare-row header">
           <div>シリーズ</div><div class="series-val">試合</div><div class="series-val">勝利</div><div class="series-wr-cell">勝率</div>
         </div>
@@ -734,12 +734,12 @@ SOFTWARE.
     <div id="pokedetailPanel" style="display:none;">
       <p class="analysis-guide">全シリーズが対象です。ポケモンと対戦モードを選び、わざ・もちもの・レーン別の成績を確認できます。</p>
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">ポケモン別詳細</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">ポケモン別詳細</div>
           <button class="btn-help" onclick="openHelp('pokedetail')">？</button>
         </div>
         <div class="detail-poke-select">
-          <select class="detail-select" id="detailPokeSelect" onchange="renderPokeDetail()" style="font-size:var(--fs-sm);padding:8px 12px;">
+          <select class="detail-select u-fs-fs-sm" id="detailPokeSelect" onchange="renderPokeDetail()" style="padding:8px 12px;">
             <option value="">— ポケモンを選択 —</option>
           </select>
         </div>
@@ -758,23 +758,23 @@ SOFTWARE.
     <!-- ゲスト用プロフィール -->
     <div id="guestProfileCard" style="display:none;">
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-user"></use></svg>ゲストモード</div>
-        <p style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7;margin-bottom:16px;">
+        <div class="card-title u-mb-12px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-user"></use></svg>ゲストモード</div>
+        <p class="u-fs-fs-sm u-c-text2 u-lh-1_7 u-mb-16px">
           現在ゲストとしてご利用中です。<br>
           対戦記録はこのブラウザにのみ保存されており、このままでは別のデバイスやブラウザには引き継がれません。
         </p>
-        <p style="font-size:var(--fs-xs);color:var(--accent);line-height:1.6;margin-bottom:16px;">
+        <p class="u-fs-fs-xs u-c-accent u-lh-1_6 u-mb-16px">
           <svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-check"></use></svg>ユーザー登録 / ログインすると、今ある対戦記録・メダルプリセットを<strong>アカウントに移行</strong>できます（移行するか確認画面が出ます）。
         </p>
-        <button class="btn-guest" onclick="logoutAndRegister()" style="margin-bottom:8px;">ユーザー登録 / ログインへ</button>
-        <button class="btn-delete-account" onclick="deleteGuestData()" style="margin-top:8px;">ゲストデータをすべて削除してログアウト</button>
+        <button class="btn-guest u-mb-8px" onclick="logoutAndRegister()">ユーザー登録 / ログインへ</button>
+        <button class="btn-delete-account u-mt-8px" onclick="deleteGuestData()">ゲストデータをすべて削除してログアウト</button>
       </div>
     </div>
     <!-- 通常ユーザー用プロフィール -->
     <div id="normalProfileCards">
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">表示名の変更</div>
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+        <div class="card-title u-mb-0">表示名の変更</div>
         <button class="btn-help" onclick="openHelp('username')">？</button>
       </div>
       <div class="profile-field">
@@ -786,8 +786,8 @@ SOFTWARE.
       <div class="profile-msg" id="usernameMsg"></div>
     </div>
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">パスワードの変更</div>
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+        <div class="card-title u-mb-0">パスワードの変更</div>
         <button class="btn-help" onclick="openHelp('password')">？</button>
       </div>
       <div class="profile-field"><label>新しいパスワード</label><div class="pw-wrap"><input type="password" id="newPassword" placeholder="6文字以上" /><button type="button" class="pw-toggle" onclick="togglePw('newPassword',this)" aria-label="パスワードを表示"><svg class="ico" aria-hidden="true"><use href="#i-eye"></use></svg></button></div></div>
@@ -796,27 +796,27 @@ SOFTWARE.
       <div class="profile-msg" id="passwordMsg"></div>
     </div>
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">アカウント情報</div>
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+        <div class="card-title u-mb-0">アカウント情報</div>
         <button class="btn-help" onclick="openHelp('account')">？</button>
       </div>
       <div class="profile-field">
         <label>プレイヤーID</label>
-        <input type="text" id="profileId" readonly style="color:var(--text2);cursor:not-allowed;" />
+        <input class="u-c-text2" type="text" id="profileId" readonly style="cursor:not-allowed;" />
         <div class="hint">プレイヤーIDは変更できません</div>
       </div>
       <div class="profile-field">
         <label>登録メールアドレス</label>
-        <input type="text" id="profileEmail" readonly style="color:var(--text2);cursor:not-allowed;" />
+        <input class="u-c-text2" type="text" id="profileEmail" readonly style="cursor:not-allowed;" />
         <div class="hint" id="profileEmailHint"></div>
       </div>
     </div>
     <!-- D2: アカウントデータ削除 -->
-    <div class="card" style="margin-top:0;">
-      <div class="card-title" style="margin-bottom:8px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-triangle-alert"></use></svg>アカウントデータを削除</div>
-      <p style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7;margin-bottom:12px;">
+    <div class="card u-mt-0">
+      <div class="card-title u-mb-8px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-triangle-alert"></use></svg>アカウントデータを削除</div>
+      <p class="u-fs-fs-sm u-c-text2 u-lh-1_7 u-mb-12px">
         全ての対戦記録・シリーズを削除してログアウトします。<br>
-        <span style="color:var(--loss);font-weight:600;">この操作は元に戻せません。</span>
+        <span class="u-c-loss u-fw-600">この操作は元に戻せません。</span>
       </p>
       <button class="btn-delete-account" onclick="deleteAccount()">すべてのデータを削除する</button>
     </div>
@@ -841,7 +841,7 @@ SOFTWARE.
 
     <div id="labRatioPanel">
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><label for="ratioSearch">ポケモンを検索</label><button class="btn-help" aria-label="レシオ一覧のヘルプ" onclick="openHelp('ratio')">？</button></div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-gap-8px"><label for="ratioSearch">ポケモンを検索</label><button class="btn-help" aria-label="レシオ一覧のヘルプ" onclick="openHelp('ratio')">？</button></div>
         <input id="ratioSearch" class="lab-select" type="search" placeholder="名前を入力（ひらがな可）" oninput="ratioSearch()">
         <div id="ratioTypes" class="ratio-types" role="group" aria-label="型で絞り込み"></div>
         <div id="ratioChoices" class="ratio-choices" aria-label="ポケモン一覧"></div>
@@ -852,27 +852,26 @@ SOFTWARE.
     <!-- ===== ステータス・ダメージ計算 パネル ===== -->
     <div id="labCalcPanel" style="display:none;">
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="card-title" style="margin-bottom:0;">ポケモン設定</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-12px">
+          <div class="card-title u-mb-0">ポケモン設定</div>
           <button class="medal-help-btn" onclick="showCalcHelp()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-help"></use></svg>使い方</button>
         </div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px;">ポケモン</div>
+        <div class="u-mb-10px">
+          <div class="u-fs-fs-xs u-c-text3 u-mb-4px">ポケモン</div>
           <select class="lab-select" id="labPokeSelect" onchange="labOnPokeChange()">
             <option value="">— 選択してください —</option>
           </select>
         </div>
-        <div style="margin-bottom:10px;">
+        <div class="u-mb-10px">
           <div class="lab-lv-row">
-            <span style="font-size:var(--fs-xs);color:var(--text3);">レベル</span>
+            <span class="u-fs-fs-xs u-c-text3">レベル</span>
             <span class="lab-lv-val" id="labLvLabel">9</span>
           </div>
-          <input type="range" id="labLvSlider" min="1" max="15" value="9"
-            style="width:100%;accent-color:var(--accent);"
+          <input class="u-w-100pct u-accent-accent" type="range" id="labLvSlider" min="1" max="15" value="9"
             oninput="document.getElementById('labLvLabel').textContent=this.value;calcLabStatsIfReady()">
         </div>
 
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-8px u-mt-4px">もちもの（最大3個）</div>
         <div id="labItemRows">
           <div class="lab-item-row">
             <div class="lab-item-row-top">
@@ -910,10 +909,10 @@ SOFTWARE.
         </div>
 
         <!-- ダメージ受けスタック数（じゃくてんほけん等装備時のみ表示） -->
-        <div id="labDmgStackRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">ダメージ受けスタック数</div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;">ダメージを受けるたびに+1（最大4回）</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="labDmgStackRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">ダメージ受けスタック数</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mb-6px">ダメージを受けるたびに+1（最大4回）</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="labDmgStackLabel">0スタック</span>
             <input type="range" class="lab-goal-range" id="labDmgStackSlider" min="0" max="4" value="0"
               oninput="document.getElementById('labDmgStackLabel').textContent=this.value+'スタック';calcLabStatsIfReady()">
@@ -921,10 +920,10 @@ SOFTWARE.
         </div>
 
         <!-- KO/アシストスタック数（スタック系アイテム装備時のみ表示） -->
-        <div id="labStackRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">KO/アシスト スタック数</div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;">KOで+2、アシストで+1（最大20）</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="labStackRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">KO/アシスト スタック数</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mb-6px">KOで+2、アシストで+1（最大20）</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="labStackLabel">0スタック</span>
             <input type="range" class="lab-goal-range" id="labStackSlider" min="0" max="20" value="0"
               oninput="document.getElementById('labStackLabel').textContent=this.value+'スタック';calcLabStatsIfReady()">
@@ -932,9 +931,9 @@ SOFTWARE.
         </div>
 
         <!-- ゴール数（ゴールボーナスアイテム装備時のみ表示） -->
-        <div id="labGoalRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:6px;">ゴール数</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="labGoalRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px">ゴール数</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="labGoalLabel">0ゴール</span>
             <input type="range" class="lab-goal-range" id="labGoalSlider" min="0" max="6" value="0"
               oninput="document.getElementById('labGoalLabel').textContent=this.value+'ゴール';calcLabStatsIfReady()">
@@ -942,27 +941,27 @@ SOFTWARE.
         </div>
 
         <!-- メダルセット選択（任意） -->
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-top:14px;margin-bottom:6px;">メダルセット（任意）</div>
-        <select class="lab-select" id="labMedalSetSel" onchange="calcLabStatsIfReady()" style="margin-top:0;">
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px" style="margin-top:14px;">メダルセット（任意）</div>
+        <select class="lab-select u-mt-0" id="labMedalSetSel" onchange="calcLabStatsIfReady()">
           <option value="">— 使用しない —</option>
         </select>
 
-        <button class="btn-save" style="width:100%;margin-top:8px;" onclick="calcLabStats(true)">計算する</button>
+        <button class="btn-save u-w-100pct u-mt-8px" onclick="calcLabStats(true)">計算する</button>
       </div>
 
       <!-- 結果カード -->
       <div class="card" id="labResultCard" style="display:none;">
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">基本ステータス</div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">基本ステータス</div>
         <div id="labBaseStats" class="lab-stat-grid"></div>
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin:12px 0 4px;">もちもの補正</div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-m-12px-0-4px">もちもの補正</div>
         <div id="labItemBonus" class="lab-stat-grid"></div>
         <div id="labMedalBonusSection" style="display:none;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin:12px 0 4px;">メダル補正</div>
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-m-12px-0-4px">メダル補正</div>
           <div id="labMedalBonus" class="lab-stat-grid"></div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;">
-          <span style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);">合計</span>
-          <div style="display:flex;gap:6px;">
+        <div class="u-d-flex u-items-center u-justify-space-between u-m-12px-0-4px">
+          <span class="u-fs-fs-xs u-fw-600 u-c-text2">合計</span>
+          <div class="u-d-flex u-gap-6px">
             <button id="labSnapBtn" class="lab-snap-btn" onclick="labSaveSnapshot()">Aとして保存</button>
             <button id="labSnapClear" class="lab-snap-clear" onclick="labClearSnapshot()" style="display:none;">クリア</button>
           </div>
@@ -972,7 +971,7 @@ SOFTWARE.
 
       <!-- スキルダメージカード -->
       <div class="card" id="labSkillCard" style="display:none;">
-        <div class="card-title" style="margin-bottom:10px;">スキルダメージ比較</div>
+        <div class="card-title u-mb-10px">スキルダメージ比較</div>
         <div class="lab-skill-grid">
           <!-- わざ1 -->
           <div class="lab-skill-col">
@@ -980,7 +979,7 @@ SOFTWARE.
             <select class="lab-select" id="labSkill1Sel" onchange="labSkillChanged(1)">
               <option value="">— わざを選択 —</option>
             </select>
-            <select class="lab-select" id="labSkill1Upg" onchange="calcLabDamageSlot(1)" style="font-size:var(--fs-xs);padding:5px 8px;">
+            <select class="lab-select u-fs-fs-xs u-p-5px-8px" id="labSkill1Upg" onchange="calcLabDamageSlot(1)">
               <option value="">—</option>
             </select>
             <div id="labDmgOut1" class="lab-dmg-out"></div>
@@ -991,7 +990,7 @@ SOFTWARE.
             <select class="lab-select" id="labSkill2Sel" onchange="labSkillChanged(2)">
               <option value="">— わざを選択 —</option>
             </select>
-            <select class="lab-select" id="labSkill2Upg" onchange="calcLabDamageSlot(2)" style="font-size:var(--fs-xs);padding:5px 8px;">
+            <select class="lab-select u-fs-fs-xs u-p-5px-8px" id="labSkill2Upg" onchange="calcLabDamageSlot(2)">
               <option value="">—</option>
             </select>
             <div id="labDmgOut2" class="lab-dmg-out"></div>
@@ -1001,15 +1000,15 @@ SOFTWARE.
         <div id="labPassiveSection" style="display:none;">
           <div class="lab-skill-slot-lbl">特性（条件を満たしたときの効果量）</div>
           <div id="labDmgOutPassive" class="lab-dmg-out"></div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);">各効果を個別に表示します。能力上昇はステータスへ自動加算されません。</div>
+          <div class="u-fs-fs-xs u-c-text3">各効果を個別に表示します。能力上昇はステータスへ自動加算されません。</div>
         </div>
         <div id="labNormalSection" style="display:none;">
-          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
+          <div class="lab-skill-slot-lbl u-mb-6px">通常攻撃</div>
           <div id="labDmgOutNormal" class="lab-dmg-out"></div>
         </div>
         <!-- ユナイトわざ -->
         <div id="labUniteSection" style="display:none;">
-          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">ユナイトわざ</div>
+          <div class="lab-skill-slot-lbl u-mb-6px">ユナイトわざ</div>
           <div id="labDmgOutUnite" class="lab-dmg-out"></div>
         </div>
       </div>
@@ -1018,30 +1017,30 @@ SOFTWARE.
     <!-- ===== ダメージ計算 パネル ===== -->
     <div id="labDmgCalcPanel" style="display:none;">
 
-      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;">
+      <div class="u-d-flex u-gap-8px u-mb-12px" style="align-items:flex-start;">
         <div style="flex:1;background:#ffa72618;border:1px solid #ffa72660;border-radius:var(--radius);padding:10px 14px;font-size:var(--fs-xs);color:#ffa726;line-height:1.7;">
           <svg class="ico ico-l" aria-hidden="true"><use href="#i-triangle-alert"></use></svg><strong>プレビュー版</strong><br>
           表示されるダメージはゲーム内の実際の値と異なる場合があります。参考程度にご活用ください。
         </div>
-        <button class="medal-help-btn" onclick="showDmgHelp()" style="flex-shrink:0;margin-top:2px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-help"></use></svg>使い方</button>
+        <button class="medal-help-btn u-shrink-0 u-mt-2px" onclick="showDmgHelp()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-help"></use></svg>使い方</button>
       </div>
 
       <!-- 攻撃側 -->
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>攻撃側（自分）</div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px;">ポケモン</div>
+        <div class="card-title u-mb-12px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>攻撃側（自分）</div>
+        <div class="u-mb-10px">
+          <div class="u-fs-fs-xs u-c-text3 u-mb-4px">ポケモン</div>
           <select class="lab-select" id="dcAtkPoke" onchange="dcPokeChanged()"><option value="">— 選択してください —</option></select>
         </div>
-        <div style="margin-bottom:10px;">
+        <div class="u-mb-10px">
           <div class="lab-lv-row">
-            <span style="font-size:var(--fs-xs);color:var(--text3);">レベル</span>
+            <span class="u-fs-fs-xs u-c-text3">レベル</span>
             <span class="lab-lv-val" id="dcAtkLvLabel">9</span>
           </div>
-          <input type="range" id="dcAtkLv" min="1" max="15" value="9" style="width:100%;accent-color:var(--accent);"
+          <input class="u-w-100pct u-accent-accent" type="range" id="dcAtkLv" min="1" max="15" value="9"
             oninput="document.getElementById('dcAtkLvLabel').textContent=this.value;dcCalcIfReady()">
         </div>
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-8px u-mt-4px">もちもの（最大3個）</div>
         <div class="lab-item-row">
           <div class="lab-item-row-top"><span class="lab-item-label">①</span>
             <select class="lab-select" id="dcAtkItem1" onchange="dcUpdateSpecialRows();dcCalcIfReady()"><option value="">なし</option></select></div>
@@ -1064,57 +1063,57 @@ SOFTWARE.
               oninput="document.getElementById('dcAtkGLbl3').textContent='G'+this.value;dcCalcIfReady()"></div>
         </div>
         <!-- ダメージ受けスタック -->
-        <div id="dcDmgStackRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">ダメージ受けスタック数</div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;">ダメージを受けるたびに+1（最大4回）</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="dcDmgStackRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">ダメージ受けスタック数</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mb-6px">ダメージを受けるたびに+1（最大4回）</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="dcDmgStackLabel">0スタック</span>
             <input type="range" class="lab-goal-range" id="dcDmgStackSlider" min="0" max="4" value="0"
               oninput="document.getElementById('dcDmgStackLabel').textContent=this.value+'スタック';dcCalcIfReady()">
           </div>
         </div>
         <!-- KO/アシストスタック -->
-        <div id="dcStackRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">KO/アシスト スタック数</div>
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;">KOで+2、アシストで+1（最大20）</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="dcStackRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">KO/アシスト スタック数</div>
+          <div class="u-fs-fs-xs u-c-text3 u-mb-6px">KOで+2、アシストで+1（最大20）</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="dcStackLabel">0スタック</span>
             <input type="range" class="lab-goal-range" id="dcStackSlider" min="0" max="20" value="0"
               oninput="document.getElementById('dcStackLabel').textContent=this.value+'スタック';dcCalcIfReady()">
           </div>
         </div>
         <!-- ゴール数 -->
-        <div id="dcGoalRow" style="display:none;margin-top:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:6px;">ゴール数</div>
-          <div style="display:flex;align-items:center;gap:8px;">
+        <div class="u-mt-10px" id="dcGoalRow" style="display:none;">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px">ゴール数</div>
+          <div class="u-d-flex u-items-center u-gap-8px">
             <span class="lab-grade-lbl" id="dcGoalLabel">0ゴール</span>
             <input type="range" class="lab-goal-range" id="dcGoalSlider" min="0" max="6" value="0"
               oninput="document.getElementById('dcGoalLabel').textContent=this.value+'ゴール';dcCalcIfReady()">
           </div>
         </div>
         <!-- メダルセット -->
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-top:14px;margin-bottom:6px;">メダルセット（任意）</div>
-        <select class="lab-select" id="dcAtkMedal" onchange="dcCalcIfReady()" style="margin-top:0;">
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px" style="margin-top:14px;">メダルセット（任意）</div>
+        <select class="lab-select u-mt-0" id="dcAtkMedal" onchange="dcCalcIfReady()">
           <option value="">— 使用しない —</option>
         </select>
       </div>
 
       <!-- 防御側 -->
-      <div class="card" style="margin-top:12px;">
-        <div class="card-title" style="margin-bottom:12px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-shield"></use></svg>防御側（相手）</div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:4px;">ポケモン</div>
+      <div class="card u-mt-12px">
+        <div class="card-title u-mb-12px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-shield"></use></svg>防御側（相手）</div>
+        <div class="u-mb-10px">
+          <div class="u-fs-fs-xs u-c-text3 u-mb-4px">ポケモン</div>
           <select class="lab-select" id="dcDefPoke" onchange="dcPokeChanged()"><option value="">— 選択してください —</option></select>
         </div>
-        <div style="margin-bottom:10px;">
+        <div class="u-mb-10px">
           <div class="lab-lv-row">
-            <span style="font-size:var(--fs-xs);color:var(--text3);">レベル</span>
+            <span class="u-fs-fs-xs u-c-text3">レベル</span>
             <span class="lab-lv-val" id="dcDefLvLabel">9</span>
           </div>
-          <input type="range" id="dcDefLv" min="1" max="15" value="9" style="width:100%;accent-color:var(--accent);"
+          <input class="u-w-100pct u-accent-accent" type="range" id="dcDefLv" min="1" max="15" value="9"
             oninput="document.getElementById('dcDefLvLabel').textContent=this.value;dcCalcIfReady()">
         </div>
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:8px;margin-top:4px;">もちもの（最大3個）</div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-8px u-mt-4px">もちもの（最大3個）</div>
         <div class="lab-item-row">
           <div class="lab-item-row-top"><span class="lab-item-label">①</span>
             <select class="lab-select" id="dcDefItem1" onchange="dcCalcIfReady()"><option value="">なし</option></select></div>
@@ -1138,41 +1137,41 @@ SOFTWARE.
         </div>
       </div>
 
-      <button class="btn-save" style="width:100%;margin-top:8px;" onclick="calcDmgCalcMain(true)">計算する</button>
+      <button class="btn-save u-w-100pct u-mt-8px" onclick="calcDmgCalcMain(true)">計算する</button>
 
       <!-- 結果カード -->
-      <div class="card" id="dcResultCard" style="display:none;margin-top:12px;">
-        <div id="dcStatSummary" style="margin-bottom:12px;"></div>
+      <div class="card u-mt-12px" id="dcResultCard" style="display:none;">
+        <div class="u-mb-12px" id="dcStatSummary"></div>
         <!-- わざ1 / わざ2 -->
         <div class="lab-skill-grid">
           <div class="lab-skill-col">
             <div class="lab-skill-slot-lbl">わざ 1</div>
             <select class="lab-select" id="dcSkill1Sel" onchange="dcSkillChanged(1)"><option value="">— わざを選択 —</option></select>
-            <select class="lab-select" id="dcSkill1Upg" onchange="dcUpdateDmgOutput()" style="font-size:var(--fs-xs);padding:5px 8px;display:none;"><option value="">—</option></select>
+            <select class="lab-select u-fs-fs-xs u-p-5px-8px" id="dcSkill1Upg" onchange="dcUpdateDmgOutput()" style="display:none;"><option value="">—</option></select>
             <div id="dcDmgOut1" class="lab-dmg-out"></div>
           </div>
           <div class="lab-skill-col">
             <div class="lab-skill-slot-lbl">わざ 2</div>
             <select class="lab-select" id="dcSkill2Sel" onchange="dcSkillChanged(2)"><option value="">— わざを選択 —</option></select>
-            <select class="lab-select" id="dcSkill2Upg" onchange="dcUpdateDmgOutput()" style="font-size:var(--fs-xs);padding:5px 8px;display:none;"><option value="">—</option></select>
+            <select class="lab-select u-fs-fs-xs u-p-5px-8px" id="dcSkill2Upg" onchange="dcUpdateDmgOutput()" style="display:none;"><option value="">—</option></select>
             <div id="dcDmgOut2" class="lab-dmg-out"></div>
           </div>
         </div>
         <!-- 通常攻撃 -->
-        <div id="dcPassiveSection" style="display:none;margin-top:10px;">
+        <div class="u-mt-10px" id="dcPassiveSection" style="display:none;">
           <div class="lab-skill-slot-lbl">特性（条件を満たしたとき）</div>
           <div id="dcDmgOutPassive" class="lab-dmg-out"></div>
         </div>
-        <div id="dcNormalSection" style="display:none;margin-top:10px;">
-          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">通常攻撃</div>
+        <div class="u-mt-10px" id="dcNormalSection" style="display:none;">
+          <div class="lab-skill-slot-lbl u-mb-6px">通常攻撃</div>
           <div id="dcDmgOutNormal" class="lab-dmg-out"></div>
         </div>
         <!-- ユナイトわざ -->
-        <div id="dcUniteSection" style="display:none;margin-top:10px;">
-          <div class="lab-skill-slot-lbl" style="margin-bottom:6px;">ユナイトわざ</div>
+        <div class="u-mt-10px" id="dcUniteSection" style="display:none;">
+          <div class="lab-skill-slot-lbl u-mb-6px">ユナイトわざ</div>
           <div id="dcDmgOutUnite" class="lab-dmg-out"></div>
         </div>
-        <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:10px;line-height:1.6;">
+        <div class="u-fs-fs-xs u-c-text3 u-mt-10px u-lh-1_6">
           物理は防御、特殊は特防で軽減した計算値です。条件・端数処理は「使い方」で確認できます。
         </div>
       </div>
@@ -1184,8 +1183,8 @@ SOFTWARE.
 
       <!-- プリセット保存 -->
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div class="card-title" style="margin-bottom:0;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-save"></use></svg>プリセット保存（8パターン）</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-10px">
+          <div class="card-title u-mb-0"><svg class="ico ico-l" aria-hidden="true"><use href="#i-save"></use></svg>プリセット保存（8パターン）</div>
           <button class="medal-help-btn" onclick="showMedalHelp()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-help"></use></svg>使い方</button>
         </div>
         <div class="medal-preset-grid" id="medalPresetGrid"><!-- JS生成 --></div>
@@ -1193,12 +1192,12 @@ SOFTWARE.
 
       <!-- スロット -->
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div class="card-title" style="margin-bottom:0;">メダルスロット <span id="medalSlotCount" style="font-size:var(--fs-xs);color:var(--text3);">0/10</span></div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-10px">
+          <div class="card-title u-mb-0">メダルスロット <span class="u-fs-fs-xs u-c-text3" id="medalSlotCount">0/10</span></div>
           <button onclick="labClearAllMedals()" style="font-size:var(--fs-xs);padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;">クリア</button>
         </div>
         <div class="medal-slot-bar" id="medalSlotBar"><!-- JS生成 --></div>
-        <div id="medalActiveHint" style="font-size:var(--fs-xs);color:var(--accent);margin-top:8px;text-align:center;min-height:16px;"></div>
+        <div class="u-fs-fs-xs u-c-accent u-mt-8px u-ta-center" id="medalActiveHint" style="min-height:16px;"></div>
       </div>
 
       <!-- フィルター + 一覧 -->
@@ -1233,33 +1232,33 @@ SOFTWARE.
               <option value="platinum">プラチナのみ</option>
             </select>
           </div>
-          <div style="display:flex;align-items:flex-end;">
-            <button class="btn-save" style="width:100%;padding:6px;font-size:var(--fs-xs);" onclick="labResetMedalFilters()">リセット</button>
+          <div class="u-d-flex" style="align-items:flex-end;">
+            <button class="btn-save u-w-100pct u-fs-fs-xs" style="padding:6px;" onclick="labResetMedalFilters()">リセット</button>
           </div>
         </div>
-        <div id="medalListCount" style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;"></div>
+        <div class="u-fs-fs-xs u-c-text3 u-mb-6px" id="medalListCount"></div>
         <div id="medalListContainer" class="medal-list"><!-- JS生成 --></div>
       </div>
 
       <!-- 結果 -->
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);">一括レアリティ設定</div>
+        <div class="u-d-flex u-items-center u-justify-space-between u-mb-10px">
+          <div class="u-fs-fs-xs u-fw-600 u-c-text2">一括レアリティ設定</div>
           <div class="medal-bulk-rar">
-            <span style="font-size:var(--fs-xs);color:var(--text3);">全スロット：</span>
+            <span class="u-fs-fs-xs u-c-text3">全スロット：</span>
             <button class="medal-bulk-btn" onclick="labSetAllRarity('bronze')">銅</button>
             <button class="medal-bulk-btn" onclick="labSetAllRarity('silver')">銀</button>
             <button class="medal-bulk-btn" onclick="labSetAllRarity('gold')">金</button>
           </div>
         </div>
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:6px;">カラー内訳・セット効果</div>
-        <div id="labMedalColorCount" class="medal-color-row" style="margin-bottom:8px;">
-          <span style="font-size:var(--fs-xs);color:var(--text3);">メダル未選択</span>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px">カラー内訳・セット効果</div>
+        <div id="labMedalColorCount" class="medal-color-row u-mb-8px">
+          <span class="u-fs-fs-xs u-c-text3">メダル未選択</span>
         </div>
-        <div id="labMedalSetEffects" style="margin-bottom:8px;"></div>
-        <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">合計ステータス</div>
+        <div class="u-mb-8px" id="labMedalSetEffects"></div>
+        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">合計ステータス</div>
         <div id="labMedalTotal" class="lab-stat-grid">
-          <div class="empty" style="font-size:var(--fs-xs);grid-column:span 2;">メダルを選択すると集計されます</div>
+          <div class="empty u-fs-fs-xs u-col-span-2">メダルを選択すると集計されます</div>
         </div>
       </div>
     </div>
@@ -1268,9 +1267,9 @@ SOFTWARE.
   <!-- 更新履歴ページ -->
   <div id="changelogPage" style="display:none;">
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-        <div class="card-title" style="margin-bottom:0;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-clipboard-list"></use></svg>更新履歴</div>
-        <button class="btn-logout" onclick="showPage('tracker')" style="font-size:var(--fs-xs);">← 戻る</button>
+      <div class="u-d-flex u-items-center u-justify-space-between u-mb-1rem">
+        <div class="card-title u-mb-0"><svg class="ico ico-l" aria-hidden="true"><use href="#i-clipboard-list"></use></svg>更新履歴</div>
+        <button class="btn-logout u-fs-fs-xs" onclick="showPage('tracker')">← 戻る</button>
       </div>
       <div id="changelogList"></div>
     </div>
@@ -1306,13 +1305,13 @@ SOFTWARE.
 <!-- シェア画像モーダル -->
 <div class="modal-overlay" id="shareModal">
   <div class="share-modal-box">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <div class="u-d-flex u-items-center u-justify-space-between u-mb-1rem">
       <h3>シェア画像</h3>
       <button type="button" class="btn-close" onclick="closeModal('shareModal')" aria-label="閉じる">✕</button>
     </div>
     <div id="sharePreview"></div>
-    <div style="margin-top:12px;">
-      <button class="btn-modal-ok" onclick="webShare()" style="width:100%;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-download"></use></svg>画像を保存</button>
+    <div class="u-mt-12px">
+      <button class="btn-modal-ok u-w-100pct" onclick="webShare()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-download"></use></svg>画像を保存</button>
     </div>
     <div class="share-hint">
       保存した画像は X（旧Twitter）や Discord など、お好きなSNSで自由にシェアしてください。<br>
@@ -1327,20 +1326,20 @@ SOFTWARE.
     <h3><svg class="ico ico-l" aria-hidden="true"><use href="#i-download"></use></svg>CSVエクスポート</h3>
     <div class="modal-field">
       <label>出力するシリーズを選択</label>
-      <div id="csvSeriesList" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;max-height:200px;overflow-y:auto;padding:2px;"></div>
+      <div class="u-d-flex u-gap-6px u-mt-4px" id="csvSeriesList" style="flex-direction:column;max-height:200px;overflow-y:auto;padding:2px;"></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:6px;">
+    <div class="u-d-flex u-gap-8px u-mt-6px">
       <button onclick="csvSelectAll(true)" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:5px;font-size:var(--fs-xs);cursor:pointer;">すべて選択</button>
       <button onclick="csvSelectAll(false)" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:5px;font-size:var(--fs-xs);cursor:pointer;">すべて解除</button>
     </div>
-    <div style="font-size:var(--fs-xs);color:var(--text3);margin-top:10px;margin-bottom:4px;line-height:1.6;">
+    <div class="u-fs-fs-xs u-c-text3 u-mt-10px u-mb-4px u-lh-1_6">
       出力項目：日時・シリーズ名・結果・マッチ種別・ポケモン・わざ1・わざ2・もちもの・バトルアイテム
     </div>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeModal('csvModal')">キャンセル</button>
       <button class="btn-modal-ok" onclick="exportCsv()">ダウンロード</button>
     </div>
-    <div id="csvMsg" style="font-size:var(--fs-xs);margin-top:10px;color:var(--loss);min-height:16px;"></div>
+    <div class="u-fs-fs-xs u-mt-10px u-c-loss" id="csvMsg" style="min-height:16px;"></div>
   </div>
 </div>
 
@@ -1349,7 +1348,7 @@ SOFTWARE.
   <div class="help-modal">
     <h3 id="helpTitle">❓ ヘルプ</h3>
     <div id="helpBody"></div>
-    <div class="modal-btns" style="margin-top:12px;">
+    <div class="modal-btns u-mt-12px">
       <button class="btn-modal-ok" onclick="closeModal('helpModal')">閉じる</button>
     </div>
   </div>
@@ -1359,32 +1358,31 @@ SOFTWARE.
 <!-- 不具合報告/改善要望モーダル -->
 <div class="modal-overlay" id="guestRegModal" onclick="if(event.target===this)closeGuestRegModal(false)">
   <div class="modal" style="max-width:320px;">
-    <div class="card-title" style="margin-bottom:12px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-save"></use></svg>データの保存について</div>
-    <p style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7;margin-bottom:16px;">
+    <div class="card-title u-mb-12px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-save"></use></svg>データの保存について</div>
+    <p class="u-fs-fs-sm u-c-text2 u-lh-1_7 u-mb-16px">
       ゲストのデータはこのブラウザのみに保存されます。<br>
       ブラウザやデバイスが変わると引き継ぐことができません。<br>
       <strong>ユーザー登録 / ログイン</strong>すれば、今ある記録をアカウントへ移行して引き継げます。
     </p>
-    <label style="display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);color:var(--text3);margin-bottom:16px;cursor:pointer;">
+    <label class="u-d-flex u-items-center u-gap-8px u-fs-fs-xs u-c-text3 u-mb-16px u-cursor-pointer">
       <input type="checkbox" id="guestHidePromptChk" /> 今後表示しない
     </label>
-    <button class="btn-primary" onclick="closeGuestRegModal(true)" style="width:100%;">閉じる</button>
+    <button class="btn-primary u-w-100pct" onclick="closeGuestRegModal(true)">閉じる</button>
   </div>
 </div>
 <div class="modal-overlay" id="feedbackModal" onclick="if(event.target===this)closeFeedbackModal()">
   <div class="modal" style="max-width:340px;">
-    <div class="card-title" style="margin-bottom:12px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-message-square"></use></svg>不具合報告 / 改善要望</div>
-    <p style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7;margin-bottom:12px;">
+    <div class="card-title u-mb-12px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-message-square"></use></svg>不具合報告 / 改善要望</div>
+    <p class="u-fs-fs-sm u-c-text2 u-lh-1_7 u-mb-12px">
       不具合を見つけた場合や、機能の改善・追加のご要望は、開発・運用元のXアカウントへのリプライまたはDMでお気軽にお知らせください。
     </p>
-    <p style="font-size:var(--fs-xs);color:var(--text3);line-height:1.6;margin-bottom:16px;">
+    <p class="u-fs-fs-xs u-c-text3 u-lh-1_6 u-mb-16px">
       <svg class="ico ico-l" aria-hidden="true"><use href="#i-info"></use></svg>できるだけ具体的な状況（どの画面で・何をしたら・どうなったか）を教えていただけると助かります。
     </p>
-    <a href="https://x.com/36musyokuodi" target="_blank" rel="noopener"
-      style="display:flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border-radius:var(--radius-sm);padding:12px;font-size:var(--fs-md);font-weight:700;text-decoration:none;margin-bottom:12px;">
+    <a class="u-d-flex u-items-center u-gap-8px u-r-radius-sm u-fw-700 u-mb-12px" href="https://x.com/36musyokuodi" target="_blank" rel="noopener" style="justify-content:center;background:#000;color:#fff;padding:12px;font-size:var(--fs-md);text-decoration:none;">
       𝕏 @36musyokuodi を開く
     </a>
-    <button class="btn-cancel" onclick="closeFeedbackModal()" style="width:100%;">閉じる</button>
+    <button class="btn-cancel u-w-100pct" onclick="closeFeedbackModal()">閉じる</button>
   </div>
 </div>
 
@@ -1407,7 +1405,7 @@ SOFTWARE.
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
     <h3 id="confirmTitle">確認</h3>
-    <p id="confirmMessage" style="font-size:var(--fs-sm);color:var(--text2);line-height:1.7;margin-bottom:1rem;white-space:pre-line;"></p>
+    <p class="u-fs-fs-sm u-c-text2 u-lh-1_7 u-mb-1rem" id="confirmMessage" style="white-space:pre-line;"></p>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="handleConfirm(false)">キャンセル</button>
       <button class="btn-danger" id="confirmOkBtn" onclick="handleConfirm(true)">削除する</button>
@@ -1453,7 +1451,7 @@ SOFTWARE.
         <option value="エキスパート">エキスパート</option>
         <option value="マスター以上">マスター以上（レート）</option>
       </select>
-      <select id="editRankClass" style="display:none;margin-top:6px;">
+      <select class="u-mt-6px" id="editRankClass" style="display:none;">
         <option value="">クラス —</option>
         <option value="5">クラス5</option>
         <option value="4">クラス4</option>
@@ -1461,7 +1459,7 @@ SOFTWARE.
         <option value="2">クラス2</option>
         <option value="1">クラス1</option>
       </select>
-      <div id="editRankRateWrap" style="display:none;margin-top:6px;">
+      <div class="u-mt-6px" id="editRankRateWrap" style="display:none;">
         <input id="editRankRate" class="rate-input" type="number" inputmode="numeric" min="0" max="99999" placeholder="例: 320" />
         <div class="rate-steprow">
           <button type="button" class="rate-step" onclick="stepRate('editRankRate',-10)">−10</button>
@@ -1489,8 +1487,8 @@ SOFTWARE.
       <label>日時</label>
       <input type="datetime-local" id="editDatetime" style="color-scheme:dark;" />
     </div>
-    <div style="height:1px;background:var(--border);margin:8px 0;"></div>
-    <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">技セット / もちもの / バトルアイテム</div>
+    <div class="u-h-1px u-bg-border" style="margin:8px 0;"></div>
+    <div class="u-fs-fs-xs u-fw-600 u-c-text3 u-mb-8px" style="text-transform:uppercase;letter-spacing:0.05em;">技セット / もちもの / バトルアイテム</div>
     <div class="modal-field">
       <label>わざ１</label>
       <select id="editSkill1"><option value="">— 選択 —</option></select>
@@ -1674,7 +1672,7 @@ function updateDetailForPoke(pokeName){
       fixedWrap.style.display='';
       normalWrap.style.display='none';
       const src=getItemImgSrc(dedicated);
-      fixedVal.innerHTML=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;"><img src="${src}" width="24" height="24" style="object-fit:contain;" onerror="this.style.opacity='0'" /><span style="font-size:var(--fs-xs);color:var(--text2);">${dedicated}（固定）</span></div>`;
+      fixedVal.innerHTML=`<div class="u-d-flex u-items-center u-gap-6px u-p-4px-0"><img src="${src}" width="24" height="24" style="object-fit:contain;" onerror="this.style.opacity='0'" /><span class="u-fs-fs-xs u-c-text2">${dedicated}（固定）</span></div>`;
     } else {
       fixedWrap.style.display='none';
       normalWrap.style.display='';
@@ -1736,7 +1734,7 @@ function renderItemPickerList(pid, pickerIdx, search=''){
   if(!drop)return;
   const items=getPickerItems(pickerIdx);
   const filtered=search?items.filter(i=>i.includes(search)):items;
-  if(!filtered.length){drop.querySelector('.item-chip-list').innerHTML='<div style="padding:10px;font-size:var(--fs-xs);color:var(--text3);">見つかりません</div>';return;}
+  if(!filtered.length){drop.querySelector('.item-chip-list').innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:10px;">見つかりません</div>';return;}
   drop.querySelector('.item-chip-list').innerHTML=filtered.map(item=>{
     const src=getItemImgSrc(item);
     const sel=pickerSelected[pid]===item?'selected':'';
@@ -1767,7 +1765,7 @@ function selectItemPicker(pid, pickerIdx, item){
   // ボタン表示更新
   const btn=document.getElementById(pid+'btn');
   const src=getItemImgSrc(item);
-  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(item)}" onerror="this.style.opacity='0'" /><span style="font-size:var(--fs-xs);">${escapeHtml(item)}</span>`;
+  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(item)}" onerror="this.style.opacity='0'" /><span class="u-fs-fs-xs">${escapeHtml(item)}</span>`;
   const clearBtn=document.getElementById(pid+'clear');
   if(clearBtn)clearBtn.style.display='';
   document.getElementById(pid+'drop')?.classList.remove('open');
@@ -1800,7 +1798,7 @@ function setItemPickerValue(pid, value){
   const btn=document.getElementById(pid+'btn');
   if(!btn)return;
   const src=getItemImgSrc(value);
-  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(value)}" onerror="this.style.opacity='0'" /><span style="font-size:var(--fs-xs);">${escapeHtml(value)}</span>`;
+  btn.innerHTML=`<img class="item-picker-img" src="${escapeHtml(src)}" alt="${escapeHtml(value)}" onerror="this.style.opacity='0'" /><span class="u-fs-fs-xs">${escapeHtml(value)}</span>`;
   const clearBtn=document.getElementById(pid+'clear');
   if(clearBtn)clearBtn.style.display='';
 }
@@ -2117,6 +2115,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {
+    version: 'v5.53', date: '2026-10-03',
+    items: ['初回表示を速くしました。グラフとラボのデータを、画面の表示を待たせない読み込み方に変更しています（通信が遅い環境の測定で、最初の表示まで約7.1秒→約3.9秒）。', '画面の見た目の指定を整理しました（表示は変わりません）。']
+  },
   {
     version: 'v5.52', date: '2026-10-03',
     items: ['アイコンを統一したデザインに置き換え、端末によって見た目が変わらないようにしました。', '文字の大きさと書体を整理し、日本語と数字を読みやすくしました。グラフの色をライトモードでも見やすくし、テーマを切り替えたときは表示中のグラフの色も切り替わるようにしました。', 'シリーズがまだないときに、作り方の案内を表示するようにしました。', '分析のタブ名が途中で折り返さないようにしました。もちものを登録していない対戦記録では、空の枠を表示しないようにしました。', '勝率50%ちょうどのときの色を、ほかの表示と同じ「勝ち色」にそろえました。', '非公式ツールであることの表記を追加しました。']
@@ -2858,15 +2860,15 @@ function renderChangelog(){
   const el=document.getElementById('changelogList');
   if(!el)return;
   el.innerHTML=CHANGELOG.map(log=>`
-    <div style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="background:var(--accent-bg);color:var(--accent);font-size:var(--fs-xs);font-weight:700;padding:3px 10px;border-radius:999px;">${log.version}</span>
-        <span style="font-size:var(--fs-xs);color:var(--text3);">${log.date}</span>
+    <div class="u-bb-1px-solid-border" style="margin-bottom:1.5rem;padding-bottom:1.5rem;">
+      <div class="u-d-flex u-items-center u-mb-8px" style="gap:10px;">
+        <span class="u-c-accent u-fs-fs-xs u-fw-700" style="background:var(--accent-bg);padding:3px 10px;border-radius:999px;">${log.version}</span>
+        <span class="u-fs-fs-xs u-c-text3">${log.date}</span>
       </div>
-      <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px;">
+      <ul class="u-p-0 u-d-flex" style="list-style:none;flex-direction:column;gap:5px;">
         ${log.items.map(item=>`
-          <li style="display:flex;align-items:flex-start;gap:6px;font-size:var(--fs-sm);color:var(--text2);">
-            <span style="color:var(--accent);flex-shrink:0;margin-top:1px;">•</span>
+          <li class="u-d-flex u-gap-6px u-fs-fs-sm u-c-text2" style="align-items:flex-start;">
+            <span class="u-c-accent u-shrink-0" style="margin-top:1px;">•</span>
             <span>${item}</span>
           </li>`).join('')}
       </ul>
@@ -2889,12 +2891,11 @@ async function openCsvModal(){
   }
   const listEl=document.getElementById('csvSeriesList');
   if(!seriesList||!seriesList.length){
-    listEl.innerHTML='<div style="font-size:var(--fs-sm);color:var(--text3);">シリーズがありません</div>';
+    listEl.innerHTML='<div class="u-fs-fs-sm u-c-text3">シリーズがありません</div>';
   } else {
     listEl.innerHTML=seriesList.map(s=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--radius-sm);cursor:pointer;font-size:var(--fs-sm);color:var(--text2);">
-        <input type="checkbox" value="${s.id}" data-name="${escapeHtml(s.name)}" class="csv-series-check"
-          style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;"
+      <label class="u-d-flex u-items-center u-gap-8px u-bg-bg3 u-r-radius-sm u-cursor-pointer u-fs-fs-sm u-c-text2" style="padding:7px 10px;">
+        <input type="checkbox" value="${s.id}" data-name="${escapeHtml(s.name)}" class="csv-series-check u-accent-accent u-cursor-pointer" style="width:15px;height:15px;"
           ${currentSeriesId===s.id?'checked':''} />
         ${escapeHtml(s.name)}
       </label>`).join('');
@@ -3047,6 +3048,53 @@ function openFeedbackModal(){document.getElementById('feedbackModal').classList.
 function closeFeedbackModal(){document.getElementById('feedbackModal').classList.remove('open');}
 
 // ---- 分析 ----
+// ---- 後から読み込むスクリプト（Chart.js・ラボデータ）の準備待ち ----
+// 表示を速くするため defer で読み込む。読み込み完了前にそのページが開かれた場合は、
+// ページ全体を操作できない状態（inert）にして「読み込み中」を表示し、完了後に初期化する。
+const DEFERRED_LIBS={
+  chart:{script:'chartScript',ready:()=>typeof Chart!=='undefined'},
+  lab:{script:'labDataScript',ready:()=>typeof LAB_STATUS!=='undefined'&&typeof LAB_SKILLS!=='undefined'},
+};
+function libReady(name){return DEFERRED_LIBS[name].ready();}
+function whenLibReady(name){
+  const lib=DEFERRED_LIBS[name];
+  return new Promise((resolve,reject)=>{
+    const done=()=>lib.ready()?resolve():reject(new Error(name+' not available'));
+    if(lib.ready()){resolve();return;}
+    const el=document.getElementById(lib.script);
+    if(!el||el.dataset.state==='error'){reject(new Error(name+' failed to load'));return;}
+    if(el.dataset.state==='ok'){done();return;}
+    el.addEventListener('load',done,{once:true});
+    el.addEventListener('error',()=>reject(new Error(name+' failed to load')),{once:true});
+  });
+}
+function gatePageUntilReady(pageId,name,onReady){
+  const page=document.getElementById(pageId);
+  if(!page)return;
+  if(page.dataset.gating==='1')return; // すでに待機中
+  page.dataset.gating='1';
+  page.setAttribute('aria-busy','true');
+  const kids=[...page.children];
+  kids.forEach(k=>{k.inert=true;k.classList.add('is-gated');});
+  const msg=document.createElement('div');
+  msg.className='card lab-loading page-gate-msg';
+  msg.setAttribute('role','status');
+  msg.innerHTML='<div class="card-loading-circle"></div><span>データを読み込んでいます…</span>';
+  page.prepend(msg);
+  whenLibReady(name).then(()=>{
+    kids.forEach(k=>{k.inert=false;k.classList.remove('is-gated');});
+    msg.remove();
+    page.removeAttribute('aria-busy');
+    delete page.dataset.gating;
+    // 待っている間に別のページへ移っていたら初期化しない（次に開いたときに通常どおり初期化される）
+    if(page.style.display!=='none')onReady();
+  }).catch(()=>{
+    msg.classList.add('is-error');
+    msg.innerHTML='<span>データを読み込めませんでした。通信状況を確認して、ページを再読み込みしてください。</span>';
+    msg.setAttribute('role','alert');
+  });
+}
+
 // アイコン（Lucide・ISCライセンス）のSVGを返す。withGap=true で右に余白
 function icoSvg(name,withGap){return `<svg class="ico${withGap?' ico-l':''}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
 // グラフの色はCSSのデザイントークンから読む（ライト/ダーク両対応）
@@ -3061,6 +3109,8 @@ let analysisLoaded=false;
 let analysisNeedsRefresh=true; // P2: キャッシュ制御
 
 async function loadAnalysis(){
+  // Chart.js は defer で読み込む。読み込み前なら、完了まで分析を操作不可にして待つ
+  if(!libReady('chart')){gatePageUntilReady('analysisPage','chart',()=>loadAnalysis());return;}
   // P2: キャッシュが有効なら再描画のみ
   if(analysisLoaded&&!analysisNeedsRefresh){
     setTimeout(()=>{ renderMyPickup(); renderTrendChart(); renderTotalStats(); }, 50);
@@ -3119,6 +3169,7 @@ async function loadAnalysis(){
 }
 
 function switchAnalysis(tab){
+  if(!libReady('chart'))return; // Chart.js 読み込み前は何もしない（画面は gatePageUntilReady で操作不可）
   navId++; // ナビゲーションガード
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
   document.querySelectorAll('#analysisPage .analysis-tab').forEach((t,i)=>t.classList.toggle('active',
@@ -3348,14 +3399,14 @@ function renderBestWorstSlots(battles){
     else map[key].loss++;
   }
   const arr=Object.values(map).map(m=>{const total=m.win+m.loss;return {...m,total,wr:m.win/total};}).filter(m=>m.total>=MIN);
-  if(!arr.length){ el.innerHTML='<div class="empty" style="font-size:var(--fs-xs);padding:1rem 0;">3戦以上の「曜日×時間帯」がまだありません</div>'; return; }
+  if(!arr.length){ el.innerHTML='<div class="empty u-fs-fs-xs u-p-1rem-0">3戦以上の「曜日×時間帯」がまだありません</div>'; return; }
   const fmt=m=>`${wd[m.day]}曜 ${tl[m.tb]}`;
   const best=[...arr].sort((a,b)=>b.wr-a.wr||b.total-a.total).slice(0,3);
   const worst=[...arr].sort((a,b)=>a.wr-b.wr||b.total-a.total).slice(0,3);
   const row=(m,good)=>`<div class="bw-row"><span class="bw-slot">${fmt(m)}</span><span class="bw-wr" style="color:${good?'var(--win)':'var(--loss)'}">${Math.round(m.wr*100)}%</span><span class="bw-n">${m.win}勝${m.total-m.win}敗</span></div>`;
   el.innerHTML=
-    `<div class="bw-col"><div class="bw-head" style="color:var(--win)">勝率上位3件</div>${best.map(m=>row(m,true)).join('')}</div>`+
-    `<div class="bw-col"><div class="bw-head" style="color:var(--loss)">勝率下位3件</div>${worst.map(m=>row(m,false)).join('')}</div>`;
+    `<div class="bw-col"><div class="bw-head u-c-win">勝率上位3件</div>${best.map(m=>row(m,true)).join('')}</div>`+
+    `<div class="bw-col"><div class="bw-head u-c-loss">勝率下位3件</div>${worst.map(m=>row(m,false)).join('')}</div>`;
 }
 
 function renderCompareChart(){
@@ -3395,7 +3446,7 @@ function renderCompareChart(){
         const col=t>0?wrColor(wr):'var(--text2)';
         return `<div class="series-compare-row"><div class="series-name-cell">${escapeHtml(s.name)}</div><div class="series-val">${t}</div><div class="series-val">${w}</div><div class="series-wr-cell" style="color:${col}">${wr}</div></div>`;
       }).join('')
-    : '<div class="empty" style="padding:1rem 0;">データなし</div>';
+    : '<div class="empty u-p-1rem-0">データなし</div>';
 }
 
 // 平均の対象なしでも、未入力と除外記録を区別して表示する。
@@ -3403,17 +3454,17 @@ function statsSummaryHTML(battles){
   const a=aggBattleStats(battles);
   const excluded=`<div class="stats-excluded-count">平均対象外: ${a.excludedN}件（勝ち${a.excludedWinN}件・負け${a.excludedLossN}件）</div>`;
   const note='<div class="stats-summary-note">※ 平均対象外の件数は、数値を1項目以上記録した試合のみです。</div>';
-  if(!a.n) return `<div class="stats-summary"><div class="empty" style="padding:0.8rem 0;">${a.excludedN?'対象の記録がありません':'スタッツの記録がありません'}</div>${excluded}${note}</div>`;
+  if(!a.n) return `<div class="stats-summary"><div class="empty u-p-0_8rem-0">${a.excludedN?'対象の記録がありません':'スタッツの記録がありません'}</div>${excluded}${note}</div>`;
   const fmt=(v,type)=> v==null?'—':(type==='dmg'?Math.round(v).toLocaleString():v.toFixed(1));
   const th=(label,col)=>`<th style="padding:4px 6px;text-align:center;${col?'color:'+col+';':'color:var(--text3);'}">${label}</th>`;
-  const head=`<thead><tr style="border-bottom:1px solid var(--border);">${th('項目')}${th('全体('+a.n+')')}${th('勝ち('+a.winN+')','var(--win)')}${th('負け('+a.lossN+')','var(--loss)')}</tr></thead>`;
+  const head=`<thead><tr class="u-bb-1px-solid-border">${th('項目')}${th('全体('+a.n+')')}${th('勝ち('+a.winN+')','var(--win)')}${th('負け('+a.lossN+')','var(--loss)')}</tr></thead>`;
   const body=a.rows.map(r=>`<tr>
-    <td style="padding:4px 6px;color:var(--text2);">${r.label}</td>
-    <td style="padding:4px 6px;text-align:center;">${fmt(r.all,r.type)}</td>
-    <td style="padding:4px 6px;text-align:center;color:var(--win);">${fmt(r.win,r.type)}</td>
-    <td style="padding:4px 6px;text-align:center;color:var(--loss);">${fmt(r.loss,r.type)}</td>
+    <td class="u-p-4px-6px u-c-text2">${r.label}</td>
+    <td class="u-p-4px-6px u-ta-center">${fmt(r.all,r.type)}</td>
+    <td class="u-p-4px-6px u-ta-center u-c-win">${fmt(r.win,r.type)}</td>
+    <td class="u-p-4px-6px u-ta-center u-c-loss">${fmt(r.loss,r.type)}</td>
   </tr>`).join('');
-  return `<div class="stats-summary"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">${head}<tbody>${body}</tbody></table></div>
+  return `<div class="stats-summary"><div style="overflow-x:auto;"><table class="u-w-100pct u-fs-fs-xs" style="border-collapse:collapse;">${head}<tbody>${body}</tbody></table></div>
     ${excluded}<div class="stats-summary-note">※ 各項目を記録した対象試合のみで平均（項目ごとに記録数が異なる場合あり）</div>${note}</div>`;
 }
 
@@ -3458,14 +3509,14 @@ const MY_PICKUP_CARDS = [
       const wr=t>0?((w/t)*100).toFixed(1):'—';
       const col=t>0?wrColor(wr):'var(--text2)';
       return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div>
-        <div class="mp-sub">全${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
+        <div class="mp-sub">全${t}戦（<span class="u-c-win">${w}勝</span> <span class="u-c-loss">${t-w}敗</span>）</div>`;
     }
   },
   { id:'rate', name:'レート', title:'<svg class="ico ico-l" aria-hidden="true"><use href="#i-award"></use></svg>レート', detail:'seriesanal',
     render(all){
       // レートはシリーズが変わるとリセットされるため、最新シリーズ内のみで扱う（all=最新シリーズの battles・時系列昇順）
       const rates=all.map(b=>rankRate(b.rank)).filter(r=>r!=null);
-      if(!rates.length) return `<div class="mp-big" style="color:var(--text2)">—</div><div class="mp-sub">このシリーズにマスター以上のレート記録がありません</div>`;
+      if(!rates.length) return `<div class="mp-big u-c-text2">—</div><div class="mp-sub">このシリーズにマスター以上のレート記録がありません</div>`;
       const latest=rates[rates.length-1], prev=rates.length>1?rates[rates.length-2]:null;
       const ch=prev!=null?latest-prev:null;
       const chStr=ch==null?'':` <span style="font-size:var(--fs-md);color:${ch>=0?'var(--win)':'var(--loss)'}">(${ch>=0?'+':''}${ch})</span>`;
@@ -3477,7 +3528,7 @@ const MY_PICKUP_CARDS = [
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const top=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
-      if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
+      if(!top.length) return `<div class="mp-sub u-p-6px-0">3戦以上のポケモン記録がありません</div>`;
       return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;
       }).join('');
@@ -3496,14 +3547,14 @@ const MY_PICKUP_CARDS = [
     render(all){
       const r=all.slice(-10), w=winCount(r), t=r.length;
       const wr=calcWR(w,t)||'—', col=t>0?wrColor(wr):'var(--text2)';
-      return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span style="color:var(--win)">${w}勝</span> <span style="color:var(--loss)">${t-w}敗</span>）</div>`;
+      return `<div class="mp-big" style="color:${col}">${wr}${t>0?'%':''}</div><div class="mp-sub">直近${t}戦（<span class="u-c-win">${w}勝</span> <span class="u-c-loss">${t-w}敗</span>）</div>`;
     }
   },
   { id:'lane', name:'レーン別勝率', title:'<svg class="ico ico-l" aria-hidden="true"><use href="#i-route"></use></svg>レーン別勝率', detail:'seriesanal',
     render(all){
       const LANES=['上','中央','下'];
       const rows=LANES.map(l=>[l,all.filter(b=>b.lane===l)]).filter(([l,m])=>m.length);
-      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">レーンの記録がありません</div>`;
+      if(!rows.length) return `<div class="mp-sub u-p-6px-0">レーンの記録がありません</div>`;
       return rows.map(([l,m])=>{const w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${l}レーン</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}勝 / ${t}戦</span></div>`;}).join('');
     }
@@ -3514,14 +3565,14 @@ const MY_PICKUP_CARDS = [
       const ROLE_ORDER=['アタック型','バランス型','スピード型','ディフェンス型','サポート型'];
       const map={}; all.forEach(b=>{const r=b.pokemon&&pokeRole[b.pokemon]; if(!r)return; (map[r]=map[r]||[]).push(b);});
       const rows=ROLE_ORDER.filter(r=>map[r]);
-      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">型の記録がありません</div>`;
+      if(!rows.length) return `<div class="mp-sub u-p-6px-0">型の記録がありません</div>`;
       return rows.map(r=>{const m=map[r],w=winCount(m),t=m.length,wr=calcWR(w,t),col=wrColor(w/t*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${r}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${w}勝 / ${t}戦</span></div>`;}).join('');
     }
   },
   { id:'streak', name:'現在の連勝/連敗', title:'<svg class="ico ico-l" aria-hidden="true"><use href="#i-flame"></use></svg>現在の連勝・連敗', detail:'trend',
     render(all){
-      if(!all.length) return `<div class="mp-sub" style="padding:6px 0;">記録がありません</div>`;
+      if(!all.length) return `<div class="mp-sub u-p-6px-0">記録がありません</div>`;
       const last=all[all.length-1].result; let n=0;
       for(let i=all.length-1;i>=0;i--){ if(all[i].result===last) n++; else break; }
       const win=last==='win', col=win?'var(--win)':'var(--loss)';
@@ -3533,7 +3584,7 @@ const MY_PICKUP_CARDS = [
     render(all){
       const pm={}; all.filter(b=>b.pokemon).forEach(b=>{if(!pm[b.pokemon])pm[b.pokemon]={w:0,l:0};b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
       const low=Object.entries(pm).map(([n,s])=>({n,t:s.w+s.l,w:s.w,wr:s.w/(s.w+s.l)})).filter(p=>p.t>=3).sort((a,b)=>a.wr-b.wr).slice(0,3);
-      if(!low.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上のポケモン記録がありません</div>`;
+      if(!low.length) return `<div class="mp-sub u-p-6px-0">3戦以上のポケモン記録がありません</div>`;
       return low.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row">${iconImg(p.n,'poke-mode-icon',22)}<span class="mp-poke-name">${escapeHtml(p.n)}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;
       }).join('');
@@ -3546,7 +3597,7 @@ const MY_PICKUP_CARDS = [
       const m={};
       all.forEach(b=>{ if(!b.created_at)return; const bi=Math.floor(new Date(b.created_at).getHours()/2); (m[bi]=m[bi]||{w:0,t:0}); if(b.result==='win')m[bi].w++; m[bi].t++; });
       const top=Object.entries(m).map(([bi,s])=>({bi:+bi,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
-      if(!top.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の時間帯記録がありません</div>`;
+      if(!top.length) return `<div class="mp-sub u-p-6px-0">3戦以上の時間帯記録がありません</div>`;
       return top.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${labels[p.bi]}</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;}).join('');
     }
@@ -3558,7 +3609,7 @@ const MY_PICKUP_CARDS = [
       const m={};
       all.forEach(b=>{ if(!b.created_at)return; const d=gameDayDate(b.created_at).getDay(); (m[d]=m[d]||{w:0,t:0}); if(b.result==='win')m[d].w++; m[d].t++; });
       const rows=Object.entries(m).map(([d,s])=>({d:+d,w:s.w,t:s.t,wr:s.w/s.t})).filter(p=>p.t>=3).sort((a,b)=>b.wr-a.wr).slice(0,3);
-      if(!rows.length) return `<div class="mp-sub" style="padding:6px 0;">3戦以上の曜日記録がありません</div>`;
+      if(!rows.length) return `<div class="mp-sub u-p-6px-0">3戦以上の曜日記録がありません</div>`;
       return rows.map(p=>{const wr=(p.wr*100).toFixed(1);const col=wrColor(p.wr*100);
         return `<div class="mp-poke-row"><span class="mp-poke-name">${wd[p.d]}曜</span><span class="mp-poke-wr" style="color:${col}">${wr}%</span><span class="mp-poke-gt">${p.w}勝 / ${p.t}戦</span></div>`;}).join('');
     }
@@ -3608,15 +3659,15 @@ function renderMyPickup(){
   // マイピックアップは最新シリーズ（created_atが最大のシリーズ）のみを対象にする
   const latest=allSeriesData.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0];
   const all=(latest?latest.battles:[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-  if(!all.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">最新シリーズにまだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
+  if(!all.length){ cont.innerHTML='<div class="empty u-p-1_5rem-0">最新シリーズにまだ記録がありません。トラッカーで対戦を記録すると、ここに要約が表示されます。</div>'; return; }
   const sel=getMyPickupSelection();
   const cards=sel.map(id=>MY_PICKUP_CARDS.find(c=>c.id===id));
-  if(!cards.length){ cont.innerHTML='<div class="empty" style="padding:1.5rem 0;">表示するカードがありません。「<svg class="ico ico-l" aria-hidden="true"><use href="#i-sliders-horizontal"></use></svg>表示カードを編集」から選んでください。</div>'; return; }
-  const scope=`<div class="mp-sub" style="margin:-2px 0 8px;font-size:var(--fs-xs);color:var(--text2);">対象シリーズ：${escapeHtml(latest.name||'最新')}</div>`;
+  if(!cards.length){ cont.innerHTML='<div class="empty u-p-1_5rem-0">表示するカードがありません。「<svg class="ico ico-l" aria-hidden="true"><use href="#i-sliders-horizontal"></use></svg>表示カードを編集」から選んでください。</div>'; return; }
+  const scope=`<div class="mp-sub u-fs-fs-xs u-c-text2" style="margin:-2px 0 8px;">対象シリーズ：${escapeHtml(latest.name||'最新')}</div>`;
   cont.innerHTML=scope+cards.map(c=>
     `<div class="card mp-card" data-mp-card="${c.id}">
       <div class="mp-card-head">
-        <div class="card-title" style="margin-bottom:0;">${c.title}</div>
+        <div class="card-title u-mb-0">${c.title}</div>
         <button class="mp-detail-link" onclick="openMyPickupDetail('${c.id}')">詳細 →</button>
       </div>
       <div class="mp-card-body">${c.render(all)}</div>
@@ -3662,7 +3713,7 @@ function renderPokeDetail(){
   const all=allSeriesData.flatMap(s=>s.battles);
   let bs=all.filter(b=>b.pokemon===pokeName);
   if(detailMode!=='all') bs=bs.filter(b=>b.match_type===detailMode);
-  if(!bs.length){content.innerHTML='<div class="empty" style="padding:1.5rem 0;">このモードの記録がありません</div>';return;}
+  if(!bs.length){content.innerHTML='<div class="empty u-p-1_5rem-0">このモードの記録がありません</div>';return;}
 
   const w=winCount(bs);
   const t=bs.length;
@@ -3688,7 +3739,7 @@ function renderPokeDetail(){
       <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
         const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
         const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
-        return `<tr><td style="font-size:var(--fs-xs);">${escapeHtml(name)}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+        return `<tr><td class="u-fs-fs-xs">${escapeHtml(name)}</td><td class="u-ta-center">${tt}</td><td class="u-ta-center">${s.w}</td><td class="u-ta-center">${s.l}</td><td class="${cls} u-ta-center">${wr?wr+'%':'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   };
@@ -3710,7 +3761,7 @@ function renderPokeDetail(){
       <tbody>${Object.entries(map).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([name,s])=>{
         const tt=s.w+s.l, wr=tt>0?((s.w/tt)*100).toFixed(1):null;
         const cls=wr===null?'wr-neu':parseFloat(wr)>=50?'wr-good':'wr-bad';
-        return `<tr><td>${escapeHtml(name)}</td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${wr?wr+'%':'—'}</td></tr>`;
+        return `<tr><td>${escapeHtml(name)}</td><td class="u-ta-center">${tt}</td><td class="u-ta-center">${s.w}</td><td class="u-ta-center">${s.l}</td><td class="${cls} u-ta-center">${wr?wr+'%':'—'}</td></tr>`;
       }).join('')}</tbody>
     </table>`;
   };
@@ -3734,16 +3785,16 @@ function renderPokeDetail(){
 
   content.innerHTML=`
     <!-- 基本成績 -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <div class="stat-box" style="flex:1;"><div class="stat-label">試合数</div><div class="stat-val">${t}</div></div>
-      <div class="stat-box" style="flex:1;"><div class="stat-label">勝利</div><div class="stat-val win">${w}</div></div>
-      <div class="stat-box" style="flex:1;"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
-      <div class="stat-box" style="flex:1;"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:var(--fs-lg);color:${wrCol}">${wr}</div></div>
+    <div class="u-d-flex u-gap-8px" style="margin-bottom:14px;">
+      <div class="stat-box u-flex-1"><div class="stat-label">試合数</div><div class="stat-val">${t}</div></div>
+      <div class="stat-box u-flex-1"><div class="stat-label">勝利</div><div class="stat-val win">${w}</div></div>
+      <div class="stat-box u-flex-1"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
+      <div class="stat-box u-flex-1"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:var(--fs-lg);color:${wrCol}">${wr}</div></div>
     </div>
 
     <div class="detail-subsection"><div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>平均スタッツ</div>${statsSummaryHTML(bs)}</div>
 
-    ${!hasSet?'<div class="empty" style="padding:1rem 0;">技・もちもの・バトルアイテムの記録がありません</div>':''}
+    ${!hasSet?'<div class="empty u-p-1rem-0">技・もちもの・バトルアイテムの記録がありません</div>':''}
 
     <!-- 技セット別 -->
     <div class="detail-subsection">
@@ -3770,13 +3821,13 @@ function renderPokeDetail(){
     </div>
 
     <!-- 個別詳細（折りたたみ） -->
-    <div class="poke-mode-block" style="margin-top:10px;">
+    <div class="poke-mode-block u-mt-10px">
       <div class="poke-mode-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open')">
-        <span class="poke-mode-title" style="font-size:var(--fs-xs);color:var(--text2);">個別詳細（わざ1・わざ2・もちもの単体）</span>
+        <span class="poke-mode-title u-fs-fs-xs u-c-text2">個別詳細（わざ1・わざ2・もちもの単体）</span>
         <span class="poke-mode-arrow">▼</span>
       </div>
       <div class="poke-mode-body">
-        <div class="detail-subsection" style="margin-top:8px;">
+        <div class="detail-subsection u-mt-8px">
           <div class="detail-subsection-title">わざ１</div>${skill1Indiv}
         </div>
         <div class="detail-subsection">
@@ -3803,10 +3854,10 @@ function renderPokeDetail(){
         const s=rankMap[r],tt=s.w+s.l,rwr=tt>0?((s.w/tt)*100).toFixed(1):null;
         const rs=RANK_STYLE[r]||{color:'var(--text2)',bg:'var(--bg3)'};
         const cls=rwr===null?'wr-neu':parseFloat(rwr)>=50?'wr-good':'wr-bad';
-        return `<tr><td><span class="badge" style="background:${rs.bg};color:${rs.color};font-size:var(--fs-xs);">${r}</span></td><td style="text-align:center;">${tt}</td><td style="text-align:center;">${s.w}</td><td style="text-align:center;">${s.l}</td><td style="text-align:center;" class="${cls}">${rwr?rwr+'%':'—'}</td></tr>`;
+        return `<tr><td><span class="badge" style="background:${rs.bg};color:${rs.color};font-size:var(--fs-xs);">${r}</span></td><td class="u-ta-center">${tt}</td><td class="u-ta-center">${s.w}</td><td class="u-ta-center">${s.l}</td><td class="${cls} u-ta-center">${rwr?rwr+'%':'—'}</td></tr>`;
       }).join('');
       if(!rankRows)return '';
-      return `<div class="detail-subsection" style="margin-top:10px;">
+      return `<div class="detail-subsection u-mt-10px">
         <div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-award"></use></svg>ランク帯別</div>
         <table class="stat-table"><thead><tr><th>ランク</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead><tbody>${rankRows}</tbody></table>
       </div>`;
@@ -3820,10 +3871,10 @@ function renderPokeDetail(){
         if(!list.length) return null;
         const sw=winCount(list), st=list.length, swr=calcWR(sw,st);
         const cls=parseFloat(swr)>=50?'wr-good':'wr-bad';
-        return `<tr><td style="font-size:var(--fs-xs);">${escapeHtml(s.name)}${s.archived?' <svg class="ico" aria-hidden="true"><use href="#i-archive"></use></svg>':''}</td><td style="text-align:center;">${st}</td><td style="text-align:center;">${sw}</td><td style="text-align:center;">${st-sw}</td><td style="text-align:center;" class="${cls}">${swr}%</td></tr>`;
+        return `<tr><td class="u-fs-fs-xs">${escapeHtml(s.name)}${s.archived?' <svg class="ico" aria-hidden="true"><use href="#i-archive"></use></svg>':''}</td><td class="u-ta-center">${st}</td><td class="u-ta-center">${sw}</td><td class="u-ta-center">${st-sw}</td><td class="${cls} u-ta-center">${swr}%</td></tr>`;
       }).filter(Boolean).join('');
       if(!rows) return '';
-      return `<div class="detail-subsection" style="margin-top:10px;">
+      return `<div class="detail-subsection u-mt-10px">
         <div class="detail-subsection-title"><svg class="ico ico-l" aria-hidden="true"><use href="#i-library"></use></svg>シリーズ別</div>
         <table class="stat-table"><thead><tr><th>シリーズ</th><th>試合</th><th>勝</th><th>敗</th><th>勝率</th></tr></thead><tbody>${rows}</tbody></table>
       </div>`;
@@ -4472,7 +4523,7 @@ async function generateShareImage(battlesData,titleLabel){
 
   shareCanvas=canvas;
   shareDataUrl=canvas.toDataURL('image/png');
-  preview.innerHTML=`<img src="${shareDataUrl}" alt="シェア用の成績画像：勝率${heroNum}${tS.wr!==null?'%':''}、${tS.t}戦${tS.w}勝${tS.l}敗" style="width:100%;height:auto;display:block;border-radius:8px;" />`;
+  preview.innerHTML=`<img class="u-w-100pct" src="${shareDataUrl}" alt="シェア用の成績画像：勝率${heroNum}${tS.wr!==null?'%':''}、${tS.t}戦${tS.w}勝${tS.l}敗" style="height:auto;display:block;border-radius:8px;" />`;
 }
 
 function downloadShareImage(){
@@ -4835,7 +4886,7 @@ function renderStats(){
     const modeLine=(label,cls,arr)=>{
       const mw=winCount(arr), ml=arr.length-mw, mwr=calcWR(mw,arr.length);
       const mcol=mwr?wrColor(mwr):'var(--text3)';
-      return `<div class="rank-mode-line"><span class="badge ${cls}" style="font-size:var(--fs-xs);padding:2px 7px;">${label}</span><span class="rank-mode-rec">${arr.length?`${mw}勝 ${ml}敗`:'—'}</span><span class="rank-mode-wr" style="color:${mcol};">${mwr?mwr+'%':'—'}</span></div>`;
+      return `<div class="rank-mode-line"><span class="badge ${cls} u-fs-fs-xs" style="padding:2px 7px;">${label}</span><span class="rank-mode-rec">${arr.length?`${mw}勝 ${ml}敗`:'—'}</span><span class="rank-mode-wr" style="color:${mcol};">${mwr?mwr+'%':'—'}</span></div>`;
     };
     const modeBody=modeLine('ソロ','badge-solo',rl.filter(b=>b.match_type==='solo'))
       +modeLine('デュオ/トリオ','badge-duo',rl.filter(b=>b.match_type==='duo'))
@@ -4960,15 +5011,15 @@ function renderHistory(){
       :`<div class="h-poke-name-empty">—</div>`;
     const skillHtml=(b.skill1||b.skill2)
       ?`<div class="h-skill"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>${escapeHtml([b.skill1,b.skill2].filter(Boolean).join(' ＋ '))}</div>`
-      :`<div class="h-skill" style="color:var(--text3);">—</div>`;
+      :`<div class="h-skill u-c-text3">—</div>`;
     // F1: メモ表示
     const noteHtml=b.note
-      ?`<div style="font-size:var(--fs-xs);color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-notebook-pen"></use></svg>${escapeHtml(b.note)}</div>`
+      ?`<div class="u-fs-fs-xs u-c-text3 u-mt-2px u-ws-nowrap u-ov-hidden" style="text-overflow:ellipsis;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-notebook-pen"></use></svg>${escapeHtml(b.note)}</div>`
       :'';
     // 参考記録（KO/アシスト/与ダメ/被ダメ/回復/ゴール）。いずれか入力されていれば表示。
     const hasStats=b.kills!=null||b.assists!=null||b.dmg_dealt!=null||b.dmg_taken!=null||b.heal!=null||b.goals!=null;
     const statsHtml=hasStats
-      ?`<div style="font-size:var(--fs-xs);color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-chart-column"></use></svg>${[
+      ?`<div class="u-fs-fs-xs u-c-text3 u-mt-2px u-ws-nowrap u-ov-hidden" style="text-overflow:ellipsis;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-chart-column"></use></svg>${[
           b.kills!=null?`KO${b.kills}`:null,
           b.assists!=null?`AS${b.assists}`:null,
           b.dmg_dealt!=null?`与${Number(b.dmg_dealt).toLocaleString()}`:null,
@@ -4995,7 +5046,7 @@ function renderHistory(){
         <div class="h-meta-r">
           <span class="h-num">#${num}</span>
           <span class="h-date">${ds}</span>
-          <button class="btn-del" style="color:var(--accent);" onclick="openEditModal('${b.id}')" aria-label="この対戦記録を編集"><svg class="ico" aria-hidden="true"><use href="#i-pencil"></use></svg></button>
+          <button class="btn-del u-c-accent" onclick="openEditModal('${b.id}')" aria-label="この対戦記録を編集"><svg class="ico" aria-hidden="true"><use href="#i-pencil"></use></svg></button>
           <button class="btn-del" onclick="deleteEntry('${b.id}')" aria-label="この対戦記録を削除">✕</button>
         </div>
       </div>
@@ -5470,8 +5521,8 @@ async function renderSeriesAnalysis(){
   const overview=buildSeriesAnalysisOverview(bs);
   const {rateBattles,rateData,rateLabels,rateShowLegendLine,pokeList,dayMap,dayKeys}=overview;
   const rateHTML=rateData.length>=2
-    ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalRateChart"></canvas></div>`
-    :'<div class="empty" style="padding:0.8rem 0;">マスター以上のレート記録が2件以上必要です</div>';
+    ?`<div class="chart-wrap u-h-200px"><canvas id="seriesanalRateChart"></canvas></div>`
+    :'<div class="empty u-p-0_8rem-0">マスター以上のレート記録が2件以上必要です</div>';
 
   const w=overview.wins;
   const t=overview.total;
@@ -5487,15 +5538,15 @@ async function renderSeriesAnalysis(){
   };
   // 勝敗色は js/utils.js の共通 wrColor を使用（'—'→var(--text3) も既定で一致）
   const makeAccordion=(title,bodyHTML)=>`
-    <div class="poke-mode-block" style="margin-bottom:8px;">
+    <div class="poke-mode-block u-mb-8px">
       <div class="poke-mode-header" onclick="const b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.poke-mode-arrow').classList.toggle('open');">
-        <span style="font-size:var(--fs-xs);font-weight:600;">${title}</span>
+        <span class="u-fs-fs-xs u-fw-600">${title}</span>
         <span class="poke-mode-arrow">▼</span>
       </div>
       <div class="poke-mode-body">${bodyHTML}</div>
     </div>`;
-  const tblHead=(cols)=>`<thead><tr style="color:var(--text3);border-bottom:1px solid var(--border);">${cols.map(c=>`<th style="padding:4px 6px;white-space:nowrap;${c.left?'text-align:left;':''}">${c.label}</th>`).join('')}</tr></thead>`;
-  const tblWrap=(inner)=>`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">${inner}</table></div>`;
+  const tblHead=(cols)=>`<thead><tr class="u-c-text3 u-bb-1px-solid-border">${cols.map(c=>`<th style="padding:4px 6px;white-space:nowrap;${c.left?'text-align:left;':''}">${c.label}</th>`).join('')}</tr></thead>`;
+  const tblWrap=(inner)=>`<div style="overflow-x:auto;"><table class="u-w-100pct u-fs-fs-xs" style="border-collapse:collapse;">${inner}</table></div>`;
 
   // ── B1: ランク帯別勝率 ──（レート試合は「プレイ時の帯」＝直前に記録したレートで帯分け）
   const playedTierMap=buildPlayedTierMap(bs);
@@ -5512,10 +5563,10 @@ async function renderSeriesAnalysis(){
     const rwr=wrPct(rw,rt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
     return `<tr>
-      <td style="padding:4px 6px;">${rankBadge(r)}</td>
-      <td style="padding:4px 6px;text-align:center;">${rt}</td>
-      <td style="padding:4px 6px;text-align:center;">${rw}</td>
-      <td style="padding:4px 6px;text-align:center;">${rt-rw}</td>
+      <td class="u-p-4px-6px">${rankBadge(r)}</td>
+      <td class="u-p-4px-6px u-ta-center">${rt}</td>
+      <td class="u-p-4px-6px u-ta-center">${rw}</td>
+      <td class="u-p-4px-6px u-ta-center">${rt-rw}</td>
       <td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td>
       <td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td>
       <td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td>
@@ -5525,7 +5576,7 @@ async function renderSeriesAnalysis(){
   const b1HTML=b1Rows?tblWrap(tblHead([
     {label:'ランク帯',left:true},{label:'試合'},{label:'勝'},{label:'敗'},
     {label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}
-  ])+`<tbody>${b1Rows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">ランク記録なし</div>';
+  ])+`<tbody>${b1Rows}</tbody>`):'<div class="empty u-p-0_8rem-0">ランク記録なし</div>';
 
   // ── B2: ランク帯×ポケモン別勝率 ──
   const b2Sections=RANKS.filter(r=>rankMap[r]).map(r=>{
@@ -5543,24 +5594,24 @@ async function renderSeriesAnalysis(){
       const rwr=wrPct(rw,rt);
       const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
       return `<tr>
-        <td style="padding:4px 6px;"><div style="display:flex;align-items:center;gap:4px;">${iconImg(name,'',16)}<span>${escapeHtml(name)}</span></div></td>
-        <td style="padding:4px 6px;text-align:center;">${rt}</td>
-        <td style="padding:4px 6px;text-align:center;">${rw}</td>
+        <td class="u-p-4px-6px"><div class="u-d-flex u-items-center" style="gap:4px;">${iconImg(name,'',16)}<span>${escapeHtml(name)}</span></div></td>
+        <td class="u-p-4px-6px u-ta-center">${rt}</td>
+        <td class="u-p-4px-6px u-ta-center">${rw}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td>
       </tr>`;
     }).join('');
-    return `<div style="margin-bottom:10px;">
-      <div style="font-size:var(--fs-xs);color:var(--text3);padding:4px 0 2px;">${rankBadge(r)}</div>
+    return `<div class="u-mb-10px">
+      <div class="u-fs-fs-xs u-c-text3" style="padding:4px 0 2px;">${rankBadge(r)}</div>
       ${tblWrap(tblHead([
         {label:'ポケモン',left:true},{label:'試合'},{label:'勝'},
         {label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}
       ])+`<tbody>${rows}</tbody>`)}
     </div>`;
   }).join('');
-  const b2HTML=b2Sections||'<div class="empty" style="padding:0.8rem 0;">ランク記録なし</div>';
+  const b2HTML=b2Sections||'<div class="empty u-p-0_8rem-0">ランク記録なし</div>';
 
   // ── B3: 技セット別勝率（ポケモン別） ──
   // ポケモンごとに技セットを集計し、使用頻度順で表示
@@ -5583,27 +5634,27 @@ async function renderSeriesAnalysis(){
       const st=arr.length;
       const swr=wrPct(sw,st);
       return `<tr>
-        <td style="padding:4px 8px;font-size:var(--fs-xs);">${escapeHtml(key)}</td>
-        <td style="padding:4px 6px;text-align:center;">${st}</td>
-        <td style="padding:4px 6px;text-align:center;">${sw}</td>
-        <td style="padding:4px 6px;text-align:center;">${st-sw}</td>
+        <td class="u-p-4px-8px u-fs-fs-xs">${escapeHtml(key)}</td>
+        <td class="u-p-4px-6px u-ta-center">${st}</td>
+        <td class="u-p-4px-6px u-ta-center">${sw}</td>
+        <td class="u-p-4px-6px u-ta-center">${st-sw}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(swr)};font-weight:600;">${swr}</td>
       </tr>`;
     }).join('');
     const pt=pokeBattles.length,pw=winCount(pokeBattles);
     const pwr=wrPct(pw,pt);
-    return `<div style="margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:4px 0;border-bottom:1px solid var(--border);">
+    return `<div class="u-mb-12px">
+      <div class="u-d-flex u-items-center u-gap-6px u-mb-4px u-p-4px-0 u-bb-1px-solid-border">
         ${iconImg(pokeName,'',20)}
-        <span style="font-size:var(--fs-xs);font-weight:600;">${pokeName}</span>
-        <span style="font-size:var(--fs-xs);color:var(--text3);margin-left:auto;">${pt}試合 / 勝率 <span style="color:${wrColor(pwr)}">${pwr}</span></span>
+        <span class="u-fs-fs-xs u-fw-600">${pokeName}</span>
+        <span class="u-fs-fs-xs u-c-text3" style="margin-left:auto;">${pt}試合 / 勝率 <span style="color:${wrColor(pwr)}">${pwr}</span></span>
       </div>
       ${tblWrap(tblHead([
         {label:'技セット（技1 / 技2）',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'}
       ])+`<tbody>${rows}</tbody>`)}
     </div>`;
   }).join('');
-  const b3HTML=b3Sections||'<div class="empty" style="padding:0.8rem 0;">技記録なし</div>';
+  const b3HTML=b3Sections||'<div class="empty u-p-0_8rem-0">技記録なし</div>';
 
   // ── B4: アイテム別勝率 ──
   // itemsはDB形式によりarray/JSON文字列/nullの場合がある
@@ -5643,21 +5694,21 @@ async function renderSeriesAnalysis(){
       // アイテム採用率（このポケモンの試合のうち何割で使われたか）
       const rate=((it/pokeBattles.length)*100).toFixed(0)+'%';
       return `<tr>
-        <td style="padding:4px 8px;font-size:var(--fs-xs);">${escapeHtml(item)}</td>
-        <td style="padding:4px 6px;text-align:center;color:var(--text3);">${rate}</td>
-        <td style="padding:4px 6px;text-align:center;">${it}</td>
-        <td style="padding:4px 6px;text-align:center;">${iw}</td>
-        <td style="padding:4px 6px;text-align:center;">${it-iw}</td>
+        <td class="u-p-4px-8px u-fs-fs-xs">${escapeHtml(item)}</td>
+        <td class="u-p-4px-6px u-ta-center u-c-text3">${rate}</td>
+        <td class="u-p-4px-6px u-ta-center">${it}</td>
+        <td class="u-p-4px-6px u-ta-center">${iw}</td>
+        <td class="u-p-4px-6px u-ta-center">${it-iw}</td>
         <td style="padding:4px 6px;text-align:center;color:${wrColor(iwr)};font-weight:600;">${iwr}</td>
       </tr>`;
     }).join('');
     const pt=pokeBattles.length,pw=winCount(pokeBattles);
     const pwr=wrPct(pw,pt);
-    return `<div style="margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:4px 0;border-bottom:1px solid var(--border);">
+    return `<div class="u-mb-12px">
+      <div class="u-d-flex u-items-center u-gap-6px u-mb-4px u-p-4px-0 u-bb-1px-solid-border">
         ${iconImg(pokeName,'',20)}
-        <span style="font-size:var(--fs-xs);font-weight:600;">${pokeName}</span>
-        <span style="font-size:var(--fs-xs);color:var(--text3);margin-left:auto;">${pt}試合 / 勝率 <span style="color:${wrColor(pwr)}">${pwr}</span></span>
+        <span class="u-fs-fs-xs u-fw-600">${pokeName}</span>
+        <span class="u-fs-fs-xs u-c-text3" style="margin-left:auto;">${pt}試合 / 勝率 <span style="color:${wrColor(pwr)}">${pwr}</span></span>
       </div>
       ${tblWrap(tblHead([
         {label:'もちもの',left:true},{label:'採用率'},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'}
@@ -5677,21 +5728,21 @@ async function renderSeriesAnalysis(){
     const bwr=wrPct(bw,bt);
     const brate=((bt/bs.length)*100).toFixed(0)+'%';
     return `<tr>
-      <td style="padding:4px 8px;font-size:var(--fs-xs);">${escapeHtml(item)}</td>
-      <td style="padding:4px 6px;text-align:center;color:var(--text3);">${brate}</td>
-      <td style="padding:4px 6px;text-align:center;">${bt}</td>
-      <td style="padding:4px 6px;text-align:center;">${bw}</td>
-      <td style="padding:4px 6px;text-align:center;">${bt-bw}</td>
+      <td class="u-p-4px-8px u-fs-fs-xs">${escapeHtml(item)}</td>
+      <td class="u-p-4px-6px u-ta-center u-c-text3">${brate}</td>
+      <td class="u-p-4px-6px u-ta-center">${bt}</td>
+      <td class="u-p-4px-6px u-ta-center">${bw}</td>
+      <td class="u-p-4px-6px u-ta-center">${bt-bw}</td>
       <td style="padding:4px 6px;text-align:center;color:${wrColor(bwr)};font-weight:600;">${bwr}</td>
     </tr>`;
   }).join('');
   const b4HTML=`
-    <div style="margin-bottom:12px;">
-      <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:8px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-backpack"></use></svg>もちもの（ポケモン別）</div>
+    <div class="u-mb-12px">
+      <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-8px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-backpack"></use></svg>もちもの（ポケモン別）</div>
       ${itemSections||'<div class="empty" style="padding:0.5rem 0;">記録なし</div>'}
     </div>
     <div>
-      <div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>バトルアイテム（全体）</div>
+      <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>バトルアイテム（全体）</div>
       ${baRows?tblWrap(tblHead([
         {label:'バトルアイテム',left:true},{label:'採用率'},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'}
       ])+`<tbody>${baRows}</tbody>`):'<div class="empty" style="padding:0.5rem 0;">記録なし</div>'}
@@ -5699,8 +5750,8 @@ async function renderSeriesAnalysis(){
 
   // ── B7: 日別試合数 ──
   const b7HTML=dayKeys.length>1
-    ?`<div class="chart-wrap" style="height:200px;"><canvas id="seriesanalDayChart"></canvas></div>`
-    :'<div class="empty" style="padding:0.8rem 0;">データが2日以上必要です</div>';
+    ?`<div class="chart-wrap u-h-200px"><canvas id="seriesanalDayChart"></canvas></div>`
+    :'<div class="empty u-p-0_8rem-0">データが2日以上必要です</div>';
 
   // ── 新B8: レーン別勝率 ＋ レーン×ポケモン ──
   const LANES=['上','中央','下'];
@@ -5710,16 +5761,16 @@ async function renderSeriesAnalysis(){
   const laneRows=LANES.filter(l=>laneMap[l]).map(l=>{
     const arr=laneMap[l], lw=winCount(arr), lt=arr.length, lwr=wrPct(lw,lt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
-    return `<tr><td style="padding:4px 6px;">${l}</td><td style="padding:4px 6px;text-align:center;">${lt}</td><td style="padding:4px 6px;text-align:center;">${lw}</td><td style="padding:4px 6px;text-align:center;">${lt-lw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(lwr)}">${lwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
+    return `<tr><td class="u-p-4px-6px">${l}</td><td class="u-p-4px-6px u-ta-center">${lt}</td><td class="u-p-4px-6px u-ta-center">${lw}</td><td class="u-p-4px-6px u-ta-center">${lt-lw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(lwr)}">${lwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
   }).join('');
   const lanePokeSections=LANES.filter(l=>laneMap[l]).map(l=>{
     const pm={}; laneMap[l].filter(b=>b.pokemon).forEach(b=>{(pm[b.pokemon]=pm[b.pokemon]||{w:0,l:0});b.result==='win'?pm[b.pokemon].w++:pm[b.pokemon].l++;});
     const rows=Object.entries(pm).sort((a,b)=>(b[1].w+b[1].l)-(a[1].w+a[1].l)).map(([n,sv])=>{const pt=sv.w+sv.l,pwr=wrPct(sv.w,pt);return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(n,'',18)} ${escapeHtml(n)}</div><div class="series-val">${pt}</div><div class="series-val">${sv.w}</div><div class="series-wr-cell" style="color:${wrColor(pwr)}">${pwr}</div></div>`;}).join('');
-    return `<div style="margin-bottom:8px;"><div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">${l}レーン</div>${rows||'<div class="empty" style="padding:0.4rem 0;">記録なし</div>'}</div>`;
+    return `<div class="u-mb-8px"><div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">${l}レーン</div>${rows||'<div class="empty u-p-0_4rem-0">記録なし</div>'}</div>`;
   }).join('');
   const laneHTML=laneRows
-    ?tblWrap(tblHead(laneCols)+`<tbody>${laneRows}</tbody>`)+`<div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin:10px 0 6px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-route"></use></svg>レーン×ポケモン別</div>${lanePokeSections}`
-    :'<div class="empty" style="padding:0.8rem 0;">レーンの記録がありません</div>';
+    ?tblWrap(tblHead(laneCols)+`<tbody>${laneRows}</tbody>`)+`<div class="u-fs-fs-xs u-fw-600 u-c-text2 u-m-10px-0-6px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-route"></use></svg>レーン×ポケモン別</div>${lanePokeSections}`
+    :'<div class="empty u-p-0_8rem-0">レーンの記録がありません</div>';
 
   // ── 新B9: 型（ロール）別勝率 ──
   const pokeRole={}; Object.values(POKEMON_DATA).forEach(d=>d.pokemon.forEach(p=>pokeRole[p]=d.label));
@@ -5729,73 +5780,73 @@ async function renderSeriesAnalysis(){
   // 5型すべて常に表示し、未入力と全件除外を共通の表示で区別する。
   const roleStatsHTML=ROLE_ORDER.map(r=>{
     const h=statsSummaryHTML(roleMap[r]||[]);
-    return `<div style="margin-bottom:10px;"><div style="font-size:var(--fs-xs);font-weight:600;color:var(--text2);margin-bottom:4px;">${r}</div>${h}</div>`;
+    return `<div class="u-mb-10px"><div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">${r}</div>${h}</div>`;
   }).join('');
   const roleRows=ROLE_ORDER.filter(r=>roleMap[r]).map(r=>{
     const arr=roleMap[r], rw=winCount(arr), rt=arr.length, rwr=wrPct(rw,rt);
     const swr=modeWR(arr,'solo'),dwr=modeWR(arr,'duo'),fwr=modeWR(arr,'full');
-    return `<tr><td style="padding:4px 6px;">${r}</td><td style="padding:4px 6px;text-align:center;">${rt}</td><td style="padding:4px 6px;text-align:center;">${rw}</td><td style="padding:4px 6px;text-align:center;">${rt-rw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
+    return `<tr><td class="u-p-4px-6px">${r}</td><td class="u-p-4px-6px u-ta-center">${rt}</td><td class="u-p-4px-6px u-ta-center">${rw}</td><td class="u-p-4px-6px u-ta-center">${rt-rw}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(rwr)}">${rwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(swr)}">${swr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(dwr)}">${dwr}</td><td style="padding:4px 6px;text-align:center;color:${wrColor(fwr)}">${fwr}</td></tr>`;
   }).join('');
-  const roleHTML=roleRows?tblWrap(tblHead([{label:'型',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}])+`<tbody>${roleRows}</tbody>`):'<div class="empty" style="padding:0.8rem 0;">記録なし</div>';
+  const roleHTML=roleRows?tblWrap(tblHead([{label:'型',left:true},{label:'試合'},{label:'勝'},{label:'敗'},{label:'勝率'},{label:'ソロ'},{label:'デュオ/トリオ'},{label:'フルパ'}])+`<tbody>${roleRows}</tbody>`):'<div class="empty u-p-0_8rem-0">記録なし</div>';
 
   // ── 新B10: 勝ちパターン（ポケモン×レーンの組み合わせ別）──
   const baseWR=t>0?w/t:0, MINP=3;
   const hdrRow=`<div class="series-compare-row header"><div>組み合わせ</div><div class="series-val">勝/試</div><div class="series-wr-cell">勝率</div><div class="series-val">差</div></div>`;
-  const wpRow=(label,e)=>{const wr=(e.wr*100).toFixed(0);const delta=Math.round((e.wr-baseWR)*100);const dcol=delta>=0?'var(--win)':'var(--loss)';return `<div class="series-compare-row"><div class="series-name-cell" style="font-size:var(--fs-xs);">${label}</div><div class="series-val">${e.w}/${e.t}</div><div class="series-wr-cell" style="color:${wrColor(wr+'%')}">${wr}%</div><div class="series-val" style="color:${dcol};font-size:var(--fs-xs);">${delta>=0?'+':''}${delta}</div></div>`;};
+  const wpRow=(label,e)=>{const wr=(e.wr*100).toFixed(0);const delta=Math.round((e.wr-baseWR)*100);const dcol=delta>=0?'var(--win)':'var(--loss)';return `<div class="series-compare-row"><div class="series-name-cell u-fs-fs-xs">${label}</div><div class="series-val">${e.w}/${e.t}</div><div class="series-wr-cell" style="color:${wrColor(wr+'%')}">${wr}%</div><div class="series-val" style="color:${dcol};font-size:var(--fs-xs);">${delta>=0?'+':''}${delta}</div></div>`;};
   // 組み合わせ集計の共通処理：keyFn→{label,集計}、勝てる/苦手で出す
   const comboBlock=(rows,fmt)=>{
     const ent=rows.filter(e=>e.t>=MINP).sort((a,b)=>b.wr-a.wr);
-    if(!ent.length) return `<div class="empty" style="padding:0.4rem 0;">${MINP}戦以上の組み合わせなし</div>`;
+    if(!ent.length) return `<div class="empty u-p-0_4rem-0">${MINP}戦以上の組み合わせなし</div>`;
     const best=ent.filter(e=>e.wr>=baseWR).slice(0,6), worst=ent.filter(e=>e.wr<baseWR).slice(-6).reverse();
     return `${hdrRow}
-      <div style="font-size:var(--fs-xs);font-weight:600;color:var(--win);margin:6px 0 2px;">シリーズ勝率以上の組み合わせ</div>
-      ${best.length?best.map(fmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}
-      <div style="font-size:var(--fs-xs);font-weight:600;color:var(--loss);margin:8px 0 2px;">シリーズ勝率未満の組み合わせ</div>
-      ${worst.length?worst.map(fmt).join(''):'<div class="empty" style="padding:0.4rem 0;">該当なし</div>'}`;
+      <div class="u-fs-fs-xs u-fw-600 u-c-win" style="margin:6px 0 2px;">シリーズ勝率以上の組み合わせ</div>
+      ${best.length?best.map(fmt).join(''):'<div class="empty u-p-0_4rem-0">該当なし</div>'}
+      <div class="u-fs-fs-xs u-fw-600 u-c-loss" style="margin:8px 0 2px;">シリーズ勝率未満の組み合わせ</div>
+      ${worst.length?worst.map(fmt).join(''):'<div class="empty u-p-0_4rem-0">該当なし</div>'}`;
   };
   // ポケモン×レーン
   const c2={};
   bs.forEach(b=>{ if(!b.pokemon||!b.lane)return; const k=b.pokemon+'|'+b.lane; (c2[k]=c2[k]||{poke:b.pokemon,lane:b.lane,w:0,l:0}); b.result==='win'?c2[k].w++:c2[k].l++; });
   const c2Rows=Object.values(c2).map(s=>({...s,t:s.w+s.l,wr:s.w/(s.w+s.l)}));
-  const c2Fmt=(e)=>wpRow(`${iconImg(e.poke,'',18)} ${escapeHtml(e.poke)} <span style="color:var(--text3);">・${escapeHtml(e.lane)}</span>`,e);
+  const c2Fmt=(e)=>wpRow(`${iconImg(e.poke,'',18)} ${escapeHtml(e.poke)} <span class="u-c-text3">・${escapeHtml(e.lane)}</span>`,e);
   // 型×レーン×モード
   const MODE_LBL={solo:'ソロ',duo:'デュオ/トリオ',full:'フルパ'};
   const c3={};
   bs.forEach(b=>{ const role=b.pokemon&&pokeRole[b.pokemon]; if(!role||!b.lane||!b.match_type)return; const k=role+'|'+b.lane+'|'+b.match_type; (c3[k]=c3[k]||{role,lane:b.lane,mode:b.match_type,w:0,l:0}); b.result==='win'?c3[k].w++:c3[k].l++; });
   const c3Rows=Object.values(c3).map(s=>({...s,t:s.w+s.l,wr:s.w/(s.w+s.l)}));
-  const c3Fmt=(e)=>wpRow(`${escapeHtml(e.role)} <span style="color:var(--text3);">・${escapeHtml(e.lane)}・${MODE_LBL[e.mode]||escapeHtml(e.mode)}</span>`,e);
+  const c3Fmt=(e)=>wpRow(`${escapeHtml(e.role)} <span class="u-c-text3">・${escapeHtml(e.lane)}・${MODE_LBL[e.mode]||escapeHtml(e.mode)}</span>`,e);
   const winPatternHTML=(c2Rows.some(e=>e.t>=MINP)||c3Rows.some(e=>e.t>=MINP))
-    ?`<div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:6px;">${MINP}戦以上の組み合わせを勝率順に。全体勝率 ${(baseWR*100).toFixed(1)}%（右端はシリーズ勝率との差・単位はポイント）</div>
-      <div style="font-size:var(--fs-xs);font-weight:700;margin:8px 0 4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-paw-print"></use></svg>ポケモン × レーン</div>
+    ?`<div class="u-fs-fs-xs u-c-text3 u-mb-6px">${MINP}戦以上の組み合わせを勝率順に。全体勝率 ${(baseWR*100).toFixed(1)}%（右端はシリーズ勝率との差・単位はポイント）</div>
+      <div class="u-fs-fs-xs u-fw-700" style="margin:8px 0 4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-paw-print"></use></svg>ポケモン × レーン</div>
       ${comboBlock(c2Rows,c2Fmt)}
-      <div style="font-size:var(--fs-xs);font-weight:700;margin:14px 0 4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-drama"></use></svg>型 × レーン × モード</div>
+      <div class="u-fs-fs-xs u-fw-700" style="margin:14px 0 4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-drama"></use></svg>型 × レーン × モード</div>
       ${comboBlock(c3Rows,c3Fmt)}`
-    :`<div class="empty" style="padding:0.8rem 0;">${MINP}戦以上の組み合わせがまだありません</div>`;
+    :`<div class="empty u-p-0_8rem-0">${MINP}戦以上の組み合わせがまだありません</div>`;
 
   // ── HTML組み立て ──
   if(myNav!==navId){return;} // 描画前に再チェック
   content.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;">
+    <div class="u-gap-8px" style="display:grid;grid-template-columns:repeat(4,1fr);margin:12px 0;">
       <div class="stat-box"><div class="stat-label">試合数</div><div class="stat-val">${t}</div></div>
       <div class="stat-box"><div class="stat-label">勝利</div><div class="stat-val win">${w}</div></div>
       <div class="stat-box"><div class="stat-label">敗北</div><div class="stat-val loss">${t-w}</div></div>
       <div class="stat-box"><div class="stat-label">勝率</div><div class="stat-val" style="font-size:var(--fs-xl);color:${wrCol}">${wr}</div></div>
     </div>
     ${rateData.length>=1?`
-    <div class="card-title" style="margin:10px 0 6px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-trending-up"></use></svg>レート推移（マスター以上）</div>
+    <div class="card-title u-m-10px-0-6px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-trending-up"></use></svg>レート推移（マスター以上）</div>
     ${rateHTML}
     `:''}
     ${pokeList.length?`
-    <div class="card-title" style="margin:10px 0 6px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-gamepad-2"></use></svg>使用ポケモン（使用回数順）</div>
-    <div class="chart-wrap" style="height:200px;margin-bottom:12px;"><canvas id="seriesanalChart"></canvas></div>
+    <div class="card-title u-m-10px-0-6px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-gamepad-2"></use></svg>使用ポケモン（使用回数順）</div>
+    <div class="chart-wrap u-h-200px u-mb-12px"><canvas id="seriesanalChart"></canvas></div>
     <div class="series-compare-row header"><div>ポケモン</div><div class="series-val">試合</div><div class="series-val">勝</div><div class="series-wr-cell">勝率</div></div>
     ${pokeList.map(([name,ps])=>{
       const pt=ps.w+ps.l,pwr=wrPct(ps.w,pt);
       const pc=pt>0?wrColor(pwr):'var(--text2)';
       return `<div class="series-compare-row"><div class="series-name-cell">${iconImg(name,'',20)} ${escapeHtml(name)}</div><div class="series-val">${pt}</div><div class="series-val">${ps.w}</div><div class="series-wr-cell" style="color:${pc}">${pwr}</div></div>`;
     }).join('')}
-    `:'<div class="empty" style="padding:1rem 0;">ポケモン記録なし</div>'}
-    <div style="margin-top:4px;">
+    `:'<div class="empty u-p-1rem-0">ポケモン記録なし</div>'}
+    <div class="u-mt-4px">
 <h3 class="analysis-group-title">対戦条件ごとの成績</h3>
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-route"></use></svg>レーン別勝率',laneHTML)}
       ${makeAccordion('<svg class="ico ico-l" aria-hidden="true"><use href="#i-drama"></use></svg>型（ロール）別勝率',roleHTML)}
@@ -5901,7 +5952,7 @@ async function renderSeriesAnalysis(){
       });
     },100);
   }
-  }catch(err){content.innerHTML=`<div class="empty" style="color:var(--loss);padding:1rem;">エラー: ${err.message}<br><small>${err.stack||''}</small></div>`;}
+  }catch(err){content.innerHTML=`<div class="empty u-c-loss" style="padding:1rem;">エラー: ${err.message}<br><small>${err.stack||''}</small></div>`;}
 }
 
 // ==================== ラボタブ ====================
@@ -6045,8 +6096,8 @@ function labRenderTotals(totals){
       const ds=diff>0?'+'+diff:diff===0?'±0':String(diff);
       const fmt=v=>Number.isInteger(v)?v.toLocaleString():v.toFixed(1);
       return `<div class="lab-cmp-name">${k}</div>
-        <div class="lab-cmp-val" style="color:var(--text3);">${fmt(a)}</div>
-        <div class="lab-cmp-val" style="color:var(--accent);">${fmt(b)}</div>
+        <div class="lab-cmp-val u-c-text3">${fmt(a)}</div>
+        <div class="lab-cmp-val u-c-accent">${fmt(b)}</div>
         <div class="lab-cmp-diff ${dc}">${ds}</div>`;
     }).join('')}
   </div>`;
@@ -6059,6 +6110,8 @@ function calcLabStatsIfReady(){
 // ---- データ初期化（lab_data.jsはページロード時に同期読み込み済み）----
 function loadLabData(){
   if(labDataReady) return;
+  // lab_data.js は表示を妨げないよう defer で読み込む。読み込み前なら、完了までラボを操作不可にして待つ
+  if(!libReady('lab')){gatePageUntilReady('labPage','lab',loadLabData);return;}
   labDataReady = true;
   const msg=document.getElementById('labLoadingMsg');
   if(msg) msg.style.display='none';
@@ -6098,6 +6151,7 @@ function labInitUI(){
 
 // ---- サブタブ切替 ----
 function switchLab(tab){
+  if(!libReady('lab'))return; // ラボデータ読み込み前は何もしない（画面は gatePageUntilReady で操作不可）
   document.querySelectorAll('#labPage .analysis-tab').forEach(t=>{
     t.classList.toggle('active',t.dataset.labTab===tab);
   });
@@ -6119,9 +6173,10 @@ const LAB_STAT_MAP={
   '通常攻撃の速さ':'通常攻撃の速さ','急所率':'急所率'
 };
 const LAB_STAT_ORDER=['HP','攻撃','防御','特攻','特防','移動速度'];
+// LAB_STATUS / LAB_ITEMS は lab_data.js（defer読み込み）で定義されるため、参照は使う時点まで遅らせる
 const LAB_STATS_DEPS={
-  status:LAB_STATUS,
-  itemStats:LAB_ITEMS,
+  get status(){return LAB_STATUS;},
+  get itemStats(){return LAB_ITEMS;},
   statMap:LAB_STAT_MAP,
   pctItems:LAB_PCT_ITEMS,
   dmgStackItems:LAB_DMG_STACK_ITEMS,
@@ -6260,7 +6315,7 @@ function labRenderStatGrid(el,stats,color){
   LAB_STAT_ORDER.forEach(k=>{ if(stats[k]!==undefined) entries.push([k,stats[k]]); });
   Object.entries(stats).forEach(([k,v])=>{ if(!LAB_STAT_ORDER.includes(k)) entries.push([k,v]); });
   if(!entries.length){
-    el.innerHTML='<div class="empty" style="font-size:var(--fs-xs);grid-column:span 2;">データなし</div>'; return;
+    el.innerHTML='<div class="empty u-fs-fs-xs u-col-span-2">データなし</div>'; return;
   }
   el.innerHTML=entries.map(([name,val])=>{
     const c=(typeof val==='number'&&val<0)?'var(--loss)':color;
@@ -6389,9 +6444,9 @@ function calcLabDamageAll(){
 function _renderDmgRows(outId, rows){
   const out=document.getElementById(outId);
   if(!out||!labCalcResult) return;
-  if(!rows.length){ out.innerHTML='<div style="font-size:var(--fs-xs);color:var(--text3);padding:4px;">データなし</div>'; return; }
+  if(!rows.length){ out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">データなし</div>'; return; }
   out.innerHTML=rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
-  if(!out.innerHTML) out.innerHTML='<div style="font-size:var(--fs-xs);color:var(--text3);padding:4px;">計算不可</div>';
+  if(!out.innerHTML) out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">計算不可</div>';
 }
 
 
@@ -6552,8 +6607,8 @@ function _calcDmgHtml(r){
     const total = perHit * hits;
     const hitsNote = hitsVar ? `最大${hits}回` : `× ${hits}ヒット`;
     return `<div class="lab-damage-box">
-      <div class="lab-damage-num">${perHit.toLocaleString()} <span style="font-size:var(--fs-sm);color:var(--text2);">${hitsNote}</span></div>
-      <div class="lab-damage-num" style="font-size:var(--fs-xl);color:var(--orange);margin-top:2px;">合計 ${total.toLocaleString()}</div>
+      <div class="lab-damage-num">${perHit.toLocaleString()} <span class="u-fs-fs-sm u-c-text2">${hitsNote}</span></div>
+      <div class="lab-damage-num u-mt-2px" style="font-size:var(--fs-xl);color:var(--orange);">合計 ${total.toLocaleString()}</div>
       <div class="lab-damage-sub">${label}（${formula}）</div>
     </div>`;
   }
@@ -6674,7 +6729,7 @@ function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
   const actPerHit=isHealShield?rawPerHit:dcCalcActual(rawPerHit,defStat,0,pctIgnore);
   const hits=r.hits||1;
   const label=dcCleanLabel(r.dmgType)||'ダメージ';
-  const upgTag=r.upg?`<span style="font-size:var(--fs-xs);color:var(--accent);margin-left:3px;">[${r.upg}]</span>`:'';
+  const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">[${r.upg}]</span>`:'';
   if(isHealShield){
     return `<div class="lab-dmg-row">
       <span class="lab-dmg-label">${label}${upgTag}</span>
@@ -6847,7 +6902,7 @@ function dcUpdateDmgOutput(){
     let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
     if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&(r.coeff!=null||r.description));
     const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
-    out.innerHTML=html||'<div class="empty" style="font-size:var(--fs-xs);">ダメージなし</div>';
+    out.innerHTML=html||'<div class="empty u-fs-fs-xs">ダメージなし</div>';
   }
   // 通常攻撃
   const passiveRows=skills.filter(r=>r.slot==='特性'&&/^(ダメージ|回復|シールド)/.test(r.dmgType||''));
@@ -6878,16 +6933,16 @@ function dcRenderStatSummary(atkPoke,atkLv,defPoke,defLv){
   const el=document.getElementById('dcStatSummary');
   if(!el||!dcAtkStats||!dcDefStats) return;
   const fmt=v=>Math.round(v||0).toLocaleString();
-  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:var(--fs-xs);margin-bottom:4px;">
+  el.innerHTML=`<div class="u-gap-8px u-fs-fs-xs u-mb-4px" style="display:grid;grid-template-columns:1fr 1fr;">
     <div style="background:var(--bg);border-radius:6px;padding:8px;">
-      <div style="font-weight:700;color:var(--accent);margin-bottom:4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>${atkPoke} Lv${atkLv}</div>
-      <div style="color:var(--text2);">攻撃: <b>${fmt(dcAtkStats['攻撃'])}</b></div>
-      <div style="color:var(--text2);">特攻: <b>${fmt(dcAtkStats['特攻'])}</b></div>
+      <div class="u-fw-700 u-c-accent u-mb-4px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-swords"></use></svg>${atkPoke} Lv${atkLv}</div>
+      <div class="u-c-text2">攻撃: <b>${fmt(dcAtkStats['攻撃'])}</b></div>
+      <div class="u-c-text2">特攻: <b>${fmt(dcAtkStats['特攻'])}</b></div>
     </div>
     <div style="background:var(--bg);border-radius:6px;padding:8px;">
-      <div style="font-weight:700;color:var(--loss);margin-bottom:4px;"><svg class="ico ico-l" aria-hidden="true"><use href="#i-shield"></use></svg>${defPoke} Lv${defLv}</div>
-      <div style="color:var(--text2);">防御: <b>${fmt(dcDefStats['防御'])}</b></div>
-      <div style="color:var(--text2);">特防: <b>${fmt(dcDefStats['特防'])}</b></div>
+      <div class="u-fw-700 u-c-loss u-mb-4px"><svg class="ico ico-l" aria-hidden="true"><use href="#i-shield"></use></svg>${defPoke} Lv${defLv}</div>
+      <div class="u-c-text2">防御: <b>${fmt(dcDefStats['防御'])}</b></div>
+      <div class="u-c-text2">特防: <b>${fmt(dcDefStats['特防'])}</b></div>
     </div>
   </div>`;
 }
@@ -6986,7 +7041,7 @@ function labRenderMedalSlots(){
         <div class="medal-slot-del" onclick="event.stopPropagation();labRemoveMedalFromSlot(${i})">✕</div>
         <div class="medal-slot-rar ${rar}">${rarLabel}</div>`;
     } else {
-      btn.innerHTML = `<div style="font-size:var(--fs-xs);color:var(--text3);">${i+1}</div>`;
+      btn.innerHTML = `<div class="u-fs-fs-xs u-c-text3">${i+1}</div>`;
     }
     bar.appendChild(btn);
   });
@@ -6998,9 +7053,9 @@ function labRenderMedalSlots(){
     if(cur){
       const rar = labMedalRarities[labActiveMedalSlot]||'gold';
       const rarLabel = rar==='bronze'?'銅':rar==='silver'?'銀':'金';
-      hint.innerHTML = `<span style="font-size:var(--fs-xs);color:var(--text2);">スロット${labActiveMedalSlot+1}：${cur}（${rarLabel}）　一覧の 銅/銀/金 ボタンでレアリティを変更</span>`;
+      hint.innerHTML = `<span class="u-fs-fs-xs u-c-text2">スロット${labActiveMedalSlot+1}：${cur}（${rarLabel}）　一覧の 銅/銀/金 ボタンでレアリティを変更</span>`;
     } else {
-      hint.innerHTML = `<span style="font-size:var(--fs-xs);color:var(--accent);">スロット${labActiveMedalSlot+1}を選択中 ← 一覧からメダルを選択、または 銅/銀/金 を直接クリック</span>`;
+      hint.innerHTML = `<span class="u-fs-fs-xs u-c-accent">スロット${labActiveMedalSlot+1}を選択中 ← 一覧からメダルを選択、または 銅/銀/金 を直接クリック</span>`;
     }
   }
 }
@@ -7078,8 +7133,8 @@ function labRenderMedalList(){
     // 表示値はフィルターレアリティ基準（未選択なら金）
     const upV = labMedalGetVal(m, dispRar, 'up');
     const dnV = labMedalGetVal(m, dispRar, 'dn');
-    const upTxt = (m.upStat&&m.upStat!=='なし'&&upV!=null) ? `<span style="color:var(--win);">+${upV} ${m.upStat}</span>` : '';
-    const dnTxt = (m.dnStat&&m.dnStat!=='なし'&&dnV!=null) ? `<span style="color:var(--loss);">${dnV} ${m.dnStat}</span>` : '';
+    const upTxt = (m.upStat&&m.upStat!=='なし'&&upV!=null) ? `<span class="u-c-win">+${upV} ${m.upStat}</span>` : '';
+    const dnTxt = (m.dnStat&&m.dnStat!=='なし'&&dnV!=null) ? `<span class="u-c-loss">${dnV} ${m.dnStat}</span>` : '';
     // レアリティボタン（in-slotの場合は現在のレアリティをハイライト）
     const rarBtns = [['bronze','銅'],['silver','銀'],['gold','金']].map(([rv,lb])=>{
       const isActive = inSlot && slotRar===rv;
@@ -7274,10 +7329,10 @@ function labUpdateMedalResult(){
           return `<div class="medal-color-badge">
             <span class="medal-color-dot" style="background:${hex};"></span>
             <span>${c} ${n}枚</span>
-            ${topEffect?`<span style="color:var(--win);font-size:var(--fs-xs);">▲${topEffect.target} ${topEffect.val}${topEffect.isPct?'%':''}</span>`:''}
+            ${topEffect?`<span class="u-c-win u-fs-fs-xs">▲${topEffect.target} ${topEffect.val}${topEffect.isPct?'%':''}</span>`:''}
           </div>`;
         }).join('')
-      : '<span style="font-size:var(--fs-xs);color:var(--text3);">メダル未選択</span>';
+      : '<span class="u-fs-fs-xs u-c-text3">メダル未選択</span>';
   }
 
   // セット効果一覧（各色の全閾値を表示、達成済みは緑）
@@ -7291,12 +7346,12 @@ function labUpdateMedalResult(){
         return `<div class="medal-set-row ${on?'medal-set-on':'medal-set-off'}">
           <span class="medal-color-dot" style="background:${hex};"></span>
           <span class="medal-set-tag ${on?'medal-set-tag-on':'medal-set-tag-off'}">${t.count}枚</span>
-          <span style="flex:1;">${c}：${t.target} ${t.val}${t.isPct?'%':''}</span>
-          <span style="font-size:var(--fs-xs);">${n}/${t.count}${on?' ✓':''}</span>
+          <span class="u-flex-1">${c}：${t.target} ${t.val}${t.isPct?'%':''}</span>
+          <span class="u-fs-fs-xs">${n}/${t.count}${on?' ✓':''}</span>
         </div>`;
       });
     }).join('');
-    setEl.innerHTML=html||'<div style="font-size:var(--fs-xs);color:var(--text3);">セット効果なし</div>';
+    setEl.innerHTML=html||'<div class="u-fs-fs-xs u-c-text3">セット効果なし</div>';
   }
 
   // 合計ステータス
@@ -7304,7 +7359,7 @@ function labUpdateMedalResult(){
   if(Object.keys(totalStats).length){
     labRenderStatGrid(el,totalStats,'var(--accent)');
   } else if(el){
-    el.innerHTML='<div class="empty" style="font-size:var(--fs-xs);grid-column:span 2;">メダルを選択すると集計されます</div>';
+    el.innerHTML='<div class="empty u-fs-fs-xs u-col-span-2">メダルを選択すると集計されます</div>';
   }
 }
 

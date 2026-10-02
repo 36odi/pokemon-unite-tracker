@@ -1,6 +1,18 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-10-03 / ローカル更新: v5.52・SW v78（公開準備済み） / 公開状態とは区別する
+> 最終更新: 2026-10-03 / ローカル更新: v5.53・SW v79（公開準備済み） / 公開状態とは区別する
+
+## 2026-10-03 残課題の対応 v5.53 / SW v79
+
+- 公開済みの afc2cf2（v5.52・SW v78、Astraがpush）を元に実装。公開ページで v5.52・SW v78・THIRD_PARTY_LICENSES.txt（HTTP 200）を確認済み。
+- インラインstyleの整理：3回以上使われる宣言（62種）をユーティリティクラス `.u-*`（styles.css末尾、2重クラスで優先度を確保）へ移設。style属性 540→210（残りはJSで切り替える `display:none`、`${}` を含む動的値、使用2回以下の宣言、margin と margin-* のような同系統の重複を含むもの）。条件付きテンプレート内のstyle（medal-preset-num）は対象外として元に戻した。
+- 見た目の不変を検証：変更前（afc2cf2）と変更後で、18画面状態×2幅（375/1100）の全要素 173,422件について計算済みスタイル40項目を比較し差分0件。
+- 表示速度：`vendor/chart.umd.min.js` と `lab_data.js` を `defer` 化。トップレベルで LAB_STATUS/LAB_ITEMS を参照していた `LAB_STATS_DEPS` はゲッターで遅延参照に変更。`loadAnalysis`・`loadLabData`・`openRecordRatio` は未読込時に DOMContentLoaded 後へ遅延。測定（1.6Mbps・遅延150ms・CPU4倍低速・SWなし、3回中央値）：FCP 7,096ms→3,860ms。
+- 外部レビュー（Astra）指摘を修正：ラボデータ読み込み完了前にラボを開き「レシオ一覧」タブや名前検索を操作すると `LAB_SKILLS is not defined`。対応として、`<script id="chartScript">`・`<script id="labDataScript">` に読み込み状態（data-state=ok/error）を記録し、`whenLibReady()`・`gatePageUntilReady()` を追加。読み込み前にラボ・分析を開いた場合はページ全体を inert にして「データを読み込んでいます…」を表示し、完了後に初期化（失敗時は再読み込みの案内）。`switchLab`・`switchAnalysis`・`ratioSearch` は準備前なら何もしない。`openRecordRatio` は準備前ならラボを開いて完了後に再実行。
+- 追加テスト `tests/deferred-load.browser.test.js`（17項目）：2つのスクリプトの応答を止めた状態でラボのタブ・名前検索・分析のサブタブ・記録画面の「レシオ一覧」を操作し、エラーが出ないこと、完了後に通常どおり使えること、ラボデータ読み込み失敗時に案内が出ることを確認。修正前の版では `LAB_SKILLS is not defined` を再現し失敗。
+- `tests/lab-morpeko.browser.test.js`：v5.48でラボ初期タブがレシオ一覧になったため、計算タブの要素を待って失敗していた（公開版でも同様）。テスト側で `switchLab('calc')` を追加し、変更前・変更後の両方で37項目PASSを確認。
+- 検証：logic 194（SW版数チェック含む）、lab-source 178、ratio-labels 5,564、ブラウザ（help 143・mypickup 20・ratio 59・avg-stats 159・undo-delete 33・theme-charts 7・lab-morpeko 37・deferred-load 17）すべてPASS（Chromium）。修正後に速度を再測定し FCP 7,108ms→3,812ms（同条件）。ページエラー0、実DB書き込み0件。
+- 2026-10-03: Edgeでdeferred-load 17項目、lab-morpeko 37項目、ratio 59項目が通過。前回の読み込み途中の再現手順でもエラーなし。ユーザー指示によりコミット・pushを承認済み。公開結果はGit履歴・配信状態を参照。
 
 ## 2026-10-02 デザイン改善 第2弾（土台・C）v5.52 / SW v78
 
