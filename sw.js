@@ -1,4 +1,4 @@
-const CACHE = 'unite-tracker-v76';
+const CACHE = 'unite-tracker-v77';
 
 // オフラインで動作させるために必要なアプリシェル一式（ローカル資産）。
 // Supabase / Chart.js は CDN から vendor/ に同梱済みなのでここでキャッシュする。
@@ -16,6 +16,9 @@ const ASSETS = [
   './images/pokemon/25.png',
   './images/app-icon-192.png',
   './images/app-icon-512.png',
+  './images/app-icon-maskable-512.png',
+  './images/apple-touch-icon.png',
+  './images/brand-mark.svg',
   './vendor/supabase.min.js',
   './vendor/chart.umd.min.js',
 ];

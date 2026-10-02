@@ -1,6 +1,22 @@
 # HANDOFF.md — ポケモンユナイト対戦トラッカー
 
-> 最終更新: 2026-09-28 / ローカル更新: v5.45・SW v70 / 公開状態とは区別する
+> 最終更新: 2026-10-02 / ローカル更新: v5.51・SW v77（公開準備済み） / 公開状態とは区別する
+
+## 2026-10-02 デザイン改善 第1弾（優先度A・B）v5.51 / SW v77
+
+- 公開版main（eee7406・v5.50・SW v76）を元に実装。手元フォルダの index.html / styles.css / sw.js / manifest.json は作業開始時点で公開版と同一だった。
+- 対戦記録の削除を取り消し猶予つきへ変更（`deleteEntry` → `pendingDeletes`）。画面からは即時に消し、最後の削除から5秒後にまとめて実削除（ログイン時は `delete().in('id',…)` 1回）。取り消し時はDBへ何も送らない。
+- 外部レビュー（GPT-6 Astra）の指摘3件を修正済み：①連続削除は1つの通知にまとめ「元に戻す」で全件を戻す ②別シリーズ・分析表示中の取り消しでも分析を作り直す ③猶予はアプリ表示中だけ数える（非表示中は停止）。猶予中の終了に備え削除待ちを `localStorage.pendingBattleDeletes` に保存し、次回起動時（`loadSeries` 冒頭）に確定する。
+- 追加指摘④（通信待ち中の取り消しで表示と保存が食い違う）を修正：確定した削除は通信完了を待たずに `pendingDeletes` から `committingDeletes`（取り消し対象外・表示からは除外）へ移す。閉じかけの通知は inert にして押せないようにした。遅延DELETEでの再現テストを追加（旧版では失敗、修正版で成功を確認）。
+- 最後に開いたシリーズを `localStorage.lastSeriesId` に保存し、起動時に自動で開く。シリーズ追加・並び順・名前変更・アーカイブ・削除は「管理」へ折りたたみ（シリーズ選択中のみ）。
+- スマホ幅ヘッダーの折り返しを修正（560px以下ではログアウトを☰メニューのみに）。シェアモーダルの✕を共通の `.btn-close`（36px）へ。
+- シェア画像を2倍解像度（2400×1350）で作り直し。総合勝率を主役、得意ポケモンTOP3、URL・作者表記入り。最小文字22px（1200px基準）。絵文字は使わない。
+- OGP・Twitterカード・description・favicon・apple-touch-icon を追加。`images/og-image.jpg`（1200×630）、`images/brand-mark.svg`、アプリアイコン3種を新規作成（ピカチュウのドット絵アイコンは廃止）。manifest に maskable アイコンを追加。
+- `--text3` を #5c6080 → #8a90b4（ライト #8890b0 → #5f6688）、`--text2` を微調整。10px・11px の文字指定を12pxへ統一（7〜9pxのメダル装飾は据え置き）。Chart.js の文字も12px。
+- onclick付き div/span に role=button・tabindex を自動付与し Enter/Space で操作可能に。ラベルと入力欄の自動関連付け、アイコンボタンの aria-label、:focus-visible、color-scheme、prefers-reduced-motion を追加。
+- 検証：logic 194件、lab-source 178件、ratio-labels 5,564件、ブラウザ（help 143・mypickup 20・ratio 59・avg-stats 159/6シナリオ・新規 undo-delete 33/7シナリオ）すべてPASS。`tests/undo-delete.browser.test.js` は BROWSER_EXECUTABLE か BROWSER_CHANNEL でブラウザを指定できる（既定はEdge）。lab-morpeko.browser は公開版mainでも同じ箇所（selectOption待ち）で失敗するため既存の環境依存として未解決のまま。375px・1100px、ダーク/ライトで画面確認、削除→取り消し→確定、再読込でのシリーズ復元を確認。実DB書き込み0件（Supabase通信は遮断）。
+- `share-preview.jpg` は画像として読めない壊れたファイル（未参照）。ローカルで削除済み。今回のコミットに含める。
+- 2026-10-02のユーザー指示でコミット・pushを承認済み。公開結果はGit履歴・配信状態を参照。
 
 ## 2026-09-28 ストリンダーのラボ対応
 
