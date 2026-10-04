@@ -23,13 +23,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=83"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=83" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=83" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=83"></script>
-<script src="js/utils.js?v=83"></script>
-<script src="js/lab-core.js?v=83"></script>
-<link rel="stylesheet" href="styles.css?v=83" />
+<script src="vendor/supabase.min.js?v=84"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=84" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=84" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=84"></script>
+<script src="js/utils.js?v=84"></script>
+<script src="js/lab-core.js?v=84"></script>
+<link rel="stylesheet" href="styles.css?v=84" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -1662,6 +1662,14 @@ function initDetailSelects(){
   // battleItem(旧ID)は現UIに存在しないため削除済み
 }
 
+// バシャーモの旧記録・前回設定は、スタイル共通の技構成として復元する。
+function recordSkillValue(pokemon,slot,value){
+  if(pokemon==='バシャーモ' && value && SKILLS[pokemon][slot][0].split('／').includes(value)){
+    return SKILLS[pokemon][slot][0];
+  }
+  return value;
+}
+
 function updateDetailForPoke(pokeName){
   // 技セット更新
   const skill=SKILLS[pokeName];
@@ -1700,8 +1708,8 @@ function updateDetailForPoke(pokeName){
     const saved=localStorage.getItem('pokeLoadout_'+pokeName);
     if(saved){
       const lo=JSON.parse(saved);
-      if(s1&&lo.skill1)s1.value=lo.skill1;
-      if(s2&&lo.skill2)s2.value=lo.skill2;
+      if(s1&&lo.skill1)s1.value=recordSkillValue(pokeName,'s1',lo.skill1);
+      if(s2&&lo.skill2)s2.value=recordSkillValue(pokeName,'s2',lo.skill2);
       if(!dedicated&&lo.ip1)setItemPickerValue('ip1',lo.ip1);
       if(lo.ip2)setItemPickerValue('ip2',lo.ip2);
       if(lo.ip3)setItemPickerValue('ip3',lo.ip3);
@@ -2148,6 +2156,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.58', date: '2026-10-04', items: ['対戦記録のバシャーモの技を、スタイル切り替えを含む1つの構成にまとめました。']},
   {
     version: 'v5.57', date: '2026-10-03',
     items: ['「ホーム画面に追加」の案内に「次回から表示しない」を追加しました。', 'ラボのレシオ一覧などで、ストライクの画像が表示されない問題を修正しました。']
@@ -4346,8 +4355,8 @@ function openEditModal(id){
   updateEditSkillsForPoke(pokemon||'');
   const s1=document.getElementById('editSkill1');
   const s2=document.getElementById('editSkill2');
-  if(s1&&battle.skill1)s1.value=battle.skill1;
-  if(s2&&battle.skill2)s2.value=battle.skill2;
+  if(s1&&battle.skill1)s1.value=recordSkillValue(pokemon,'s1',battle.skill1);
+  if(s2&&battle.skill2)s2.value=recordSkillValue(pokemon,'s2',battle.skill2);
   const dedicated=DEDICATED_ITEMS[pokemon];
   const itemArr=battle.items?battle.items.split(','):[];
   // items は [スロット1, スロット2, スロット3]。専用もちものの場合は [0] が専用（固定表示）。
@@ -7590,8 +7599,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=83"></script>
-<script src="ratio.js?v=83"></script>
+<script src="ratio-labels.js?v=84"></script>
+<script src="ratio.js?v=84"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
