@@ -23,13 +23,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=84"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=84" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=84" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=84"></script>
-<script src="js/utils.js?v=84"></script>
-<script src="js/lab-core.js?v=84"></script>
-<link rel="stylesheet" href="styles.css?v=84" />
+<script src="vendor/supabase.min.js?v=85"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=85" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=85" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=85"></script>
+<script src="js/utils.js?v=85"></script>
+<script src="js/lab-core.js?v=85"></script>
+<link rel="stylesheet" href="styles.css?v=85" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2156,6 +2156,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.59', date: '2026-10-05', items: ['対戦履歴を続けて編集すると、登録済みのもちものが空欄になることがある不具合を修正しました。']},
   {version: 'v5.58', date: '2026-10-04', items: ['対戦記録のバシャーモの技を、スタイル切り替えを含む1つの構成にまとめました。']},
   {
     version: 'v5.57', date: '2026-10-03',
@@ -4284,8 +4285,8 @@ function initEditItemSelects(){
   ['editItem1','editItem2','editItem3'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
-    if(sel.options.length<=1)
-      sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    // 前の編集で絞り込まれた候補を残さず、今回の記録を復元する前に全候補へ戻す。
+    sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
     sel.onchange=()=>refreshEditItemSelects(id);
   });
   const bi=document.getElementById('editBattleItem');
@@ -4361,7 +4362,7 @@ function openEditModal(id){
   const itemArr=battle.items?battle.items.split(','):[];
   // items は [スロット1, スロット2, スロット3]。専用もちものの場合は [0] が専用（固定表示）。
   // editItem2/3 は専用有無に関わらず常に [1]/[2] に対応する（旧コードはここがオフバイワンで欠落していた）
-  if(!dedicated){const i1=document.getElementById('editItem1');if(i1)i1.value=itemArr[0]||'';}
+  const i1=document.getElementById('editItem1');if(i1)i1.value=dedicated?'':itemArr[0]||'';
   const i2=document.getElementById('editItem2');if(i2)i2.value=itemArr[1]||'';
   const i3=document.getElementById('editItem3');if(i3)i3.value=itemArr[2]||'';
   const bi=document.getElementById('editBattleItem');if(bi)bi.value=battle.battle_item||'';
@@ -7599,8 +7600,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=84"></script>
-<script src="ratio.js?v=84"></script>
+<script src="ratio-labels.js?v=85"></script>
+<script src="ratio.js?v=85"></script>
 <!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
 <script data-goatcounter="https://unitetracker.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
