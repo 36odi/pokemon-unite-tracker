@@ -23,13 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=85"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=85" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=85" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=85"></script>
-<script src="js/utils.js?v=85"></script>
-<script src="js/lab-core.js?v=85"></script>
-<link rel="stylesheet" href="styles.css?v=85" />
+<script src="vendor/supabase.min.js?v=86"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=86" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=86" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=86"></script>
+<script src="js/utils.js?v=86"></script>
+<script src="js/lab-core.js?v=86"></script>
+<script src="js/usage-analytics.js?v=86"></script>
+<link rel="stylesheet" href="styles.css?v=86" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -213,7 +214,16 @@ SOFTWARE.
     <button class="btn-guest" onclick="loginAsGuest()">ゲストとして試す</button>
     <div class="u-fs-fs-xs u-c-text3 u-mt-6px u-ta-center">登録不要・すべての機能をお試しいただけます</div>
   </div>
-  <p class="site-footer auth-footer">非公式のファンツールです。ゲームの運営・開発元とは関係ありません。ゲーム内の名称・画像の権利は各権利者に帰属します。</p>
+  <p class="site-footer auth-footer">非公式のファンツールです。ゲームの運営・開発元とは関係ありません。<br>ゲーム内の名称・画像の権利は各権利者に帰属します。</p>
+  <button class="btn-guest" onclick="openUsageSettings()">利用状況の計測について・設定</button>
+  <details class="site-footer data-handling">
+    <summary>データの扱いについて</summary>
+    <p>ログイン機能や、ログインしている方の対戦記録の保存・読み込みにはSupabaseを利用しています。</p>
+    <p>利用状況の計測を停止しても、これらの機能に必要な通信は続きます。</p>
+    <p>Supabaseにはアクセスの記録が残ります。</p>
+    <p>記録の対象には、接続日時、接続元のIPアドレス、ブラウザの種類、接続先、処理の成功・失敗などが含まれます。</p>
+    <p>これらは利用規模の集計には使いません。</p>
+  </details>
 </div>
 
 <div id="appSection">
@@ -1284,7 +1294,15 @@ SOFTWARE.
     </div>
   </div>
 
-  <p class="site-footer">非公式のファンツールです。ゲームの運営・開発元とは関係ありません。ゲーム内の名称・画像の権利は各権利者に帰属します。<br><a href="THIRD_PARTY_LICENSES.txt" target="_blank" rel="noopener">利用している素材のライセンス</a></p>
+  <p class="site-footer">非公式のファンツールです。ゲームの運営・開発元とは関係ありません。<br>ゲーム内の名称・画像の権利は各権利者に帰属します。<br><a href="THIRD_PARTY_LICENSES.txt" target="_blank" rel="noopener">利用している素材のライセンス</a></p>
+  <details class="site-footer data-handling">
+    <summary>データの扱いについて</summary>
+    <p>ログイン機能や、ログインしている方の対戦記録の保存・読み込みにはSupabaseを利用しています。</p>
+    <p>利用状況の計測を停止しても、これらの機能に必要な通信は続きます。</p>
+    <p>Supabaseにはアクセスの記録が残ります。</p>
+    <p>記録の対象には、接続日時、接続元のIPアドレス、ブラウザの種類、接続先、処理の成功・失敗などが含まれます。</p>
+    <p>これらは利用規模の集計には使いません。</p>
+  </details>
 </div>
 
 <!-- メダルセット作成 ヘルプモーダル -->
@@ -1396,6 +1414,30 @@ SOFTWARE.
 </div>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="modal-overlay" id="usageSettingsModal" onclick="if(event.target===this)closeModal('usageSettingsModal')">
+  <div class="modal usage-settings" role="dialog" aria-modal="true" aria-labelledby="usageSettingsTitle">
+    <h3 id="usageSettingsTitle">利用状況の計測</h3>
+    <p>登録せずに使っている方も含め、このツールがどれくらい利用されているかを知るため、利用状況を計測しています。</p>
+    <p>今回の計測では、氏名やメールアドレスは収集しません。</p>
+    <p>利用規模の集計に使うのは、次の2つです。</p>
+    <ul><li>利用した日</li><li>同じブラウザを重複して数えないためのランダムな番号</li></ul>
+    <p>ログインアカウントとは結び付けません。<br>計測のために対戦記録を送ることもありません。</p>
+    <p>計測は下の設定でいつでも停止できます。<br>停止しても、すべての機能をそのまま使えます。</p>
+    <label><input type="checkbox" id="usageEnabled" onchange="window.UniteUsage?.setEnabled(this.checked)"> 利用状況の計測</label>
+    <p class="u-fs-fs-xs u-c-text3">画面の訪問数も別に計測しています。こちらも停止できます。</p>
+    <label><input type="checkbox" id="visitsEnabled" onchange="setVisitsEnabled(this.checked)"> 画面の訪問数の計測</label>
+    <p class="u-fs-fs-xs u-c-text3">初期設定はどちらも有効です。<br>設定はこのブラウザに適用されます。</p>
+    <details class="u-fs-fs-xs u-c-text3">
+      <summary>詳しい内容</summary>
+      <p>利用した日とランダムな番号の保存先はSupabaseです。</p>
+      <p>直近30日間に使われたブラウザ数を確認し、古い計測記録は集計時に削除します。</p>
+      <p>停止前に送信済みの記録は、その場では削除されません。</p>
+      <p>画面の訪問数には、Cookieを使わないGoatCounterを利用しています。</p>
+    </details>
+    <p id="usageSettingsMessage" role="status"></p>
+    <button class="btn-primary" onclick="closeModal('usageSettingsModal')">閉じる</button>
+  </div>
+</div>
 <div class="drawer" id="drawer">
   <div class="drawer-title">ページ</div>
   <button class="drawer-item" onclick="showPage('tracker');closeDrawer()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-chart-column"></use></svg>トラッカー</button>
@@ -1406,6 +1448,7 @@ SOFTWARE.
   <button class="drawer-item" onclick="openCsvModal();closeDrawer()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-download"></use></svg>CSVエクスポート</button>
   <button class="drawer-item" onclick="showPage('changelog');closeDrawer()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-clipboard-list"></use></svg>更新履歴</button>
   <button class="drawer-item" onclick="openFeedbackModal();closeDrawer()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-message-square"></use></svg>不具合報告 / 改善要望</button>
+  <button class="drawer-item" onclick="openUsageSettings();closeDrawer()">利用状況の計測について・設定</button>
   <button class="drawer-item" onclick="logout();closeDrawer()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-log-out"></use></svg>ログアウト</button>
   <div class="drawer-close" onclick="closeDrawer()">閉じる ✕</div>
 </div>
@@ -1585,6 +1628,22 @@ function isFakeEmail(email){ return email && email.endsWith('@'+MAIL_DOMAIN); }
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+try{window.UniteUsage?.start(SUPABASE_URL,SUPABASE_KEY);}catch{}
+function usageIntent(scope){try{return window.UniteUsage?.intent(scope);}catch{return null;}}
+function usageUsed(ticket){try{window.UniteUsage?.used(ticket);}catch{}}
+function usageResult(scope,value,key){try{window.UniteUsage?.result(scope,value,key);}catch{}}
+function visitsEnabled(){try{return localStorage.getItem('visits_disabled')!=='1'&&localStorage.getItem('usage_excluded')!=='1';}catch{return false;}}
+function setVisitsEnabled(value){
+  try{localStorage.setItem('visits_disabled',value?'0':'1');}catch{}
+  document.getElementById('visitsEnabled').checked=visitsEnabled();
+  if(value)loadVisitAnalytics();
+}
+function openUsageSettings(){
+  window.UniteUsage?.syncSettings();
+  document.getElementById('visitsEnabled').checked=visitsEnabled();
+  document.getElementById('usageSettingsMessage').textContent='';
+  document.getElementById('usageSettingsModal').classList.add('open');
+}
 const LAST_SERIES_KEY='lastSeriesId';
 // 対戦記録のメダルセット：DBの battles に medal_set 列があるか（null=未確認）。ゲストは常に記録できる
 let medalSetColumnReady=null;
@@ -2147,7 +2206,7 @@ function showPage(page){
   // アクセス解析: 主要3画面の仮想ページビュー（方式A＝セッション単位。count既定で同一セッションの重複は集約）
   try{
     const gc={tracker:['/tracker','トラッカー'],analysis:['/analysis','分析'],lab:['/lab','ラボ']}[page];
-    if(gc && window.goatcounter && typeof window.goatcounter.count==='function'){
+    if(gc && visitsEnabled() && window.goatcounter && typeof window.goatcounter.count==='function'){
       window.goatcounter.count({path:gc[0], title:gc[1]});
     }
   }catch(e){}
@@ -3259,12 +3318,22 @@ let allSeriesData=[];
 let analysisLoaded=false;
 let analysisNeedsRefresh=true; // P2: キャッシュ制御
 
-async function loadAnalysis(){
+async function loadAnalysis(usageTicket=usageIntent()){
+  const usageNav=navId;
+  const renderViews=()=>{
+    if(navId!==usageNav)return;
+    const ticketFor=id=>document.getElementById('analysisPage').style.display==='block'&&document.getElementById(id)?.style.display!=='none'?usageTicket:null;
+    renderMyPickup(ticketFor('myPickupPanel'));
+    renderTrendChart(ticketFor('trendPanel'));
+    renderTotalStats(ticketFor('totalPanel'));
+    if(document.getElementById('pokedetailPanel')?.style.display!=='none')initPokeDetailSelect(ticketFor('pokedetailPanel'));
+    if(document.getElementById('seriesanalPanel')?.style.display!=='none'){renderSeriesAnalysis(ticketFor('seriesanalPanel'));renderCompareChart();}
+  };
   // Chart.js は defer で読み込む。読み込み前なら、完了まで分析を操作不可にして待つ
-  if(!libReady('chart')){gatePageUntilReady('analysisPage','chart',()=>loadAnalysis());return;}
+  if(!libReady('chart')){gatePageUntilReady('analysisPage','chart',()=>{if(navId===usageNav)loadAnalysis(usageTicket);});return;}
   // P2: キャッシュが有効なら再描画のみ
   if(analysisLoaded&&!analysisNeedsRefresh){
-    setTimeout(()=>{ renderMyPickup(); renderTrendChart(); renderTotalStats(); }, 50);
+    setTimeout(renderViews,50);
     return;
   }
   try {
@@ -3310,18 +3379,16 @@ async function loadAnalysis(){
     }
     analysisLoaded=true;
     analysisNeedsRefresh=false;
-    setTimeout(()=>{
-      renderMyPickup(); renderTrendChart(); renderTotalStats();
-      // 編集等での再構築時、表示中のサブパネルも新しいデータで再描画（反映漏れ防止）
-      if(document.getElementById('pokedetailPanel')?.style.display!=='none') initPokeDetailSelect();
-      if(document.getElementById('seriesanalPanel')?.style.display!=='none'){ renderSeriesAnalysis(); renderCompareChart(); }
-    }, 50);
+    // 編集等での再構築時も、表示中のサブパネルを新しいデータで描画。
+    setTimeout(renderViews,50);
   } catch(err){ console.error('loadAnalysis error:',err); }
 }
 
 function switchAnalysis(tab){
+  const usageTicket=usageIntent('analysisPage');
   if(!libReady('chart'))return; // Chart.js 読み込み前は何もしない（画面は gatePageUntilReady で操作不可）
   navId++; // ナビゲーションガード
+  const usageNav=navId;
   window.scrollTo({top:0,behavior:'instant'}); // タブ切替時もスクロールリセット
   document.querySelectorAll('#analysisPage .analysis-tab').forEach((t,i)=>t.classList.toggle('active',
     (i===0&&tab==='mypickup')||(i===1&&tab==='trend')||(i===2&&tab==='seriesanal')||(i===3&&tab==='total')||(i===4&&tab==='pokedetail')));
@@ -3331,13 +3398,14 @@ function switchAnalysis(tab){
   document.getElementById('pokedetailPanel').style.display=tab==='pokedetail'?'block':'none';
   document.getElementById('seriesanalPanel').style.display=tab==='seriesanal'?'block':'none';
   if(tab==='seriesanal'){
-    loadAnalysis().then(()=>{ renderSeriesAnalysis(); renderCompareChart(); });
+    loadAnalysis(usageTicket).then(()=>{ if(navId===usageNav){renderSeriesAnalysis(usageTicket); renderCompareChart();} });
   } else {
     setTimeout(()=>{
-      if(tab==='mypickup') renderMyPickup();
-      if(tab==='trend') renderTrendChart();
-      if(tab==='total') renderTotalStats();
-      if(tab==='pokedetail') initPokeDetailSelect();
+      if(navId!==usageNav)return;
+      if(tab==='mypickup') renderMyPickup(usageTicket);
+      if(tab==='trend') renderTrendChart(usageTicket);
+      if(tab==='total') renderTotalStats(usageTicket);
+      if(tab==='pokedetail') initPokeDetailSelect(usageTicket);
     }, 50);
   }
 }
@@ -3348,7 +3416,7 @@ function switchTrendMode(m){
   try{localStorage.setItem('trendMode',m);}catch(e){}
   renderTrendChart();
 }
-function renderTrendChart(){
+function renderTrendChart(usageTicket=usageIntent('analysisPage')){
   const sel=document.getElementById('trendSeriesSelect');
   if(!sel) return;
   document.querySelectorAll('.trend-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===trendMode));
@@ -3406,6 +3474,7 @@ function renderTrendChart(){
   renderHourlyWinRate(bs);
   renderWeekdayWinRate(bs);
   renderBestWorstSlots(bs);
+  usageUsed(usageTicket);
 }
 
 // 日別/週間/時間帯/曜日で共通の勝率バー行。gridCols はラベル列幅の上書き（''なら既定）。
@@ -3619,7 +3688,7 @@ function statsSummaryHTML(battles){
     ${excluded}<div class="stats-summary-note">※ 各項目を記録した対象試合のみで平均（項目ごとに記録数が異なる場合あり）</div>${note}</div>`;
 }
 
-function renderTotalStats(){
+function renderTotalStats(usageTicket=usageIntent('analysisPage')){
   const all=allSeriesData.flatMap(s=>s.battles);
   const w=winCount(all);
   const t=all.length;
@@ -3648,6 +3717,7 @@ function renderTotalStats(){
     : '<div class="poke-mode-empty">ポケモン記録なし</div>';
   const ssEl=document.getElementById('ttStatsSummary');
   if(ssEl) ssEl.innerHTML=statsSummaryHTML(all);
+  if(t)usageUsed(usageTicket);
 }
 
 // ---- マイピックアップ（要約カード）----
@@ -3804,7 +3874,7 @@ function toggleMyPickupEdit(){
   e.style.display=show?'block':'none';
   if(show) renderMyPickupEdit();
 }
-function renderMyPickup(){
+function renderMyPickup(usageTicket=usageIntent('analysisPage')){
   const cont=document.getElementById('myPickupContent');
   if(!cont) return;
   // マイピックアップは最新シリーズ（created_atが最大のシリーズ）のみを対象にする
@@ -3823,6 +3893,7 @@ function renderMyPickup(){
       </div>
       <div class="mp-card-body">${c.render(all)}</div>
     </div>`).join('');
+  usageUsed(usageTicket);
 }
 
 // カードと同じ最新シリーズを詳細画面でも表示する。
@@ -3837,7 +3908,7 @@ function openMyPickupDetail(id){
 }
 
 // ---- ポケモン別詳細 ----
-function initPokeDetailSelect(){
+function initPokeDetailSelect(usageTicket=usageIntent('analysisPage')){
   const sel=document.getElementById('detailPokeSelect');
   if(!sel)return;
   const all=allSeriesData.flatMap(s=>s.battles);
@@ -3845,7 +3916,7 @@ function initPokeDetailSelect(){
   const current=sel.value;
   sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(current)sel.value=current;
-  if(sel.value) renderPokeDetail();
+  if(sel.value) renderPokeDetail(usageTicket);
 }
 
 function switchDetailMode(mode){
@@ -3855,7 +3926,7 @@ function switchDetailMode(mode){
   renderPokeDetail();
 }
 
-function renderPokeDetail(){
+function renderPokeDetail(usageTicket=usageIntent('analysisPage')){
   const pokeName=document.getElementById('detailPokeSelect')?.value;
   const content=document.getElementById('pokeDetailContent');
   if(!content)return;
@@ -4040,6 +4111,7 @@ function renderPokeDetail(){
       </div>`;
     })()}
   `;
+  usageUsed(usageTicket);
 }
 
 function toggleMode(mode){const b=document.getElementById('body-'+mode),a=document.getElementById('arrow-'+mode);b.classList.toggle('open');a.classList.toggle('open');}
@@ -4377,6 +4449,7 @@ function openEditModal(id){
 }
 
 async function saveEdit(){
+  const usageTicket=usageIntent('editModal');
   const id=document.getElementById('editBattleId').value;
   const result=document.getElementById('editResult').value;
   const match_type=document.getElementById('editMatchType').value;
@@ -4400,17 +4473,23 @@ async function saveEdit(){
     if(v!=='__keep') update.medal_set=v===''?null:medalSetFromPreset(labMedalPresets[Number(v)],Number(v));
   }
   if(created_at)update.created_at=created_at;
+  const original=battles.find(b=>String(b.id)===String(id));
+  const changed=original&&Object.entries(update).some(([key,value])=>{
+    if(key==='created_at')return Math.floor(new Date(original[key]).getTime()/60000)!==Math.floor(new Date(value).getTime()/60000);
+    return JSON.stringify(original[key]??null)!==JSON.stringify(value??null);
+  });
   if(isGuest()){
     // ゲスト: localStorageの該当試合を更新（is_bot/メモ等の未編集項目は保持）
     const list=guestGetBattles(currentSeriesId);
     const idx=list.findIndex(b=>String(b.id)===String(id));
-    if(idx>=0){ list[idx]={...list[idx],...update}; guestSaveBattles(currentSeriesId,list); }
+    if(idx>=0){ list[idx]={...list[idx],...update}; guestSaveBattles(currentSeriesId,list); if(changed)usageUsed(usageTicket); }
     closeModal('editModal');
     await loadBattles();
     return;
   }
   const {error}=await db.from('battles').update(update).eq('id',id);
   if(error){showToast('保存に失敗しました。通信状態を確認してください。','error');return;}
+  if(changed)usageUsed(usageTicket);
   closeModal('editModal');
   await loadBattles();
 }
@@ -4754,6 +4833,7 @@ async function loadBattles(){
   renderStats();renderHistory();
 }
 async function record(result){
+  const usageTicket=usageIntent('trackerPage');
   if(!currentSeriesId||isRecording)return;
   // F2: 連打防止
   isRecording=true;
@@ -4781,6 +4861,7 @@ async function record(result){
       const battle={id:guestNextId(),result,match_type,rank,pokemon,skill1,skill2,items,battle_item,medal_set,lane,note,is_bot,...readBattleStats(),created_at:new Date().toISOString(),series_id:currentSeriesId};
       const list=guestGetBattles(currentSeriesId);list.unshift(battle);
       guestSaveBattles(currentSeriesId,list);
+      usageUsed(usageTicket);
       if(pokemon){try{localStorage.setItem('pokeLoadout_'+pokemon,JSON.stringify({skill1,skill2,ip1:i1,ip2:i2,ip3:i3,ipB:battle_item,medalKey:medalSetKey(medal_set)}));}catch{}}
       const noteEl=document.getElementById('noteInput');if(noteEl)noteEl.value='';clearBattleStats();
       persistForm();
@@ -4815,6 +4896,7 @@ async function record(result){
     const medal_set=medalSetColumnReady?getRecordMedalSet():null;
     const {error}=await db.from('battles').insert({user_id:user.id,series_id:currentSeriesId,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,note,is_bot,...readBattleStats(),...(medal_set?{medal_set}:{})});
     if(error){showToast('記録の保存に失敗しました。通信状態を確認してください。','error');return;}
+    usageUsed(usageTicket);
     // ポケモン別ロードアウトをlocalStorageに保存
     if(pokemon){
       try{
@@ -5681,7 +5763,7 @@ async function deleteAccount(){
 }
 
 // ===== A5 シリーズ分析 =====
-async function renderSeriesAnalysis(){
+async function renderSeriesAnalysis(usageTicket=usageIntent('analysisPage')){
   const myRender=++seriesanalRenderId;
   const myNav=navId; // 呼び出し時点のnavIdを保存
   const sel=document.getElementById('seriesanalSelect');
@@ -6068,6 +6150,7 @@ async function renderSeriesAnalysis(){
   `;
 
   // ── ポケモン使用チャート ──
+  usageUsed(usageTicket);
   if(pokeList.length){
     setTimeout(()=>{
       if(myNav!==navId||myRender!==seriesanalRenderId)return; // 画面移動済み、または古い描画なら中断
@@ -6511,6 +6594,7 @@ function calcLabStats(scroll=false){
   else { calcLabDamageAll(); } // 同じポケモン→ダメージだけ再計算
 
   if(scroll) setTimeout(()=>document.getElementById('labResultCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  usageResult('labCalcPanel',JSON.stringify([poke,lv,totals]));
 }
 
 function labRenderStatGrid(el,stats,color){
@@ -6651,6 +6735,7 @@ function _renderDmgRows(outId, rows){
   if(!rows.length){ out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">データなし</div>'; return; }
   out.innerHTML=rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
   if(!out.innerHTML) out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">計算不可</div>';
+  else usageResult('labCalcPanel',out.textContent,outId);
 }
 
 
@@ -7130,6 +7215,7 @@ function dcUpdateDmgOutput(){
     us.style.display=uniteRows.length?'block':'none';
     uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
+  usageResult('labDmgCalcPanel',document.getElementById('dcResultCard').textContent);
 }
 
 // ---- DC: ステータスサマリー ----
@@ -7466,6 +7552,7 @@ function labSaveMedalPreset(idx){
   const prev=_presetToObj(labMedalPresets[idx]);
   labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities], name: (prev&&prev.name)||null };
   localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  if(JSON.stringify(prev)!==JSON.stringify(labMedalPresets[idx]))usageUsed(usageIntent('labMedalPanel'));
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   if(isGuest()){ showGuestRegPrompt(); return; }
@@ -7585,6 +7672,7 @@ function labUpdateMedalResult(){
   } else if(el){
     el.innerHTML='<div class="empty u-fs-fs-xs u-col-span-2">メダルを選択すると集計されます</div>';
   }
+  usageResult('labMedalPanel',JSON.stringify([labMedalSlots,labMedalRarities]));
 }
 
 // labUpdateMedalBonus は互換のため残す
@@ -7600,10 +7688,24 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=85"></script>
-<script src="ratio.js?v=85"></script>
-<!-- アクセス解析（GoatCounter：クッキー無し・プライバシー重視） -->
-<script data-goatcounter="https://unitetracker.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+<script src="ratio-labels.js?v=86"></script>
+<script src="ratio.js?v=86"></script>
+<!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
+<script>
+function loadVisitAnalytics(){
+  if(location.origin!=='https://36odi.github.io'||!visitsEnabled()||document.getElementById('visitAnalyticsScript'))return;
+  window.goatcounter={no_onload:true};
+  const script=document.createElement('script');script.id='visitAnalyticsScript';script.async=true;
+  script.dataset.goatcounter='https://unitetracker.goatcounter.com/count';script.src='https://gc.zgo.at/count.js';
+  script.onload=()=>{
+    if(typeof window.goatcounter?.count!=='function')return;
+    const count=window.goatcounter.count;
+    window.goatcounter.count=function(...args){if(visitsEnabled())return count.apply(this,args);};
+    window.goatcounter.count();
+  };
+  document.head.appendChild(script);
+}
+loadVisitAnalytics();
+</script>
 </body>
 </html>

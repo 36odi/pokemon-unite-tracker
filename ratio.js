@@ -1,16 +1,16 @@
 // 読み取り専用のレシオ一覧。計算画面と同じデータ・アップグレード補完を使用する。
 let ratioPokemon='';
 let ratioType='all';
-function openRecordRatio(){
+function openRecordRatio(usageTicket=usageIntent('trackerPage')){
   // ラボデータ読み込み前：ラボを開いて「読み込み中」を表示し、完了後にもう一度実行する
-  if(!libReady('lab')){showPage('lab');whenLibReady('lab').then(openRecordRatio).catch(()=>{});return;}
+  if(!libReady('lab')){showPage('lab');const requestedNav=navId;whenLibReady('lab').then(()=>{if(navId===requestedNav)openRecordRatio(usageTicket);}).catch(()=>{});return;}
   ratioPokemon=Object.hasOwn(LAB_SKILLS,selectedPoke)?selectedPoke:'';
   ratioType='all';
   document.getElementById('ratioSearch').value='';
   document.getElementById('ratioResult').replaceChildren();
   showPage('lab');
   switchLab('ratio');
-  if(ratioPokemon) ratioRender();
+  if(ratioPokemon) ratioRender(usageTicket);
 }
 function ratioRenderTypes(){
   const el=document.getElementById('ratioTypes');el.replaceChildren();
@@ -64,7 +64,7 @@ function ratioSameFormulas(poke,rows,baseRows){
   const signature=rs=>rs.map(r=>JSON.stringify([ratioLabel(poke,r),r.stat,r.coeff,r.fixed,r.lvScale,r.hits,r.hitsVar,r.description||''])).sort();
   return JSON.stringify(signature(rows))===JSON.stringify(signature(baseRows));
 }
-function ratioRender(){
+function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   const poke=ratioPokemon,all=LAB_SKILLS[poke]||[];
   const role=Object.values(POKEMON_DATA).find(d=>d.pokemon.includes(poke))?.label||'';
   const dmg=LAB_STATUS[poke]?.dmg;
@@ -100,4 +100,5 @@ function ratioRender(){
     html+='</section>';
   });
   document.getElementById('ratioResult').innerHTML=html;
+  if(all.length&&document.getElementById('labPage').style.display==='block')usageUsed(usageTicket);
 }

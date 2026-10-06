@@ -804,6 +804,14 @@
   /* 非公式表記 */
   .site-footer{font-size:var(--fs-xs);color:var(--text3);line-height:1.7;text-align:center;margin:var(--sp-5) auto var(--sp-4);max-width:36em;}
   .auth-footer{margin-top:var(--sp-4);}
+  .usage-settings{max-height:calc(100dvh - 2rem);overflow-y:auto;line-height:1.7;}
+  .usage-settings p{margin:12px 0;}
+  .usage-settings label{display:block;}
+  .usage-settings ul{padding-left:1.4em;margin:8px 0 16px;}
+  .usage-settings li+li{margin-top:6px;}
+  .data-handling{text-align:left;}
+  .data-handling summary{text-align:center;cursor:pointer;}
+  .data-handling p{margin:12px 0;}
   .site-footer a{color:var(--text3);}
 
   /* ── ユーティリティ（旧インラインstyleから移設。2重クラスで既存の単一クラス規則より優先） ── */
