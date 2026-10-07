@@ -246,7 +246,37 @@ async function recordWith(page,poke,medalIdx,result='win'){
       equal(errors,[],'no column: no page errors');
       await context.close();
     }
-    console.log(`ALL PASS — ${checks} medal record checks; real DB writes: 0`);
+    // BOT designation can be removed after recording, for guests and accounts.
+    for(const mode of ['guest','account']){
+      const {page,context,state,errors}=await setup(mode);
+      await page.locator('#isBotCheck').check();
+      await recordWith(page,'ピカチュウ',0);
+      const id=await page.evaluate(()=>battles[0].id);
+      equal(await page.evaluate(()=>statBattles().length),0,mode+': BOT initially excluded');
+      await page.evaluate(id=>openEditModal(id),id);
+      equal(await page.locator('#editIsBotCheck').isChecked(),true,mode+': editor restores BOT flag');
+      await page.locator('#editIsBotCheck').uncheck();
+      await page.getByRole('button',{name:'キャンセル',exact:true}).click();
+      equal(await page.evaluate(()=>battles[0].is_bot),true,mode+': cancel preserves BOT');
+      await page.evaluate(id=>openEditModal(id),id);
+      equal(await page.locator('#editIsBotCheck').isChecked(),true,mode+': reopening resets unsaved checkbox');
+      await page.locator('#editIsBotCheck').uncheck();
+      await page.getByRole('button',{name:'保存する',exact:true}).click();
+      await page.waitForFunction(()=>!document.getElementById('editModal').classList.contains('open')&&battles[0].is_bot===false);
+      equal(await page.evaluate(()=>statBattles().length),1,mode+': unmarked battle included in stats');
+      equal(await page.locator('#historyList .badge-bot').count(),0,mode+': BOT badge removed');
+      equal(await page.evaluate(()=>battles[0].medal_set.label),'白6+茶6+青2',mode+': medal data preserved');
+      if(mode==='account')equal(state.writes.filter(w=>w.method==='PATCH'&&w.table==='battles').at(-1).data.is_bot,false,'account: false explicitly sent to DB');
+      await page.reload({waitUntil:'load'});
+      await page.waitForFunction(()=>battles.length===1);
+      equal(await page.evaluate(()=>battles[0].is_bot),false,mode+': removed flag survives reload');
+      await page.evaluate(()=>showPage('analysis'));
+      await page.waitForFunction(()=>analysisLoaded&&allSeriesData.some(s=>s.battles.length===1));
+      equal(await page.evaluate(()=>allSeriesData[0].battles.length),1,mode+': analysis includes corrected battle');
+      equal(errors,[],mode+': BOT edit has no browser errors');
+      await context.close();
+    }
+    console.log(`ALL PASS — ${checks} medal/BOT record checks; real DB writes: 0`);
   }catch(e){console.error(e.stack);process.exitCode=1;}
   finally{if(browser)await browser.close();server.close();}
 })();

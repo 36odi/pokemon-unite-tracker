@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=86"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=86" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=86" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=86"></script>
-<script src="js/utils.js?v=86"></script>
-<script src="js/lab-core.js?v=86"></script>
-<script src="js/usage-analytics.js?v=86"></script>
-<link rel="stylesheet" href="styles.css?v=86" />
+<script src="vendor/supabase.min.js?v=87"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=87" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=87" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=87"></script>
+<script src="js/utils.js?v=87"></script>
+<script src="js/lab-core.js?v=87"></script>
+<script src="js/usage-analytics.js?v=87"></script>
+<link rel="stylesheet" href="styles.css?v=87" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -1485,6 +1485,11 @@ SOFTWARE.
   <div class="modal" style="max-height:90vh;overflow-y:auto;">
     <h3><svg class="ico ico-l" aria-hidden="true"><use href="#i-pencil"></use></svg>対戦記録を編集</h3>
     <input type="hidden" id="editBattleId" />
+    <label class="u-d-flex u-items-center u-gap-8px u-fs-fs-sm u-c-text2 u-cursor-pointer u-mb-12px">
+      <input type="checkbox" id="editIsBotCheck" class="u-accent-accent u-shrink-0" style="width:16px;height:16px;" />
+      <span>BOT戦（CPU対戦）として記録</span>
+    </label>
+    <p class="u-fs-fs-xs u-c-text3 u-mb-12px">チェックを外して保存すると、通常の対戦として統計に含まれます。</p>
     <div class="modal-field">
       <label>結果</label>
       <select id="editResult">
@@ -2215,6 +2220,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.61', date: '2026-10-07', items: ['対戦履歴の編集で、BOT戦の指定を後から解除・変更できるようになりました。']},
   {version: 'v5.59', date: '2026-10-05', items: ['対戦履歴を続けて編集すると、登録済みのもちものが空欄になることがある不具合を修正しました。']},
   {version: 'v5.58', date: '2026-10-04', items: ['対戦記録のバシャーモの技を、スタイル切り替えを含む1つの構成にまとめました。']},
   {
@@ -4410,6 +4416,7 @@ function openEditModal(id){
   const {result,match_type:matchType,pokemon='',created_at:createdAt,rank=''}=battle;
   document.getElementById('editBattleId').value=id;
   document.getElementById('editResult').value=result;
+  document.getElementById('editIsBotCheck').checked=!!battle.is_bot;
   setEditRankFields(rank);
   document.getElementById('editMatchType').value=matchType;
   // ポケモン選択 select を動的生成（タイプ別グループ）
@@ -4466,7 +4473,8 @@ async function saveEdit(){
   const battle_item=document.getElementById('editBattleItem')?.value||null;
   const rank=getEditRankValue();
   const lane=editSelectedLane||null;
-  const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,...readStatInputs('editStat')};
+  const is_bot=document.getElementById('editIsBotCheck').checked;
+  const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,...readStatInputs('editStat')};
   // メダルセット（ゲスト、またはDBに列がある場合だけ更新）
   if(isGuest()||medalSetColumnReady){
     const v=document.getElementById('editMedalSet')?.value||'';
@@ -4475,11 +4483,12 @@ async function saveEdit(){
   if(created_at)update.created_at=created_at;
   const original=battles.find(b=>String(b.id)===String(id));
   const changed=original&&Object.entries(update).some(([key,value])=>{
+    if(key==='is_bot')return !!original.is_bot!==value;
     if(key==='created_at')return Math.floor(new Date(original[key]).getTime()/60000)!==Math.floor(new Date(value).getTime()/60000);
     return JSON.stringify(original[key]??null)!==JSON.stringify(value??null);
   });
   if(isGuest()){
-    // ゲスト: localStorageの該当試合を更新（is_bot/メモ等の未編集項目は保持）
+    // ゲスト: localStorageの該当試合を更新（メモ等の未編集項目は保持）
     const list=guestGetBattles(currentSeriesId);
     const idx=list.findIndex(b=>String(b.id)===String(id));
     if(idx>=0){ list[idx]={...list[idx],...update}; guestSaveBattles(currentSeriesId,list); if(changed)usageUsed(usageTicket); }
@@ -7688,8 +7697,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=86"></script>
-<script src="ratio.js?v=86"></script>
+<script src="ratio-labels.js?v=87"></script>
+<script src="ratio.js?v=87"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){
