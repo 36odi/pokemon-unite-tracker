@@ -261,6 +261,7 @@ async function recordWith(page,poke,medalIdx,result='win'){
       await page.evaluate(id=>openEditModal(id),id);
       equal(await page.locator('#editIsBotCheck').isChecked(),true,mode+': reopening resets unsaved checkbox');
       await page.locator('#editIsBotCheck').uncheck();
+      await page.locator('#editPlayedRank').selectOption('エキスパート');
       await page.getByRole('button',{name:'保存する',exact:true}).click();
       await page.waitForFunction(()=>!document.getElementById('editModal').classList.contains('open')&&battles[0].is_bot===false);
       equal(await page.evaluate(()=>statBattles().length),1,mode+': unmarked battle included in stats');
@@ -270,6 +271,12 @@ async function recordWith(page,poke,medalIdx,result='win'){
       await page.reload({waitUntil:'load'});
       await page.waitForFunction(()=>battles.length===1);
       equal(await page.evaluate(()=>battles[0].is_bot),false,mode+': removed flag survives reload');
+      equal(await page.evaluate(()=>aggRankTier(battles[0],buildPlayedTierMap(battles))),'エキスパート',mode+': rank correction survives reload');
+      await page.evaluate(id=>openEditModal(id),id);
+      equal(await page.locator('#editPlayedRank').inputValue(),'エキスパート',mode+': restores correction');
+      await page.locator('#editPlayedRank').selectOption('');
+      await page.getByRole('button',{name:'保存する',exact:true}).click();
+      await page.waitForFunction(()=>!document.getElementById('editModal').classList.contains('open')&&battles[0].played_rank===null);
       await page.evaluate(()=>showPage('analysis'));
       await page.waitForFunction(()=>analysisLoaded&&allSeriesData.some(s=>s.battles.length===1));
       equal(await page.evaluate(()=>allSeriesData[0].battles.length),1,mode+': analysis includes corrected battle');

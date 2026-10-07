@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=87"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=87" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=87" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=87"></script>
-<script src="js/utils.js?v=87"></script>
-<script src="js/lab-core.js?v=87"></script>
-<script src="js/usage-analytics.js?v=87"></script>
-<link rel="stylesheet" href="styles.css?v=87" />
+<script src="vendor/supabase.min.js?v=88"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=88" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=88" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=88"></script>
+<script src="js/utils.js?v=88"></script>
+<script src="js/lab-core.js?v=88"></script>
+<script src="js/usage-analytics.js?v=88"></script>
+<link rel="stylesheet" href="styles.css?v=88" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -1526,6 +1526,11 @@ SOFTWARE.
         </div>
       </div>
     </div>
+    <div class="modal-field" id="editPlayedRankField">
+      <label for="editPlayedRank">この試合をプレイしたランク帯（訂正用）</label>
+      <select id="editPlayedRank"><option value="">自動判定</option><option>ビギナー</option><option>スーパー</option><option>ハイパー</option><option>エリート</option><option>エキスパート</option><option>マスター</option><option>レジェンド</option></select>
+      <p class="u-fs-fs-xs u-c-text3">集計が実際のランク帯と違う場合に指定してください。保存したレートは変わりません。</p>
+    </div>
     <div class="modal-field">
       <label>マッチ種別</label>
       <select id="editMatchType">
@@ -2060,6 +2065,7 @@ async function migrateGuestData(){
   const series=guestGetSeries();
   // メダルセット付きの記録があるのに、アカウント側（DB）に保存先の列が無い・確認できないときは、
   // 何も書き込まずに中止する（メダル情報を捨てて移行し、元のゲストデータを消すのを防ぐ）
+  if(!playedRankColumnReady&&series.some(s=>guestGetBattles(s.id).some(b=>b.played_rank))) return {failed:true};
   const hasMedalSet=series.some(s=>guestGetBattles(s.id).some(b=>parseMedalSet(b.medal_set)));
   if(hasMedalSet&&medalSetColumnReady!==true) return {blocked:'medal_set'};
   let seriesCount=0,battleCount=0,presetCount=0,failed=false;
@@ -2076,6 +2082,7 @@ async function migrateGuestData(){
       const rows=gb.map(b=>({
         user_id:user.id, series_id:newSeries.id,
         result:b.result, match_type:b.match_type, rank:b.rank||null,
+        ...(b.played_rank?{played_rank:b.played_rank}:{}),
         pokemon:b.pokemon||null, skill1:b.skill1||null, skill2:b.skill2||null,
         items:b.items||null, battle_item:b.battle_item||null, lane:b.lane||null, note:b.note||null,
         kills:b.kills??null, assists:b.assists??null, dmg_dealt:b.dmg_dealt??null, dmg_taken:b.dmg_taken??null, heal:b.heal??null, goals:b.goals??null,
@@ -2220,6 +2227,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.62', date: '2026-10-07', items: ['マスター初戦が前のランク帯に集計される問題を修正しました。対戦履歴の編集で、実際にプレイしたランク帯を訂正できます。']},
   {version: 'v5.61', date: '2026-10-07', items: ['対戦履歴の編集で、BOT戦の指定を後から解除・変更できるようになりました。']},
   {version: 'v5.59', date: '2026-10-05', items: ['対戦履歴を続けて編集すると、登録済みのもちものが空欄になることがある不具合を修正しました。']},
   {version: 'v5.58', date: '2026-10-04', items: ['対戦記録のバシャーモの技を、スタイル切り替えを含む1つの構成にまとめました。']},
@@ -3104,11 +3112,11 @@ const HELP_CONTENT = {
   },
   "record": {
     "title": "❓ 対戦を記録する",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">基本の記録</div><div class=\"help-item\"><span>シリーズを選び、使用ポケモン（任意）とマッチ種別を指定して「勝利」または「敗北」を押します。ポケモンは名前や型で絞り込めます。</span></div><div class=\"help-item\"><span>ランクは試合後のクラス・レートを入力します。マスター以上はレート1000以上をレジェンドとして扱います。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">詳細設定（任意）</div><div class=\"help-item\"><span>ポケモンを選ぶと詳細設定が開きます。わざ・もちもの・バトルアイテム・メダルセット・レーン・メモを記録できます。メダルセットは、ラボの「メダルセット作成」で保存したセットから選びます（記録時点の中身を保存するので、後でセットを変えても過去の記録は変わりません）。専用もちものは自動固定です。レーンは同じボタンを再度押すと解除できます。</span></div><div class=\"help-item\"><span>スタッツはゴール数・KO・アシスト・与ダメージ・被ダメージ・回復量を記録できます。分からない項目は空欄のままで構いません。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">前回の装備を使う</div><div class=\"help-item\"><span>ポケモンを切り替えると、直前のわざ・もちもの・バトルアイテム・メダルセットを記憶します。同じポケモンを選ぶと復元します。この設定は同じブラウザ内に保存されます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">基本の記録</div><div class=\"help-item\"><span>シリーズを選び、使用ポケモン（任意）とマッチ種別を指定して「勝利」または「敗北」を押します。ポケモンは名前や型で絞り込めます。</span></div><div class=\"help-item\"><span>クラス帯はその試合をプレイしたランク、マスター以上は試合後のレートを入力します。マスター以上はレート1000以上をレジェンドとして扱います。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">詳細設定（任意）</div><div class=\"help-item\"><span>ポケモンを選ぶと詳細設定が開きます。わざ・もちもの・バトルアイテム・メダルセット・レーン・メモを記録できます。メダルセットは、ラボの「メダルセット作成」で保存したセットから選びます（記録時点の中身を保存するので、後でセットを変えても過去の記録は変わりません）。専用もちものは自動固定です。レーンは同じボタンを再度押すと解除できます。</span></div><div class=\"help-item\"><span>スタッツはゴール数・KO・アシスト・与ダメージ・被ダメージ・回復量を記録できます。分からない項目は空欄のままで構いません。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">前回の装備を使う</div><div class=\"help-item\"><span>ポケモンを切り替えると、直前のわざ・もちもの・バトルアイテム・メダルセットを記憶します。同じポケモンを選ぶと復元します。この設定は同じブラウザ内に保存されます。</span></div></div>"
   },
   "stats": {
     "title": "❓ 統計",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>選択中シリーズの試合数・勝敗・勝率を、全体・ソロ・デュオ/トリオ・フルパ別に確認できます。</span></div><div class=\"help-item\"><span>今日の成績は午前9時を1日の区切りとします。連勝・連敗は現在の連続数とシリーズ内の最大数を表示します。</span></div><div class=\"help-item\"><span>ランク別・ポケモン別成績や連勝・連敗は、見出しを押すと開閉できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>ランク未入力の試合はランク別集計には含まれません。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">結果の見方</div><div class=\"help-item\"><span>選択中シリーズの試合数・勝敗・勝率を、全体・ソロ・デュオ/トリオ・フルパ別に確認できます。</span></div><div class=\"help-item\"><span>今日の成績は午前9時を1日の区切りとします。連勝・連敗は現在の連続数とシリーズ内の最大数を表示します。</span></div><div class=\"help-item\"><span>ランク別・ポケモン別成績や連勝・連敗は、見出しを押すと開閉できます。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>クラス帯と最初のレート記録は記録した帯で集計します。レート記録が続く場合は直前のレートで判定します。実際の帯と違う場合は対戦履歴の編集で訂正できます。</span></div><div class=\"help-item\"><span>ランク未入力の試合はランク別集計には含まれません。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
   "pokestats": {
     "title": "❓ ポケモン別成績",
@@ -3132,7 +3140,7 @@ const HELP_CONTENT = {
   },
   "seriesanal": {
     "title": "❓ シリーズ分析",
-    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>シリーズを選ぶと、成績の概要・レート推移・使用回数上位12匹を表示します。各分析の見出しを押して詳細を開閉できます。</span></div><div class=\"help-item\"><span>レート推移はマスター以上の記録が2件以上必要です。日別試合数のグラフには2日以上の記録が必要です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">確認できる内訳</div><div class=\"help-item\"><span>型別の平均スタッツ、組み合わせ別の勝率、レーン別・型別・ランク帯別の勝率を確認できます。</span></div><div class=\"help-item\"><span>わざセット別の採用率・勝率、ポケモン別のもちもの成績、シリーズ全体のバトルアイテム成績も確認できます。</span></div><div class=\"help-item\"><span>組み合わせ別の勝率は記録から見た傾向です。使用者・対戦条件の違いもあるため、その組み合わせの強さを保証するものではありません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>ランクは試合後の値を記録します。ランク別集計では、原則として同じシリーズの直前のランク記録から試合開始時の帯を判断します。最初のランク記録だけは、その試合に記録した帯を使います。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
+    "body": "<div class=\"help-section\"><div class=\"help-section-title\">使い方</div><div class=\"help-item\"><span>シリーズを選ぶと、成績の概要・レート推移・使用回数上位12匹を表示します。各分析の見出しを押して詳細を開閉できます。</span></div><div class=\"help-item\"><span>レート推移はマスター以上の記録が2件以上必要です。日別試合数のグラフには2日以上の記録が必要です。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">確認できる内訳</div><div class=\"help-item\"><span>型別の平均スタッツ、組み合わせ別の勝率、レーン別・型別・ランク帯別の勝率を確認できます。</span></div><div class=\"help-item\"><span>わざセット別の採用率・勝率、ポケモン別のもちもの成績、シリーズ全体のバトルアイテム成績も確認できます。</span></div><div class=\"help-item\"><span>組み合わせ別の勝率は記録から見た傾向です。使用者・対戦条件の違いもあるため、その組み合わせの強さを保証するものではありません。</span></div></div><div class=\"help-section\"><div class=\"help-section-title\">集計条件</div><div class=\"help-item\"><span>クラス帯と最初のレート記録は記録した帯で集計します。レート記録が続く場合は直前のレートで判定します。実際の帯と違う場合は対戦履歴の編集で訂正できます。</span></div><div class=\"help-item\"><span>平均は各項目の入力済みの値だけで計算します。未入力は含めず、0は含めます。「平均スタッツから除外する」を選んだ試合は平均の対象外ですが、勝率・試合数には含まれます（BOT戦の設定は別に適用）。</span></div><div class=\"help-item\"><span>BOT戦は既定で集計から除外します。トラッカーの「BOT戦も統計に含める」をオンにすると、統計・分析にも含めます。</span></div></div>"
   },
   "pokedetail": {
     "title": "❓ ポケモン別詳細",
@@ -3176,12 +3184,15 @@ function closeFeedbackModal(){document.getElementById('feedbackModal').classList
 // ---- 分析 ----
 // ==================== 対戦記録のメダルセット ====================
 // DBに medal_set 列があるかを1回だけ確認する（列の追加前に新しい画面を公開しても、記録・読込が壊れないように）
+let playedRankColumnReady=false;
 function ensureMedalSetColumnChecked(){
   if(isGuest()) return Promise.resolve(true);
   if(medalSetColumnReady!==null) return Promise.resolve(medalSetColumnReady);
   if(!medalSetColumnCheck){
     medalSetColumnCheck=(async()=>{
       try{
+        const check=await db.from('battles').select('played_rank').limit(1);
+        playedRankColumnReady=!check.error;
         const {error}=await db.from('battles').select('medal_set').limit(1);
         medalSetColumnReady=!error;
         if(error) console.warn('medal_set column not available:',error.message||error);
@@ -3192,7 +3203,7 @@ function ensureMedalSetColumnChecked(){
   }
   return medalSetColumnCheck;
 }
-function withMedalSetCol(cols){ return (!isGuest()&&medalSetColumnReady)?cols+',medal_set':cols; }
+function withMedalSetCol(cols){ return cols+((!isGuest()&&medalSetColumnReady)?',medal_set':'')+((!isGuest()&&playedRankColumnReady)?',played_rank':''); }
 function medalSetRecordable(){ return isGuest()||medalSetColumnReady===true; }
 
 // 記録フォーム用にプリセットを読み込む（端末の保存分→ログイン中ならアカウントの保存分）
@@ -4417,6 +4428,8 @@ function openEditModal(id){
   document.getElementById('editBattleId').value=id;
   document.getElementById('editResult').value=result;
   document.getElementById('editIsBotCheck').checked=!!battle.is_bot;
+  document.getElementById('editPlayedRank').value=battle.played_rank||'';
+  document.getElementById('editPlayedRankField').style.display=isGuest()||playedRankColumnReady?'':'none';
   setEditRankFields(rank);
   document.getElementById('editMatchType').value=matchType;
   // ポケモン選択 select を動的生成（タイプ別グループ）
@@ -4475,6 +4488,7 @@ async function saveEdit(){
   const lane=editSelectedLane||null;
   const is_bot=document.getElementById('editIsBotCheck').checked;
   const update={result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,...readStatInputs('editStat')};
+  if(isGuest()||playedRankColumnReady) update.played_rank=document.getElementById('editPlayedRank').value||null;
   // メダルセット（ゲスト、またはDBに列がある場合だけ更新）
   if(isGuest()||medalSetColumnReady){
     const v=document.getElementById('editMedalSet')?.value||'';
@@ -5269,7 +5283,7 @@ function renderHistory(){
       ?'<span class="badge badge-win">✓ 勝利</span>'
       :'<span class="badge badge-loss">✗ 敗北</span>';
     const tb=`<span class="badge ${cm[b.match_type]||'badge-solo'}">${lm[b.match_type]||b.match_type}</span>`;
-    const rkb=rankBadge(b.rank);
+    const rkb=rankBadge(b.rank)+(b.played_rank?`<span class="badge">集計：${escapeHtml(b.played_rank)}</span>`:'');
     const botb=b.is_bot?`<span class="badge badge-bot"><svg class="ico ico-l" aria-hidden="true"><use href="#i-bot"></use></svg>BOT</span>`:'';
     const avgb=b.exclude_from_avg_stats===true?'<span class="badge stats-excluded-badge">平均対象外</span>':'';
     const laneb=b.lane?`<span class="badge badge-lane">${escapeHtml(b.lane)}</span>`:'';
@@ -7697,8 +7711,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=87"></script>
-<script src="ratio.js?v=87"></script>
+<script src="ratio-labels.js?v=88"></script>
+<script src="ratio.js?v=88"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){
