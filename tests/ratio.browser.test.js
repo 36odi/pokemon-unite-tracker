@@ -42,6 +42,41 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     return Object.keys(LAB_SKILLS).length;
   });
   eq(count,101,'all Pokemon render');
+  const coverage=await page.evaluate(()=>{
+    const previous=labCalcResult,stats={HP:6000,攻撃:300,特攻:400,防御:200,特防:200};
+    labCalcResult=stats;let rows=0,calc=0,dc=0;
+    const box=document.createElement('div');
+    try{
+      for(const [poke,skills] of Object.entries(LAB_SKILLS))for(const r of skills){
+        rows++;const label=ratioLabel(poke,r),note=ratioComponentNote(poke,r);
+        for(const [kind,html] of [['ratio',ratioRow(r,poke)],['calc',_calcDmgHtml(r,poke)],['dc',_dcDmgHtml(r,stats,stats,9,0,poke)]]){
+          if(!html||r.coeff==null)continue;
+          box.innerHTML=html;
+          if(!box.textContent.includes(label))throw Error(poke+'/'+r.name+'/'+kind+': label differs');
+          if(note&&!box.textContent.includes(note))throw Error(poke+'/'+r.name+'/'+kind+': missing note');
+          if(kind==='calc')calc++;if(kind==='dc')dc++;
+        }
+      }
+    }finally{labCalcResult=previous;}
+    return {rows,calc,dc};
+  });
+  eq(coverage.rows,1851,'all ratio rows audited across renderers');
+  eq(coverage.calc>1500&&coverage.dc>1500,true,'both calculation renderers checked');
+  await page.evaluate(()=>switchLab('calc'));await page.selectOption('#labPokeSelect','アブソル');
+  await page.selectOption('#labSkill1Sel','つじぎり');
+  eq((await page.locator('#labDmgOut1').innerText()).includes('ダメージ（2段目）'),true,'stat screen correct second stage');
+  await page.selectOption('#labPokeSelect','ヌメルゴン');await page.selectOption('#labSkill2Sel','アシッドボム');
+  eq((await page.locator('#labDmgOut2').innerText()).includes('突進は2回命中します。式は1回分です。'),true,'stat screen retains component warning');
+  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','アブソル');await page.selectOption('#dcDefPoke','カメックス');
+  await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
+  await page.selectOption('#dcSkill1Sel','つじぎり');
+  eq((await page.locator('#dcDmgOut1').innerText()).includes('ダメージ（2段目）'),true,'damage screen correct second stage');
+  await page.selectOption('#dcAtkPoke','ヌメルゴン');await page.selectOption('#dcSkill2Sel','アシッドボム');
+  eq((await page.locator('#dcDmgOut2').innerText()).includes('突進は2回命中します。式は1回分です。'),true,'damage screen retains component warning');
+  await page.setViewportSize({width:390,height:844});
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'shared descriptions fit mobile');
+  await page.locator('#dcResultCard').screenshot({path:path.join(OUT,'shared-labels-mobile.png')});
+  await page.setViewportSize({width:1100,height:900});await page.evaluate(()=>switchLab('ratio'));
   await page.evaluate(()=>{ratioPokemon='ヌメルゴン';ratioRender();});
   eq(await page.locator('#ratioResult .ratio-label', {hasText:'ダメージ（中心）'}).count(),2,'center condition survives upgrade inheritance');
   eq(await page.locator('#ratioResult .ratio-label', {hasText:'ダメージ（周囲）'}).count(),2,'side condition survives upgrade inheritance');

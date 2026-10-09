@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=89"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=89" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=89" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=89"></script>
-<script src="js/utils.js?v=89"></script>
-<script src="js/lab-core.js?v=89"></script>
-<script src="js/usage-analytics.js?v=89"></script>
-<link rel="stylesheet" href="styles.css?v=89" />
+<script src="vendor/supabase.min.js?v=90"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=90" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=90" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=90"></script>
+<script src="js/utils.js?v=90"></script>
+<script src="js/lab-core.js?v=90"></script>
+<script src="js/usage-analytics.js?v=90"></script>
+<link rel="stylesheet" href="styles.css?v=90" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2227,6 +2227,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.64', date: '2026-10-09', items: ['ラボのわざ説明をレシオ一覧・ステータス計算・ダメージ計算で統一し、日本語の表記を整理しました。']},
   {version: 'v5.63', date: '2026-10-09', items: ['ラボにもちものの効果発動の切り替えを追加しました。ステータス補正・回復対象・ダメージの端数処理と、もちものの数値を見直しました。']},
   {version: 'v5.62', date: '2026-10-07', items: ['マスター初戦が前のランク帯に集計される問題を修正しました。対戦履歴の編集で、実際にプレイしたランク帯を訂正できます。']},
   {version: 'v5.61', date: '2026-10-07', items: ['対戦履歴の編集で、BOT戦の指定を後から解除・変更できるようになりました。']},
@@ -6686,132 +6687,14 @@ function _renderDmgRows(outId, rows){
 }
 
 
-// dmgType の機械翻訳まじりラベルを表示時に可読化（wikiwiki寄せ・部分的）
-const DC_LABEL_FIXES=[
-  // ---- 連語（ゲーム用語）----
-  // タイレーツ: 陣形はゲーム内正式名のひらがな。隊長=ヘイチョー/隊員=ヘイ（wikiwiki準拠）
-  [/No\s*後退\s*(フォーメーション|formation)/g,'はいすいのじん'],
-  [/派遣\s*formation\s*per\s*トルーパー/g,'はへいのじん（ヘイごと）'],
-  [/派遣\s*formation\s*トルーパー/g,'はへいのじん（ヘイ）'],
-  [/派遣\s*formation/g,'はへいのじん'],
-  [/ブラス(?=\s)/g,'ヘイチョー'],
-  [/トルーパー/g,'ヘイ'],
-  [/鉄\s*Head\s*バフ/g,'アイアンヘッドバフ'],
-  [/鉄\s*Head/g,'アイアンヘッド'],
-  [/No\s*光\s*スクリーン\s*Boost/gi,'ひかりのかべ強化なし'],
-  [/光\s*スクリーン\s*Boost/gi,'ひかりのかべ強化'],
-  [/光\s*スクリーン/g,'ひかりのかべ'],
-  [/女王\s*威厳\s*buff/g,'女王の威厳バフ'],
-  [/女王\s*威厳/g,'女王の威厳'],
-  [/ダーク\s*波動/g,'ダークウェーブ'],
-  [/シャドー\s*Ball/gi,'シャドーボール'],
-  [/basic\s*attacks?/gi,'通常攻撃'],
-  [/boosted\s*attacks?/gi,'強化攻撃'],
-  [/follow-?up\s*attack/gi,'追撃'],
-  [/Medium\s*Distance/gi,'中距離'],
-  [/最大y?\s*Distance/g,'最大距離'],
-  [/Less\s*Than\s*5\s*コインマーク/gi,'コインマーク5未満'],
-  [/Per\s*コイン/gi,'コインごと'],
-  [/per\s*Pokémon\s*hit(\s*-\s*up\s*to\s*\d+)?/gi,'命中ポケモンごと'],
-  [/per\s*charge\s*stack/gi,'チャージスタックごと'],
-  [/per\s*stack/gi,'スタックごと'],
-  [/per\s*Stealth\s*岩/gi,'ステルスロックごと'],
-  [/per\s*固有\s*Enemy/gi,'敵ごと'],
-  [/Per\s*Enemy/gi,'敵ごと'],
-  [/per\s*クリーム/gi,'クリームごと'],
-  [/per\s*Diagonal/gi,'斜めごと'],
-  [/Per\s*ヒット/gi,'ヒットごと'],
-  [/Against\s*Players/gi,'対プレイヤー'],
-  [/Against\s*Wilds/gi,'対野生'],
-  [/Below\s*33%\s*HP/gi,'HP33%未満'],
-  [/Between\s*66%\s*and\s*33%\s*HP/gi,'HP33〜66%'],
-  [/when\s*target\s*is\s*<\s*50%\s*HP/gi,'対象HP50%未満時'],
-  [/A\s*Pokémon\s*has\s*Bad\s*夢s?/gi,'相手が悪夢状態'],
-  [/Mysterious\s*パワー/gi,'ふしぎなパワー'],
-  // 語順/読みやすさの整形（具体フレーズを汎用語ルールより前に）
-  [/ティックごと\s*of\s*flamethrower/gi,'かえんほうしゃのティックごと'],
-  [/自動\s*return\s*first\s*Leaf\s*or\s*手動\s*return\s*first\s*Leaf\s*if\s*after\s*1s/gi,'自動／手動で最初の葉に戻る（手動は1秒後）'],
-  [/ヒット\s*during\s*追撃/g,'追撃中のヒット'],
-  [/During\s*連続\s*回転/gi,'連続回転中'],
-  [/最大y?\s*Evolved/gi,'最終進化'],
-  [/up\s*to\s*(\d+)\s*total/gi,'合計最大$1'],
-  [/中\s*range/gi,'中距離'],
-  [/増加d\s*爆発/gi,'増幅爆発'],
-  [/No\s*ゲージ/g,'ゲージなし'],
-  [/最大\s*ゲージ/g,'ゲージ最大'],
-  [/of\s*flamethrower/gi,'のかえんほうしゃ'],
-  [/return\s*first\s*Leaf/gi,'最初の葉に戻る'],
-  [/if\s*after\s*1s/gi,'（1秒後）'],
-  [/塊\s*of\s*Snow/gi,'雪の塊'],
-  [/円形\s*Draw/gi,'円形展開'],
-  [/最終ヒット\s*and\s*shove/gi,'最終ヒット・押し出し'],
-  [/発動\s*by\s*Thunderbolt/gi,'10まんボルトで発動'],
-  [/If\s*(永遠|霧)\s*Blast\s*hit\s*last/gi,'$1ブラストが最後に命中時'],
-  // ---- 単語 ----
-  [/Pokémon|Pokemon/g,'ポケモン'],
-  [/formation/gi,'陣'],
-  [/attacks?/gi,'攻撃'],
-  [/\bbuff\b/gi,'バフ'],
-  [/\bBoost\b/gi,'強化'],
-  [/\bTargets?\b/gi,'対象'],
-  [/\bEnem(?:y|ies)\b/gi,'敵'],
-  [/\bPlayers?\b/gi,'プレイヤー'],
-  [/\bWilds?\b/gi,'野生'],
-  [/\bDistance\b/gi,'距離'],
-  [/\brange\b/gi,'距離'],
-  [/\bClosest\b/gi,'最近'],
-  [/\btotal\b/gi,'合計'],
-  [/\bCreation\b/gi,'生成'],
-  [/De-?Spawn/gi,'消滅'],
-  [/\bSpawn\b/gi,'生成'],
-  [/\bMega\b/gi,'メガ'],
-  [/\bAoE\b/gi,'範囲'],
-  [/\bup\s*to\b/gi,'最大'],
-  [/\bshove\b/gi,'押し出し'],
-  [/\bEnd\b/gi,'終了'],
-  [/\bReplacement\b/gi,'差し替え'],
-  [/\bProc\b/gi,'発動'],
-  [/\bEvolved\b/gi,'進化'],
-  [/\bBlast\b/gi,'ブラスト'],
-  [/\bSnow\b/gi,'雪'],
-  [/\bLeaf\b/gi,'葉'],
-  [/\breposition\b/gi,'再配置'],
-  [/\bbreak\b/gi,'破壊'],
-  [/\bDiagonal\b/gi,'斜め'],
-  [/\breturn\b/gi,'戻り'],
-  [/\bHoT\b/g,'継続回復'],
-  [/\bDraw\b/gi,'展開'],
-  [/\bcharge\b/gi,'チャージ'],
-  [/連続\s*回転/g,'連続回転'],
-  // ---- 壊れ綴り ----
-  [/最大y/g,'最大'],
-  [/中dle/g,'中間'],
-  [/増加d/g,'増加'],
-  // ---- 接続詞・整形（最後）----
-  [/\bunder\b/gi,''],
-  [/\bin\b/gi,''],
-  [/\bof\b/gi,'の'],
-  [/\band\b/gi,'・'],
-  [/\bor\b/gi,'・'],
-  [/\bby\b/gi,''],
-  [/\bif\b/gi,''],
-  [/\bafter\b/gi,''],
-  [/\bduring\b/gi,'中'],
-  [/\bhit\b/gi,'命中'],
-  [/\blast\b/gi,'最後'],
-  [/([^\x00-\x7F])s(?=[\s,)\]、）]|$)/g,'$1'],
-  [/\s*\bgroup\b/gi,''],
-  [/\s*・\s*/g,'・'],
-  [/\s{2,}/g,' '],
-];
-function dcCleanLabel(s){
-  if(!s) return s;
-  let o=s;
-  for(const [re,rep] of DC_LABEL_FIXES) o=o.replace(re,rep);
-  return o.replace(/\s+([,)\]）、])/g,'$1').replace(/([(（\[])\s+/g,'$1').replace(/\s{2,}/g,' ').trim();
+// レシオ一覧と共通の説明・条件・部分式の注意書きを表示する。
+function labEffectLabelHtml(poke,r){
+  const name=ratioMoveName(poke,r), label=ratioLabel(poke,r), note=ratioComponentNote(poke,r);
+  const title=name!==r.name&&!label.startsWith(name)?name+'：'+label:label;
+  return escapeHtml(title)+(note?`<span class="u-c-text3" style="display:block;">${escapeHtml(note)}</span>`:'');
 }
 
-function _calcDmgHtml(r){
+function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   if(!labCalcResult) return '';
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
@@ -6839,7 +6722,7 @@ function _calcDmgHtml(r){
   let formula=parts.join(' + ');
   const appliedMult=isHealShield?mult:damageMult;
   if(appliedMult!==1)formula=`(${formula}) × ${appliedMult.toFixed(2)} (${isHealShield?hsItems.join(', '):'エナジーアンプ'})`;
-  const label = dcCleanLabel(r.dmgType) || (statLabel+'ダメージ');
+  const label = labEffectLabelHtml(poke,r);
   // ヒット数が複数の場合は合計も表示
   if(hits > 1){
     const total = perHit * hits;
@@ -6953,7 +6836,7 @@ function labRefreshCalcMedalSelect(){
 // ================================================================
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
-function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
+function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
   if(r?.coeff==null&&r?.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
   if(!r||r.coeff==null||r.coeff<=0) return null;
   const st=r.stat||'攻撃';
@@ -6973,7 +6856,7 @@ function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0){
   const damageMult=labItemDamageMultiplier(equipment,labReadEffects('dcAtk'));
   const actPerHit=isHealShield?rawPerHit:Math.floor(dcCalcActual(rawPerHit,defStat,0,pctIgnore)*damageMult+1e-9);
   const hits=r.hits||1;
-  const label=dcCleanLabel(r.dmgType)||'ダメージ';
+  const label=labEffectLabelHtml(poke,r);
   const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">[${r.upg}]</span>`:'';
   if(isHealShield){
     return `<div class="lab-dmg-row">
@@ -7647,8 +7530,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=89"></script>
-<script src="ratio.js?v=89"></script>
+<script src="ratio-labels.js?v=90"></script>
+<script src="ratio.js?v=90"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){

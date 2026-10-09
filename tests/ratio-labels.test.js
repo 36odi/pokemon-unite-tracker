@@ -11,6 +11,9 @@ for(const [poke,rows] of Object.entries(K)){
     const text=label(poke,r),key=[r.slot,name(poke,r),r.upg,text].join('|');
     eq(/[a-z]/i.test(text.replace(/HP|KO/g,'')),false,poke+'/'+r.name+' no mixed English');
     eq(text.includes('要確認'),false,poke+'/'+r.name+' known component structure');
+    eq(/[ ：&]|ティック|毎/.test(text),false,poke+'/'+r.name+' consistent Japanese formatting');
+    let depth=0;for(const c of text){if(c==='（')depth++;if(c==='）')depth--;assert.ok(depth>=0,text);}
+    eq(depth,0,poke+'/'+r.name+' balanced condition parentheses');
     eq(labels.has(key),false,poke+'/'+r.name+' distinguish each condition');labels.add(key);
   }
 }
@@ -25,5 +28,9 @@ eq(label('ピカチュウ',pick('ピカチュウ','エレキボール')[0]),'範
 eq(label('アブソル',pick('アブソル','つじぎり','ダメージ - 初撃')[0]),'ダメージ（2段目）','Second Hit is not first hit');
 eq(pick('ギャラドス','じたばた').every(r=>label('ギャラドス',r).includes('自分のHP')),true,'Flail depends on own HP');
 eq(note('ヌメルゴン',pick('ヌメルゴン','りゅうのはどう','回復')[0]).includes('含まれません'),true,'incomplete formula clearly noted');
+eq(label('マホイップ',pick('マホイップ','ふわふわハッピーシャワー')[0]),'回復（クリーム1個あたり・最大48個）','cream unit and limit retained');
+eq(label('サーナイト',pick('サーナイト','フェアリーヴォイド').find(r=>r.dmgType.includes('ティック'))),'継続ダメージ（全4回）','tick wording retains count');
+eq(label('ミライドン',pick('ミライドン','チャージビーム').find(r=>r.dmgType==='ダメージ - 通常')),'ダメージ（通常時）','normal move damage is not called basic attack');
+eq(label('バシャーモ',pick('バシャーモ','オーバーヒート').find(r=>r.dmgType.includes('中 チャージ'))),'ダメージ（中程度までためたとき）','charge wording');
 eq(JSON.stringify(K),before,'display dictionary never changes source data');
 console.log('ALL PASS — '+checks+' label checks');
