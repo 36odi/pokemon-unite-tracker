@@ -1,4 +1,4 @@
-const CACHE = 'unite-tracker-v88';
+const CACHE = 'unite-tracker-v89';
 
 // オフラインで動作させるために必要なアプリシェル一式（ローカル資産）。
 // JS/CSS は index.html と同じ ?v=版数 付きURLで持つ（版数は CACHE の数字と同じ。更新のたびに両方を上げる）。
@@ -6,23 +6,23 @@ const CACHE = 'unite-tracker-v88';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=88',
+  './styles.css?v=89',
   './manifest.json',
-  './lab_data.js?v=88',
-  './ratio.js?v=88',
-  './ratio-labels.js?v=88',
-  './js/constants.js?v=88',
-  './js/utils.js?v=88',
-  './js/lab-core.js?v=88',
-  './js/usage-analytics.js?v=88',
+  './lab_data.js?v=89',
+  './ratio.js?v=89',
+  './ratio-labels.js?v=89',
+  './js/constants.js?v=89',
+  './js/utils.js?v=89',
+  './js/lab-core.js?v=89',
+  './js/usage-analytics.js?v=89',
   './images/pokemon/25.png',
   './images/app-icon-192.png',
   './images/app-icon-512.png',
   './images/app-icon-maskable-512.png',
   './images/apple-touch-icon.png',
   './images/brand-mark.svg',
-  './vendor/supabase.min.js?v=88',
-  './vendor/chart.umd.min.js?v=88',
+  './vendor/supabase.min.js?v=89',
+  './vendor/chart.umd.min.js?v=89',
 ];
 
 self.addEventListener('install', e => {

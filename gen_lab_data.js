@@ -188,6 +188,7 @@ console.error(`メダル: ${LAB_MEDALS.length}枚`);
 // ========================
 // JS出力
 // ========================
+Object.assign(LAB_ITEMS, JSON.parse(fs.readFileSync(path.join(__dirname,'data/held-item-stats.json'),'utf8')).items);
 const out = [
   '// ===== ラボデータ（スプレッドシートより自動生成）=====',
   `const LAB_MEDAL_SETS=${JSON.stringify(LAB_MEDAL_SETS)};`,

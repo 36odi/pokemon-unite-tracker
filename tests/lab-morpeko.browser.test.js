@@ -18,12 +18,12 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     await page.locator('#labLvSlider').fill(String(lv));await page.locator('#labLvSlider').dispatchEvent('input');
     const state=await page.evaluate(()=>({atk:labCalcResult['攻撃'],normal:document.getElementById('labDmgOutNormal').innerText,passive:document.getElementById('labDmgOutPassive').innerText,unite:document.getElementById('labDmgOutUnite').innerText}));
     const contains=(text,n,label)=>eq(text.includes(n.toLocaleString('en-US')),true,label);
-    contains(state.normal,state.atk,'normal Lv'+lv);contains(state.normal,Math.round(state.atk*1.25),'boosted Lv'+lv);
-    contains(state.passive,Math.round(state.atk*.85+340),'heal Lv'+lv);
-    contains(state.unite,Math.round(state.atk*2.6+1040),'full belly Lv'+lv);contains(state.unite,Math.round(state.atk*2.6+1200),'hangry Lv'+lv);
+    contains(state.normal,state.atk,'normal Lv'+lv);contains(state.normal,Math.floor(state.atk*1.25),'boosted Lv'+lv);
+    contains(state.passive,Math.floor(state.atk*.85+340),'heal Lv'+lv);
+    contains(state.unite,Math.floor(state.atk*2.6+1040),'full belly Lv'+lv);contains(state.unite,Math.floor(state.atk*2.6+1200),'hangry Lv'+lv);
     for(const [slot,name,formula] of [[1,'スパーク+',[1.7,360,1.71,684]],[2,'ダメおし+',[1.8,720,.6,240]]]){
       await page.selectOption('#labSkill'+slot+'Sel',name);const text=await page.locator('#labDmgOut'+slot).innerText();
-      contains(text,Math.round(state.atk*formula[0]+formula[1]),name+' main');contains(text,Math.round(state.atk*formula[2]+formula[3]),name+' additional');
+      contains(text,Math.floor(state.atk*formula[0]+formula[1]),name+' main');contains(text,Math.floor(state.atk*formula[2]+formula[3]),name+' additional');
     }
   }
   await page.locator('#labSkillCard').screenshot({path:path.join(OUT,'lab-morpeko-desktop.png')});
@@ -38,7 +38,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','モルペコ');await page.selectOption('#dcDefPoke','ピカチュウ');
   await page.locator('#labDmgCalcPanel button', {hasText:'計算する'}).click();
   eq(await page.locator('#dcPassiveSection').isVisible(),true,'DC passive visible');
-  const expectedHeal=await page.evaluate(()=>Math.round(dcAtkStats['攻撃']*.85+340));
+  const expectedHeal=await page.evaluate(()=>Math.floor(dcAtkStats['攻撃']*.85+340));
   eq((await page.locator('#dcDmgOutPassive').innerText()).includes(expectedHeal.toLocaleString('en-US')),true,'DC healing ignores defender defense');
   await page.selectOption('#dcAtkPoke','ギルガルド');eq(await page.locator('#dcPassiveSection').isVisible(),false,'Shield Stance buffs do not create empty DC passive section');
   await page.selectOption('#dcAtkPoke','ピカチュウ');eq(await page.locator('#dcPassiveSection').isVisible(),false,'DC passive hidden on switch');
