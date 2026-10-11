@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=93"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=93" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=93" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=93"></script>
-<script src="js/utils.js?v=93"></script>
-<script src="js/lab-core.js?v=93"></script>
-<script src="js/usage-analytics.js?v=93"></script>
-<link rel="stylesheet" href="styles.css?v=93" />
+<script src="vendor/supabase.min.js?v=94"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=94" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=94" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=94"></script>
+<script src="js/utils.js?v=94"></script>
+<script src="js/lab-core.js?v=94"></script>
+<script src="js/usage-analytics.js?v=94"></script>
+<link rel="stylesheet" href="styles.css?v=94" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -1742,20 +1742,19 @@ function recordSkillValue(pokemon,slot,value){
   return value;
 }
 
+function setRecordSkillOptions(select,choices=[]){
+  if(!select)return;
+  select.innerHTML='<option value="">— 選択 —</option>'+choices.map(s=>`<option value="${s}">${s}</option>`).join('');
+  select.value=choices.length===1?choices[0]:'';
+}
+
 function updateDetailForPoke(pokeName){
   // 技セット更新
   const skill=SKILLS[pokeName];
   const s1=document.getElementById('skill1');
   const s2=document.getElementById('skill2');
-  if(s1&&s2){
-    if(skill){
-      s1.innerHTML='<option value="">— 選択 —</option>'+skill.s1.map(s=>`<option value="${s}">${s}</option>`).join('');
-      s2.innerHTML='<option value="">— 選択 —</option>'+skill.s2.map(s=>`<option value="${s}">${s}</option>`).join('');
-    } else {
-      s1.innerHTML='<option value="">— 選択 —</option>';
-      s2.innerHTML='<option value="">— 選択 —</option>';
-    }
-  }
+  setRecordSkillOptions(s1,skill?.s1);
+  setRecordSkillOptions(s2,skill?.s2);
   // もちもの・バトルアイテムをリセット
   resetAllItemPickers();
   // 専用もちもの処理
@@ -2230,6 +2229,7 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version: 'v5.68', date: '2026-10-11', items: ['対戦記録で、わざ候補が1つの欄はポケモンを選ぶと自動で選択されるようになりました。']},
   {version: 'v5.67', date: '2026-10-11', items: ['サンダース（スピード型）とブースター（バランス型）を追加し、それぞれのわざを対戦記録で選べるようになりました。']},
   {version: 'v5.66', date: '2026-10-11', items: ['ラボのレシオ一覧と計算画面に、回復量や特性の効果を追加しました。能力の上昇・減少も確認できます。']},
   {version: 'v5.65', date: '2026-10-11', items: ['ラボにもちもの自身の追加ダメージ・回復・シールド15種のON/OFFと発動量の表示を追加しました。']},
@@ -4412,8 +4412,8 @@ function updateEditSkillsForPoke(pokeName){
   const skill=SKILLS[pokeName];
   const s1=document.getElementById('editSkill1');
   const s2=document.getElementById('editSkill2');
-  if(s1) s1.innerHTML='<option value="">— 選択 —</option>'+(skill?skill.s1.map(s=>`<option value="${s}">${s}</option>`).join(''):'');
-  if(s2) s2.innerHTML='<option value="">— 選択 —</option>'+(skill?skill.s2.map(s=>`<option value="${s}">${s}</option>`).join(''):'');
+  setRecordSkillOptions(s1,skill?.s1);
+  setRecordSkillOptions(s2,skill?.s2);
   const dedicated=DEDICATED_ITEMS[pokeName];
   const fw=document.getElementById('editItem1Fixed');
   const nw=document.getElementById('editItem1Normal');
@@ -4456,8 +4456,9 @@ function openEditModal(id){
   updateEditSkillsForPoke(pokemon||'');
   const s1=document.getElementById('editSkill1');
   const s2=document.getElementById('editSkill2');
-  if(s1&&battle.skill1)s1.value=recordSkillValue(pokemon,'s1',battle.skill1);
-  if(s2&&battle.skill2)s2.value=recordSkillValue(pokemon,'s2',battle.skill2);
+  // 既存記録を開くときは、未選択も含めて保存済みの内容を復元する。
+  if(s1)s1.value=recordSkillValue(pokemon,'s1',battle.skill1||'');
+  if(s2)s2.value=recordSkillValue(pokemon,'s2',battle.skill2||'');
   const dedicated=DEDICATED_ITEMS[pokemon];
   const itemArr=battle.items?battle.items.split(','):[];
   // items は [スロット1, スロット2, スロット3]。専用もちものの場合は [0] が専用（固定表示）。
@@ -7598,8 +7599,8 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=93"></script>
-<script src="ratio.js?v=93"></script>
+<script src="ratio-labels.js?v=94"></script>
+<script src="ratio.js?v=94"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){
