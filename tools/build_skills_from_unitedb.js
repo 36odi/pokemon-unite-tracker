@@ -61,6 +61,7 @@ eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));
 const SK=globalThis.LAB_SKILLS;
 const beforeAdditions=JSON.stringify(SK);
 require('./lab_source_additions')(SK,csv.slice(1).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]]))));
+require('./lab_passive_ratios')(SK,csv.slice(1).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]]))));
 const additionsChanged=beforeAdditions!==JSON.stringify(SK);
 
 // 統合シートへの反映前でもfull regenで新ポケモンを失わないため、構造だけを明示する。

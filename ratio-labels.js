@@ -293,6 +293,9 @@ function ratioMoveName(poke,r){
 }
 
 function ratioComponentNote(poke,r){
+  if(r.componentNote)return r.componentNote;
+  if(poke==='マッシブーン'&&r.name.startsWith('きゅうけつ')&&/与ダメージ割合/.test(r.dmgType))
+    return '表示値は与ダメージに対する回復率（%）です。回復HP量ではありません。実際の与ダメージが必要なため、回復補正はこの割合へ自動適用しません。';
   if(poke==='ヌメルゴン'&&r.name.startsWith('りゅうのはどう')&&r.dmgType==='回復')
     return '回復の固定部分です。自身の減少HPに応じた回復はこの式に含まれません。';
   if(poke==='ヌメルゴン'&&r.name.startsWith('アシッドボム')&&ratioLabel(poke,r).includes('突進'))

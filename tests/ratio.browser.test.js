@@ -60,7 +60,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     }finally{labCalcResult=previous;}
     return {rows,calc,dc};
   });
-  eq(coverage.rows,1851,'all ratio rows audited across renderers');
+  eq(coverage.rows,1885,'all ratio rows including 34 additional passive components audited across renderers');
   eq(coverage.calc>1500&&coverage.dc>1500,true,'both calculation renderers checked');
   await page.evaluate(()=>switchLab('calc'));await page.selectOption('#labPokeSelect','アブソル');
   await page.selectOption('#labSkill1Sel','つじぎり');

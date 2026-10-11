@@ -47,7 +47,8 @@ function ratioFormula(r,multiplier=1){
   if(r.coeff) parts.push(r.stat+' × '+fmt(r.coeff)+'％');
   if(r.lvScale) parts.push(fmt(r.lvScale)+' ×（Lv − 1）');
   if(r.fixed) parts.push(fmt(r.fixed));
-  return parts.join(' ＋ ')||'0';
+  const formula=parts.join(' ＋ ')||'0';
+  return labEffectUnit(r)?'（'+formula+'）％':formula;
 }
 function ratioRow(r,poke){
   const hits=Number(r.hits)||1;

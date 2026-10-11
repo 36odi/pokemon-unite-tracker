@@ -20,7 +20,7 @@ for(const [p,rows] of Object.entries(K))for(const r of rows.filter(r=>r.sourceKe
   eq([r.coeff,r.fixed,r.lvScale],[num(s.ratio_percent),num(s.base_value),num(s.level_scaling)],r.sourceKey);
   eq(r.stat,s.stat_type==='SpAtk'?'特攻':'攻撃','scaling stat');linked++;
 }
-eq(linked,46,'existing 31 plus 11 Toxtricity source components and 4 upgrade components');
+eq(linked,80,'existing 46 source-linked rows plus 34 passive ratio components');
 const mor=stats.filter(r=>r.pokemon_name==='Morpeko').sort((a,b)=>num(a.level)-num(b.level));
 eq(mor.map(r=>num(r.level)),Array.from({length:15},(_,i)=>i+1),'complete Morpeko levels');
 for(const [dest,src] of Object.entries({hp:'hp',atk:'attack',def:'defense',spatk:'sp_attack',spdef:'sp_defense',ms:'move_speed'}))eq(S['モルペコ'][dest],mor.map(r=>num(r[src])),dest);

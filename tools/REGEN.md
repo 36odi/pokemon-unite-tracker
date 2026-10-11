@@ -42,6 +42,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ## 対応づけの仕組み（変換器）
 
+特性の数式は `lab_passive_ratios.js` が既存正本CSVの成分キーから取り込む。空欄を数式0として登録せず、既存9成分を保持し、追加34成分を再生成・更新する。回復や能力上昇の表示・分類は `tests/lab-ratio-effects.test.js` と `tests/lab-ratio-effects.browser.test.js` で確認する。
+
 `tools/build_skills_from_unitedb.js` は **名前や値ではなく「スロット内のわざの並び順 × 成分の並び順 × 強化(+)有無」** で
 ツール行と unite-db 成分を対応づける。これにより：
 
