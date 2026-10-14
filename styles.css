@@ -1,3 +1,28 @@
+  /* 記録からの計算・ポケモン別の入口・A/B比較 */
+  [hidden]{display:none!important;}
+  .lr-button{font:inherit;font-size:var(--fs-sm);color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;cursor:pointer;line-height:1.5;}
+  .lr-button:hover,.lr-tool:hover{border-color:var(--accent);color:var(--text);}
+  .lr-button:focus-visible,.lr-tool:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  .lr-primary{background:var(--accent-bg);border-color:var(--accent);color:var(--text);font-weight:600;}
+  .lr-history-actions,.lr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .lr-history-actions{border-top:1px solid var(--border);padding-top:10px;}
+  .lr-caption{font-size:var(--fs-xs);line-height:1.8;color:var(--text2);margin:10px 0;overflow-wrap:anywhere;}
+  .lr-hub-title{display:flex;align-items:center;gap:12px;margin:16px 0 6px;}
+  .lr-hub-title strong{font-size:var(--fs-xl);}.lr-hub-title p{font-size:var(--fs-sm);color:var(--text2);margin-top:4px;}
+  .lr-tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);padding-bottom:12px;margin:12px 0 18px;}
+  .lr-tabs .lr-button{flex:1;padding:10px 5px;}.lr-tabs .active{background:var(--accent-bg);border-color:var(--accent);color:var(--text);}
+  .lr-build{padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);margin-bottom:12px;}
+  .lr-build-heading,.lr-source-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .lr-sample{padding:4px 9px;background:var(--bg3);border-radius:20px;color:var(--text2);font-size:var(--fs-xs);}
+  .lr-build-stats{display:flex;gap:12px;align-items:baseline;margin:14px 0 10px;}.lr-build-stats strong{font-size:var(--fs-2xl);color:var(--accent);}.lr-build-stats small{font-size:var(--fs-md);}.lr-build-stats span{color:var(--text2);font-size:var(--fs-xs);}
+  .lr-build-skills{font-size:var(--fs-sm);line-height:1.8;overflow-wrap:anywhere;}.lr-item-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}.lr-item-chips>span{display:flex;align-items:center;gap:4px;padding:4px 7px;background:var(--bg3);border-radius:var(--radius-sm);font-size:var(--fs-xs);}
+  .lr-tool-grid{display:grid;gap:10px;}.lr-tool{font:inherit;text-align:left;padding:16px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;}.lr-tool strong{display:flex;justify-content:space-between;font-size:var(--fs-md);}.lr-tool>span{display:block;margin-top:6px;color:var(--text2);font-size:var(--fs-xs);line-height:1.6;}
+  .lr-source{border-color:var(--accent)!important;}.lr-source>p{font-size:var(--fs-sm);line-height:1.8;margin:10px 0;}.lr-import-meta{display:flex;flex-wrap:wrap;gap:6px;}.lr-import-meta span{font-size:var(--fs-xs);padding:4px 8px;background:var(--bg3);border-radius:var(--radius-sm);}
+  .lr-warning{color:var(--orange);font-size:var(--fs-sm);line-height:1.8;margin:8px 0;overflow-wrap:anywhere;}.lr-warning:empty{display:none;}
+  .lr-comparison{scroll-margin-top:20px;}.lr-eyebrow{font-size:var(--fs-xs);color:var(--text2);margin-bottom:4px;}.lr-section-title{font-size:var(--fs-md);font-weight:600;margin:14px 0 10px;}.lr-source-top .lr-section-title{margin:0;}.lr-baseline{border-left:3px solid var(--accent);padding:9px 12px;margin:16px 0 10px;background:var(--bg);font-size:var(--fs-sm);line-height:1.8;overflow-wrap:anywhere;}.lr-common{font-size:var(--fs-xs);line-height:1.8;background:var(--bg3);padding:12px;border-radius:var(--radius-sm);margin:12px 0;}.lr-common b{color:var(--accent);margin-right:6px;}
+  .lr-table-scroll{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);margin:10px 0;}.lr-table{border-collapse:collapse;width:100%;font-size:var(--fs-sm);}.lr-table th,.lr-table td{padding:11px 10px;text-align:right;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6;}.lr-table th:first-child{text-align:left;min-width:150px;font-weight:500;}.lr-table thead{background:var(--bg3);color:var(--text2);}.lr-table thead th{white-space:nowrap;}.lr-table td{min-width:65px;}.lr-table td:last-child{min-width:130px;}.lr-table tr:last-child>*{border-bottom:0;}.lr-table small{display:block;color:var(--text2);font-weight:400;font-size:var(--fs-xs);margin-top:3px;}.lr-table td:nth-child(3){color:var(--accent);}.lr-limit{border-top:1px solid var(--border);padding-top:12px;}.lr-caption summary{cursor:pointer;}
+  @media(max-width:480px){.lr-source-top{align-items:flex-start;}.lr-source-top>.lr-button{width:100%;}.lr-build-stats{flex-wrap:wrap;gap:8px;}.lr-table{font-size:var(--fs-xs);}.lr-table th,.lr-table td{padding:9px 8px;}.lr-table th:first-child{min-width:135px;}.lr-history-actions .lr-button{flex:1;}.lr-hub-title strong{font-size:var(--fs-lg);}}
+  @media(max-width:480px){.lr-table{table-layout:fixed;}.lr-table th,.lr-table td{min-width:0!important;overflow-wrap:anywhere;}.lr-table th:first-child{width:38%;}.lr-table td:last-child,.lr-table thead th:last-child{width:28%;}.lr-proc-table th:first-child{width:40%;}.lr-proc-table td:last-child,.lr-proc-table thead th:last-child{width:30%;}}
   :root {
     color-scheme:dark;
     /* ── デザイントークン：文字サイズ（7段階）・余白（4px単位）・書体 ── */

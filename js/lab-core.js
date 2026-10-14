@@ -101,6 +101,18 @@ function labEffectKind(r){
   return 'damage';
 }
 function labEffectUnit(r){return labEffectKind(r)==='rate'||/攻撃速度.*%/.test(r.dmgType||'')?'%':'';}
+// 通常表示とA/B比較で共用する1成分の計算。画面の入力欄には依存しない。
+function labEvaluateComponent(r,atkStats,defStats,lv,{items=[],activeEffects=[],healTarget='self',spdefPen=0}={}){
+  if(!r||r.coeff==null)return null;
+  const kind=labEffectKind(r),unit=labEffectUnit(r);
+  const special=/特攻|sp_?atk/i.test(r.stat||'攻撃');
+  const support=kind==='heal'||kind==='shield';
+  let rawPerHit=labRawValue(r,atkStats,lv);
+  if(support)rawPerHit=Math.floor(rawPerHit*labSupportMultiplier(items,/回復/.test(r.dmgType||''),healTarget)+1e-9);
+  const actual=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defStats[special?'特防':'防御']||0,0,special&&!support?spdefPen/100:0)*labItemDamageMultiplier(items,activeEffects)+1e-9);
+  const hits=r.hits||1;
+  return {kind,unit,rawPerHit,actPerHit:actual,hits,value:actual*hits};
+}
 function labItemProcValues({items=[],activeEffects=[],stats={},lv=1,targetStats=null,targetHP=null,selfHP=null,hpDamage=null}){
   const active=new Set(activeEffects),equipped=labUniqueItems(items);
   const floor=v=>Math.max(0,Math.floor(v+1e-9));

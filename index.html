@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=94"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=94" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=94" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=94"></script>
-<script src="js/utils.js?v=94"></script>
-<script src="js/lab-core.js?v=94"></script>
-<script src="js/usage-analytics.js?v=94"></script>
-<link rel="stylesheet" href="styles.css?v=94" />
+<script src="vendor/supabase.min.js?v=95"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=95" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=95" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=95"></script>
+<script src="js/utils.js?v=95"></script>
+<script src="js/lab-core.js?v=95"></script>
+<script src="js/usage-analytics.js?v=95"></script>
+<link rel="stylesheet" href="styles.css?v=95" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -768,7 +768,10 @@ SOFTWARE.
           <div class="detail-mode-tab" onclick="switchDetailMode('duo')">デュオ/トリオ</div>
           <div class="detail-mode-tab" onclick="switchDetailMode('full')">フルパ</div>
         </div>
+        <div id="pokeHubHeader"></div>
         <div id="pokeDetailContent"><div class="empty">ポケモンを選択してください</div></div>
+        <div id="pokeHubBuilds" hidden></div>
+        <div id="pokeHubData" hidden></div>
       </div>
     </div>
   </div>
@@ -1673,6 +1676,7 @@ let storedDeletesFinalized=false;
 let seriesRestoreTried=false;
 let currentTab='login', currentSeriesId=null, battles=[], selectedPoke='', activeTypeFilter='all';
 let detailMode='all';
+let labSessionOwner=null;
 let selectedLane=null;       // 記録フォームのレーン選択（'上'/'中央'/'下' or null）
 let editSelectedLane=null;   // 編集モーダルのレーン選択
 
@@ -2014,6 +2018,10 @@ function loginAsGuest(){
   enterGuestMode();
 }
 function enterGuestMode(){
+  if(labSessionOwner!=='guest'){
+    labSessionOwner='guest';
+    if(typeof LabReview!=='undefined')LabReview.clearSession();
+  }
   document.getElementById('authSection').style.display='none';
   document.getElementById('appSection').style.display='block';
   document.getElementById('usernameDisplay').innerHTML='<span class="guest-badge">ゲスト</span>';
@@ -2175,6 +2183,11 @@ db.auth.onAuthStateChange(async(event,session)=>{
   document.getElementById('loading').style.display='none';
   // トークン自動更新は正常動作のためスキップ
   if(event==='TOKEN_REFRESHED') return;
+  const nextOwner=session?.user?.id||(isGuest()?'guest':null);
+  if(labSessionOwner!==nextOwner){
+    labSessionOwner=nextOwner;
+    if(typeof LabReview!=='undefined')LabReview.clearSession();
+  }
   // セッション切れ（リフレッシュ失敗）
   if(event==='SIGNED_OUT'&&document.getElementById('appSection').style.display==='block'){
     if(!isGuest()) showToast('セッションが切れました。再ログインしてください。','warn');
@@ -2229,6 +2242,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.69',date:'2026-10-15',items:[
+    'ポケモン別詳細に「使用構成」「データ・計算」を追加しました。構成ごとの成績を確認し、レシオ一覧や計算画面へ進めます。',
+    '対戦履歴や使用構成から、記録したわざ・もちもの・メダルをダメージ計算へ呼び出せるようになりました。',
+    'ダメージ計算で、もちもの2構成の効果量・差・変化率を比較できるようになりました。'
+  ]},
   {version: 'v5.68', date: '2026-10-11', items: ['対戦記録で、わざ候補が1つの欄はポケモンを選ぶと自動で選択されるようになりました。']},
   {version: 'v5.67', date: '2026-10-11', items: ['サンダース（スピード型）とブースター（バランス型）を追加し、それぞれのわざを対戦記録で選べるようになりました。']},
   {version: 'v5.66', date: '2026-10-11', items: ['ラボのレシオ一覧と計算画面に、回復量や特性の効果を追加しました。能力の上昇・減少も確認できます。']},
@@ -3937,7 +3955,7 @@ function initPokeDetailSelect(usageTicket=usageIntent('analysisPage')){
   const sel=document.getElementById('detailPokeSelect');
   if(!sel)return;
   const all=allSeriesData.flatMap(s=>s.battles);
-  const pokeSet=new Set(all.filter(b=>b.pokemon).map(b=>b.pokemon));
+  const pokeSet=new Set([...all.filter(b=>b.pokemon).map(b=>b.pokemon),...Object.values(POKEMON_DATA).flatMap(r=>r.pokemon),...(typeof LAB_STATUS==='undefined'?[]:Object.keys(LAB_STATUS))]);
   const current=sel.value;
   sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(current)sel.value=current;
@@ -3955,12 +3973,13 @@ function renderPokeDetail(usageTicket=usageIntent('analysisPage')){
   const pokeName=document.getElementById('detailPokeSelect')?.value;
   const content=document.getElementById('pokeDetailContent');
   if(!content)return;
-  if(!pokeName){content.innerHTML='<div class="empty">ポケモンを選択してください</div>';return;}
+  if(!pokeName){content.innerHTML='<div class="empty">ポケモンを選択してください</div>';if(typeof LabReview!=='undefined')LabReview.clearHub();return;}
 
   const all=allSeriesData.flatMap(s=>s.battles);
   let bs=all.filter(b=>b.pokemon===pokeName);
   if(detailMode!=='all') bs=bs.filter(b=>b.match_type===detailMode);
-  if(!bs.length){content.innerHTML='<div class="empty u-p-1_5rem-0">このモードの記録がありません</div>';return;}
+  if(typeof LabReview!=='undefined')LabReview.renderHub(pokeName,bs);
+  if(!bs.length){content.innerHTML='<div class="empty u-p-1_5rem-0">このモードの記録がありません。「データ・計算」は記録がなくても利用できます。</div>';return;}
 
   const w=winCount(bs);
   const t=bs.length;
@@ -5359,6 +5378,7 @@ function renderHistory(){
         </div>
         ${(items.length||b.battle_item)?`<div class="h-items-row">${itemBoxes}<div class="h-item-sep"></div>${biBox}</div>`:''}
       </div>
+      ${b.pokemon?`<div class="lr-history-actions"><button class="lr-button lr-primary" data-record-id="${escapeHtml(String(b.id))}" onclick="LabReview.openRecord(this.dataset.recordId)">この構成で計算</button><button class="lr-button" data-pokemon="${escapeHtml(b.pokemon)}" onclick="LabReview.openHub(this.dataset.pokemon)">ポケモン詳細</button></div>`:''}
     </div>`;
   }).join('');
   renderPagination(totalPages);
@@ -6832,8 +6852,8 @@ function labMedalGetVal(m, rarity, dir) {
 // ---- ステータス計算用メダル補正 ----
 // presetIdx: labMedalPresets のインデックス
 // baseStats: {HP, 攻撃, 防御, 特攻, 特防, 移動速度} — % セットボーナス計算に使用
-function labCalcMedalBonus(presetIdx, baseStats){
-  const obj = _presetToObj(labMedalPresets[presetIdx]);
+function labCalcMedalBonus(presetIdx, baseStats, recordedSet=null){
+  const obj = recordedSet || _presetToObj(labMedalPresets[presetIdx]);
   if(!obj) return {};
   const slots    = obj.slots    || Array(10).fill(null);
   const rarities = obj.rarities || Array(10).fill('gold');
@@ -6907,23 +6927,7 @@ function labRefreshCalcMedalSelect(){
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
   if(r?.coeff==null&&r?.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
   if(!r||r.coeff==null) return null;
-  const kind=labEffectKind(r),unit=labEffectUnit(r);
-  const st=r.stat||'攻撃';
-  const isSpecial=/特攻|sp_?atk/i.test(st);
-  let atkStat=0;
-  if(isSpecial)            atkStat=atkStats['特攻']||0;
-  else if(/HP/i.test(st))  atkStat=atkStats['HP']||0;
-  else                     atkStat=atkStats['攻撃']||0;
-  const defStat=isSpecial?(defStats['特防']||0):(defStats['防御']||0);
-  let rawPerHit=labRawValue(r,atkStats,atkLv);
-  const isHealShield=kind==='heal'||kind==='shield';
-  // すりぬけスプーン: 特攻ダメージのみ相手の特防を%無視
-  const pctIgnore=(isSpecial && !isHealShield)?(spdefPen/100):0;
-  const equipment=labReadItems('dcAtk');
-  if(isHealShield)rawPerHit=Math.floor(rawPerHit*labSupportMultiplier(equipment,/回復/.test(r.dmgType||''),labHealTarget('dcAtk'))+1e-9);
-  const damageMult=labItemDamageMultiplier(equipment,labReadEffects('dcAtk'));
-  const actPerHit=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defStat,0,pctIgnore)*damageMult+1e-9);
-  const hits=r.hits||1;
+  const {kind,unit,rawPerHit,actPerHit,hits}=labEvaluateComponent(r,atkStats,defStats,atkLv,{items:labReadItems('dcAtk'),activeEffects:labReadEffects('dcAtk'),healTarget:labHealTarget('dcAtk'),spdefPen});
   const label=labEffectLabelHtml(poke,r);
   const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">[${r.upg}]</span>`:'';
   if(kind!=='damage'){
@@ -6977,6 +6981,7 @@ function dcRefreshMedalSelect(){
     opt.value=i; opt.textContent=`${(obj&&obj.name)||('パターン'+(i+1))}（${count}枚）`;
     sel.appendChild(opt);
   });
+  if(typeof LabReview!=='undefined')LabReview.appendRecordedMedal(sel,cur);
   if(cur!==''&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
 }
 
@@ -7007,7 +7012,12 @@ function dcCalcIfReady(){
   labRefreshItemEffects('dcAtk');labRefreshItemEffects('dcDef');
   const atk=document.getElementById('dcAtkPoke')?.value;
   const def=document.getElementById('dcDefPoke')?.value;
-  if(!atk||!def) return;
+  if(!atk||!def){
+    dcAtkStats=null;dcDefStats=null;
+    document.getElementById('dcResultCard').style.display='none';
+    if(typeof LabReview!=='undefined')LabReview.renderComparison();
+    return;
+  }
   const rc=document.getElementById('dcResultCard');
   if(rc&&rc.style.display==='none') return;
   calcDmgCalcMain(false);
@@ -7015,6 +7025,7 @@ function dcCalcIfReady(){
 
 // ---- DC: メイン計算 ----
 function calcDmgCalcMain(scroll=false){
+  if(typeof LabReview!=='undefined'&&!LabReview.canCalculate())return;
   labRefreshItemEffects('dcAtk');labRefreshItemEffects('dcDef');
   const atkPoke=document.getElementById('dcAtkPoke')?.value;
   const defPoke=document.getElementById('dcDefPoke')?.value;
@@ -7029,9 +7040,9 @@ function calcDmgCalcMain(scroll=false){
     dmgStack:parseInt(document.getElementById('dcDmgStackSlider')?.value||0),
     koStack: parseInt(document.getElementById('dcStackSlider')?.value||0),
     goalCount:parseInt(document.getElementById('dcGoalSlider')?.value||0),
-    medalPresetIdx:medalVal?parseInt(medalVal):null,
+    medalPresetIdx:medalVal==='record'?0:medalVal?parseInt(medalVal):null,
     activeEffects:labReadEffects('dcAtk'),
-  },LAB_STATS_DEPS);
+  },typeof LabReview!=='undefined'?LabReview.recordMedalDeps(medalVal):LAB_STATS_DEPS);
   dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems,activeEffects:labReadEffects('dcDef')},LAB_STATS_DEPS);
   if(!dcAtkStats||!dcDefStats) return;
   // ポケモン変更時のみスキルセレクト再構築
@@ -7126,6 +7137,7 @@ function dcUpdateDmgOutput(){
     uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
   dcRenderProcResults();
+  if(typeof LabReview!=='undefined')LabReview.renderComparison();
   usageResult('labDmgCalcPanel',document.getElementById('dcResultCard').textContent);
 }
 
@@ -7599,8 +7611,9 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=94"></script>
-<script src="ratio.js?v=94"></script>
+<script src="ratio-labels.js?v=95"></script>
+<script src="ratio.js?v=95"></script>
+<script src="js/lab-review.js?v=95"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){
