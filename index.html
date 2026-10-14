@@ -23,14 +23,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=96"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=96" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=96" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=96"></script>
-<script src="js/utils.js?v=96"></script>
-<script src="js/lab-core.js?v=96"></script>
-<script src="js/usage-analytics.js?v=96"></script>
-<link rel="stylesheet" href="styles.css?v=96" />
+<script src="vendor/supabase.min.js?v=97"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=97" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDataScript" src="lab_data.js?v=97" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=97"></script>
+<script src="js/utils.js?v=97"></script>
+<script src="js/lab-core.js?v=97"></script>
+<script src="js/usage-analytics.js?v=97"></script>
+<link rel="stylesheet" href="styles.css?v=97" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -772,6 +772,7 @@ SOFTWARE.
         <div id="pokeDetailContent"><div class="empty">ポケモンを選択してください</div></div>
         <div id="pokeHubBuilds" hidden></div>
         <div id="pokeHubData" hidden></div>
+        <div id="pokeHubPatch" hidden></div>
       </div>
     </div>
   </div>
@@ -2242,6 +2243,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.70',date:'2026-10-15',items:[
+    'ラボの計算条件を名前付きで保存・呼び出しできるようになりました。比較用のA・Bやメダルも保存でき、条件だけをリンクで共有できます。',
+    'ポケモン別詳細に「調整前後」を追加しました。記録日時を使って、更新前後の成績・平均スタッツ・構成の違いを比較できます。'
+  ]},
   {version:'v5.69',date:'2026-10-15',items:[
     'ポケモン別詳細に「使用構成」「データ・計算」を追加しました。構成ごとの成績を確認し、レシオ一覧や計算画面へ進めます。',
     '対戦履歴や使用構成から、記録したわざ・もちもの・メダルをダメージ計算へ呼び出せるようになりました。',
@@ -3358,11 +3363,13 @@ function chartColors(){
 }
 let trendChartInst=null, compareChartInst=null;
 let allSeriesData=[];
+let allSeriesRawData=[]; // 調整前後のBOT切替・実際のランク判定用。保存内容は変更しない。
 let analysisLoaded=false;
 let analysisNeedsRefresh=true; // P2: キャッシュ制御
 
 async function loadAnalysis(usageTicket=usageIntent()){
   const usageNav=navId;
+  const analysisOwner=labSessionOwner;
   const renderViews=()=>{
     if(navId!==usageNav)return;
     const ticketFor=id=>document.getElementById('analysisPage').style.display==='block'&&document.getElementById(id)?.style.display!=='none'?usageTicket:null;
@@ -3382,10 +3389,11 @@ async function loadAnalysis(usageTicket=usageIntent()){
   try {
     if(isGuest()){
       const sl=guestGetSeries();
-      allSeriesData=sl.map(s=>({
+      allSeriesRawData=sl.map(s=>({
         ...s,
-        battles:filterPendingDeletes(guestGetBattles(s.id)).filter(b=>statIncludeBot||!b.is_bot).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
+        battles:filterPendingDeletes(guestGetBattles(s.id)).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
       }));
+      allSeriesData=allSeriesRawData.map(s=>({...s,battles:s.battles.filter(b=>statIncludeBot||!b.is_bot)}));
     } else {
     // P1: 必要列のみ取得
     const {data:seriesList,error:e1}=await sbFetchAll((f,t)=>db.from('series')
@@ -3396,11 +3404,13 @@ async function loadAnalysis(usageTicket=usageIntent()){
       .select(withMedalSetCol('id,result,match_type,rank,pokemon,skill1,skill2,items,battle_item,lane,is_bot,kills,assists,dmg_dealt,dmg_taken,heal,goals,exclude_from_avg_stats,created_at,series_id'))
       .order('created_at',{ascending:true}).order('id',{ascending:true}).range(f,t));
     if(e1||e2){ console.error(e1||e2); return; }
+    if(labSessionOwner!==analysisOwner)return;
     normBattles(allBattles||[]);
-    allSeriesData=(seriesList||[]).map(s=>({
+    allSeriesRawData=(seriesList||[]).map(s=>({
       ...s,
-      battles:filterPendingDeletes(allBattles).filter(b=>b.series_id===s.id&&(statIncludeBot||!b.is_bot)).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
+      battles:filterPendingDeletes(allBattles).filter(b=>b.series_id===s.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))
     }));
+    allSeriesData=allSeriesRawData.map(s=>({...s,battles:s.battles.filter(b=>statIncludeBot||!b.is_bot)}));
     }
     // 勝率推移セレクト
     const sel=document.getElementById('trendSeriesSelect');
@@ -6568,6 +6578,7 @@ function switchLab(tab){
   document.getElementById('labRatioPanel').style.display=tab==='ratio'?'block':'none';
   if(tab==='ratio') ratioInit();
   if(tab==='dmg') dcInitUI();
+  if(tab==='dmg'&&typeof CalcConditions!=='undefined'){CalcConditions.renderSaved();CalcConditions.updateSummary();}
 }
 
 // ---- ステータス計算 ----
@@ -7611,9 +7622,13 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=96"></script>
-<script src="ratio.js?v=96"></script>
-<script src="js/lab-review.js?v=96"></script>
+<script src="ratio-labels.js?v=97"></script>
+<script src="ratio.js?v=97"></script>
+<script src="js/lab-review.js?v=97"></script>
+<script src="js/calc-conditions-core.js?v=97"></script>
+<script src="js/calc-conditions.js?v=97"></script>
+<script src="js/patch-analysis-core.js?v=97"></script>
+<script src="js/patch-analysis.js?v=97"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){

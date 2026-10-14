@@ -67,7 +67,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq((await page.locator('#labDmgOut1').innerText()).includes('ダメージ（2段目）'),true,'stat screen correct second stage');
   await page.selectOption('#labPokeSelect','ヌメルゴン');await page.selectOption('#labSkill2Sel','アシッドボム');
   eq((await page.locator('#labDmgOut2').innerText()).includes('突進は2回命中します。式は1回分です。'),true,'stat screen retains component warning');
-  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','アブソル');await page.selectOption('#dcDefPoke','カメックス');
+  await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcAtkPoke','アブソル');await page.selectOption('#dcDefPoke','カメックス');
   await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   await page.selectOption('#dcSkill1Sel','つじぎり');
   eq((await page.locator('#dcDmgOut1').innerText()).includes('ダメージ（2段目）'),true,'damage screen correct second stage');

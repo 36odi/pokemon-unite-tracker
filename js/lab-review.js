@@ -11,7 +11,7 @@ const LabReview=(()=>{
   const modeLabel=()=>({all:'全モード',solo:'ソロ',duo:'デュオ／トリオ',full:'フルパ'})[detailMode]||'全モード';
   function allRecords(){return [...battles,...allSeriesData.flatMap(s=>s.battles||[])];}
   function clearHub(){
-    ['pokeHubHeader','pokeHubBuilds','pokeHubData'].forEach(id=>{if(el(id))el(id).innerHTML='';});
+    ['pokeHubHeader','pokeHubBuilds','pokeHubData','pokeHubPatch'].forEach(id=>{if(el(id))el(id).innerHTML='';});
     if(el('pokeDetailContent'))el('pokeDetailContent').hidden=false;
   }
   function clearSession(){
@@ -21,11 +21,13 @@ const LabReview=(()=>{
     clearHub();
     if(el('detailPokeSelect'))el('detailPokeSelect').value='';
     if(el('pokeDetailContent'))el('pokeDetailContent').innerHTML='<div class="empty">ポケモンを選択してください</div>';
-    allSeriesData=[];analysisLoaded=false;analysisNeedsRefresh=true;
+    allSeriesData=[];allSeriesRawData=[];analysisLoaded=false;analysisNeedsRefresh=true;
+    if(typeof PatchAnalysis!=='undefined')PatchAnalysis.clear();
+    if(typeof CalcConditions!=='undefined')CalcConditions.sessionChanged();
   }
   function setHubTab(tab){
     hubTab=tab;
-    [['pokeDetailContent','overview'],['pokeHubBuilds','builds'],['pokeHubData','data']].forEach(([id,key])=>{if(el(id))el(id).hidden=key!==tab;});
+    [['pokeDetailContent','overview'],['pokeHubBuilds','builds'],['pokeHubData','data'],['pokeHubPatch','patch']].forEach(([id,key])=>{if(el(id))el(id).hidden=key!==tab;});
     document.querySelectorAll('[data-hub-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.hubTab===tab);b.setAttribute('aria-pressed',String(b.dataset.hubTab===tab));});
   }
   function groupBuilds(records){
@@ -46,7 +48,7 @@ const LabReview=(()=>{
     const role=Object.values(POKEMON_DATA).find(x=>x.pokemon.includes(pokemon))?.label||'';
     el('pokeHubHeader').innerHTML=`<div class="lr-hub-title"><img src="${esc(getIconUrl(pokemon)||'')}" alt="" width="64" height="64"><div><strong>${esc(pokemon)}</strong><p>${esc(role)} · ${records.length}試合の記録</p></div></div>
       <p class="lr-caption">集計対象：全シリーズ ／ ${esc(modeLabel())}。BOT戦は分析画面の設定に従います。</p>
-      <div class="lr-tabs" aria-label="ポケモン別の表示">${[['overview','成績'],['builds','使用構成'],['data','データ・計算']].map(([key,label])=>button(label,`LabReview.setHubTab('${key}')`,`data-hub-tab="${key}"`)).join('')}</div>`;
+      <div class="lr-tabs" aria-label="ポケモン別の表示">${[['overview','成績'],['builds','使用構成'],['data','データ・計算'],['patch','調整前後']].map(([key,label])=>button(label,`LabReview.setHubTab('${key}')`,`data-hub-tab="${key}"`)).join('')}</div>`;
     const buildBox=el('pokeHubBuilds');
     buildBox.innerHTML=`<p class="lr-caption">わざ・もちもの・バトルアイテム・メダルの中身が同じ記録を集計しています。回数順で表示し、未記録の項目は区別します。</p>`+
       (groups.length?groups.map((g,i)=>{
@@ -62,6 +64,7 @@ const LabReview=(()=>{
     el('pokeHubData').innerHTML=`<p class="lr-caption">選択中の${esc(pokemon)}を引き継いで開きます。各画面には、収録済みのデータと対応範囲を表示します。</p>
       <div class="lr-tool-grid">${[['ratio','レシオ一覧','わざ・特性の計算式や条件を確認'],['calc','ステータス計算','レベル・もちもの・メダルを指定'],['dmg','ダメージ計算','相手を指定してダメージや構成を比較']].map(([key,label,desc])=>`<button class="lr-tool" data-pokemon="${esc(pokemon)}" onclick="LabReview.openPokemonTool(this.dataset.pokemon,'${key}')"><strong>${label} <span aria-hidden="true">↗</span></strong><span>${desc}</span></button>`).join('')}</div>
       ${!supported(pokemon)?'<p class="lr-caption">計算用データが未収録の場合は、移動先で対応状況を案内します。</p>':''}`;
+    if(typeof PatchAnalysis!=='undefined')PatchAnalysis.render(pokemon);
     setHubTab(hubTab);
   }
   async function openHub(pokemon){
@@ -97,7 +100,7 @@ const LabReview=(()=>{
     baseline=null;recordedMedal=null;
     ['dcAtk','dcDef'].forEach(prefix=>{
       setValue(prefix+'Poke','');setValue(prefix+'Lv',9);if(el(prefix+'LvLabel'))el(prefix+'LvLabel').textContent='9';
-      [1,2,3].forEach(i=>{setValue(prefix+'Item'+i,'');setValue(prefix+'Grade'+i,30);if(el(prefix+'GradeLabel'+i))el(prefix+'GradeLabel'+i).textContent='G30';});
+      [1,2,3].forEach(i=>{setValue(prefix+'Item'+i,'');setValue(prefix+'Grade'+i,30);if(el(prefix+'GLbl'+i))el(prefix+'GLbl'+i).textContent='G30';});
       if(el(prefix+'Effects'))el(prefix+'Effects').remove();
     });
     ['dcGoalSlider','dcStackSlider','dcDmgStackSlider'].forEach(id=>setValue(id,0));
@@ -142,6 +145,7 @@ const LabReview=(()=>{
       <p class="lr-caption">ラボに収録している計算データを使用します。試合当時のバージョンを再現する機能ではありません。</p>
       <p class="lr-caption">バトルアイテム：${esc(r.battle_item||'未記録')}（参照表示のみ）<br>メダル：${esc(recordedMedal?.label||'未記録（計算では補正なしの仮条件）')}${recordedMedal?'／試合時点の中身を使用':''}<br>もちもの：${items.length}個の記録。空欄は計算では補正なしの仮条件です。</p>
       ${warnings.length?`<p class="lr-warning">${warnings.map(esc).join('<br>')}</p>`:''}`;
+    if(typeof CalcConditions!=='undefined'){CalcConditions.updateSummary();el('lcEditor').open=true;}
   }
   async function openRecord(id){
     const record=allRecords().find(r=>String(r.id)===String(id));if(!record)return;
@@ -223,6 +227,7 @@ const LabReview=(()=>{
   function renderComparison(){
     if(!el('lrComparison'))return;
     if(baseline&&baseline.pokemon!==el('dcAtkPoke').value)baseline=null;
+    if(typeof CalcConditions!=='undefined')CalcConditions.updateSummary();
     const label=el('lrComparisonLabel'),output=el('lrComparisonOutput');
     label.textContent=baseline?'A：'+equipmentSummary(baseline):'Aは未設定';
     el('lrClearA').hidden=!baseline;
@@ -248,5 +253,7 @@ const LabReview=(()=>{
     el('dcResultCard').before(compare);renderComparison();
   }
   mount();
-  return {clearHub,clearSession,setHubTab,renderHub,groupBuilds,openHub,openGroup,openRecord,openPokemonTool,back,appendRecordedMedal,recordMedalDeps,canCalculate,captureA,clearA,renderComparison,compareRows,captureEquipment};
+  function exportState(){return {baseline:baseline?clone(baseline):null,medal:recordedMedal?clone(recordedMedal):null};}
+  function restoreState(state){recordedMedal=state.medal?clone(state.medal):null;baseline=state.baseline?clone(state.baseline):null;el('lrRecordNotice').hidden=true;returnTo=null;}
+  return {clearHub,clearSession,setHubTab,renderHub,groupBuilds,openHub,openGroup,openRecord,openPokemonTool,back,appendRecordedMedal,recordMedalDeps,canCalculate,captureA,clearA,renderComparison,compareRows,captureEquipment,exportState,restoreState,resetCalculator,readyLab};
 })();

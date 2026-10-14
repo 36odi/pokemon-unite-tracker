@@ -51,7 +51,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq(await proc('lab','ゴールサポーター').isChecked(),true,'grade retains ON');
   await page.selectOption('#labItem1','');await page.selectOption('#labItem1','ゴールサポーター');
   eq(await proc('lab','ゴールサポーター').isChecked(),false,'re-equip resets');
-  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','ピカチュウ');await page.selectOption('#dcDefPoke','カメックス');
+  await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcAtkPoke','ピカチュウ');await page.selectOption('#dcDefPoke','カメックス');
   await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   for(const name of names){
     await page.selectOption('#dcAtkItem1',name);eq(await proc('dcAtk',name).isChecked(),false,'DC default OFF: '+name);

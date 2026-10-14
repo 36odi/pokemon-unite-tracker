@@ -35,7 +35,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq(await page.locator('#labDmgOutPassive').innerText(),buffBefore,'Shield Stance buffs do not receive shield item bonus');
   await page.selectOption('#labItem1','');
   await page.selectOption('#labPokeSelect','ピカチュウ');eq(await page.locator('#labPassiveSection').isVisible(),false,'passive hidden on switch');
-  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','モルペコ');await page.selectOption('#dcDefPoke','ピカチュウ');
+  await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcAtkPoke','モルペコ');await page.selectOption('#dcDefPoke','ピカチュウ');
   await page.locator('#labDmgCalcPanel button', {hasText:'計算する'}).click();
   eq(await page.locator('#dcPassiveSection').isVisible(),true,'DC passive visible');
   const expectedHeal=await page.evaluate(()=>Math.floor(dcAtkStats['攻撃']*.85+340));

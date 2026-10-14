@@ -22,7 +22,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await belt().check();await page.selectOption('#labItem1','');await page.selectOption('#labItem1','ふんばりベルト');
   eq(await belt().isChecked(),false,'re-equip resets effect');await belt().check();
   const stat=await page.evaluate(()=>({...labCalcResult}));
-  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcAtkPoke','ピカチュウ');await page.selectOption('#dcDefPoke','カメックス');
+  await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcAtkPoke','ピカチュウ');await page.selectOption('#dcDefPoke','カメックス');
   await page.selectOption('#dcDefItem1','ふんばりベルト');await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   const before=await page.locator('#dcDmgOutNormal').innerText();
   await page.locator('#dcDefEffects input[value="ふんばりベルト"]').check();

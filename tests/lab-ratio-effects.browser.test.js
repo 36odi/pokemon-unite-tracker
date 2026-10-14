@@ -33,7 +33,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.selectOption('#labItem1','おおきなねっこ');eq((await page.locator('#labDmgOut1').innerText()).includes('112'),true,'fixed healing with root floor(94*1.2)');
   await page.selectOption('#labSkill1Sel','りゅうのはどう+');eq(await page.locator('#labDmgOut1 .lab-damage-box').count(),4,'upgrade retains both fixed heal conditions');
   await page.selectOption('#labItem1','');
-  await page.evaluate(()=>switchLab('dmg'));await page.selectOption('#dcDefPoke','カメックス');
+  await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcDefPoke','カメックス');
   await page.selectOption('#dcAtkPoke','ギルガルド');await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   for(const p of species){
     await page.selectOption('#dcAtkPoke',p);const count=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').length,p);
