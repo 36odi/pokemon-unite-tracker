@@ -104,6 +104,7 @@ const LabReview=(()=>{
     dcRefreshMedalSelect();setValue('dcAtkMedal','');dcCurAtkPoke=null;dcAtkStats=null;dcDefStats=null;
     el('dcResultCard').style.display='none';dcUpdateSpecialRows();
     el('lrComparisonOutput').innerHTML='';el('lrCalcStatus').textContent='';el('lrComparisonLabel').textContent='Aは未設定';
+    el('lrClearA').hidden=true;
   }
   function notice(message){el('lrCalcStatus').textContent=message;}
   function selectRecordedSkill(pokemon,slot,name){

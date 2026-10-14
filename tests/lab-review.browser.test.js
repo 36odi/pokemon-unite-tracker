@@ -42,6 +42,7 @@ let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
  await page.evaluate(()=>{labMedalPresets[0]={slots:Array(10).fill('ポッポ'),rarities:Array(10).fill('gold'),name:'変更したプリセット'};dcRefreshMedalSelect();calcDmgCalcMain(false);});
  eq(await page.evaluate(()=>({...dcAtkStats})),statsBefore,'historical snapshot ignores preset overwrite');
  await page.locator('#lrComparison button',{hasText:'現在の構成をAにする'}).click();
+ eq(await page.locator('#lrClearA').isVisible(),true,'clear-A button visible after capturing A');
  let comparison=await page.evaluate(()=>{const r=LabReview.compareRows(LabReview.captureEquipment(),LabReview.captureEquipment());return r.rows.map(x=>[x.a.value,x.b.value]);});
  eq(comparison.every(([a,b])=>a===b),true,'identical setups have zero delta');
  await page.selectOption('#dcAtkItem1','ものしりメガネ');
@@ -71,6 +72,7 @@ let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
  eq(await page.evaluate(()=>localStorage.getItem('guest_battles_review-fixture')),original,'source records unchanged');
  await page.locator('[data-record-id="missing"]').click();
  await page.waitForFunction(()=>document.getElementById('dcAtkItem1').value==='');
+ eq(await page.locator('#lrClearA').isVisible(),false,'opening another record hides clear-A button');
  eq(await page.locator('#dcDefPoke').inputValue(),'','previous defender reset');
  eq(await page.locator('#dcAtkMedal').inputValue(),'','previous medal snapshot cleared');
  eq(await page.locator('#dcSkill1Sel').inputValue(),'','missing move not filled from last record');
