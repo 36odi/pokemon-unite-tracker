@@ -23,15 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=100"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=100" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=100" defer></script>
-<script id="labDataScript" src="lab_data.js?v=100" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=100"></script>
-<script src="js/utils.js?v=100"></script>
-<script src="js/lab-core.js?v=100"></script>
-<script src="js/usage-analytics.js?v=100"></script>
-<link rel="stylesheet" href="styles.css?v=100" />
+<script src="vendor/supabase.min.js?v=101"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=101" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=101" defer></script>
+<script id="labDataScript" src="lab_data.js?v=101" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=101"></script>
+<script src="js/utils.js?v=101"></script>
+<script src="js/lab-core.js?v=101"></script>
+<script src="js/usage-analytics.js?v=101"></script>
+<link rel="stylesheet" href="styles.css?v=101" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2244,6 +2244,9 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.73',date:'2026-10-22',items:[
+    'レシオ一覧で、わざの「＋」に通常版の説明が表示される不具合を修正しました。炎や弾の数の増加、回復量の増加、追加効果など、強化後の変更点を確認できます。'
+  ]},
   {version:'v5.72',date:'2026-10-22',items:[
     'ラボの全ポケモンに、特性の発動条件や進化前後の違いが分かる説明を追加しました。ステータス計算・ダメージ計算・レシオ一覧で確認できます。',
     'レシオ一覧にわざの主な効果の説明を追加しました。効果を読んでから、威力・回復量の式を確認できます。'
@@ -7635,13 +7638,13 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=100"></script>
-<script src="ratio.js?v=100"></script>
-<script src="js/lab-review.js?v=100"></script>
-<script src="js/calc-conditions-core.js?v=100"></script>
-<script src="js/calc-conditions.js?v=100"></script>
-<script src="js/patch-analysis-core.js?v=100"></script>
-<script src="js/patch-analysis.js?v=100"></script>
+<script src="ratio-labels.js?v=101"></script>
+<script src="ratio.js?v=101"></script>
+<script src="js/lab-review.js?v=101"></script>
+<script src="js/calc-conditions-core.js?v=101"></script>
+<script src="js/calc-conditions.js?v=101"></script>
+<script src="js/patch-analysis-core.js?v=101"></script>
+<script src="js/patch-analysis.js?v=101"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){

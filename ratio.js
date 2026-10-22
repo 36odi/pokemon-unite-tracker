@@ -89,12 +89,13 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
           const title=name;
           if(title!==slot||level) html+=`<h4>${escapeHtml(title)}${level?` <span class="ratio-meta">Lv${escapeHtml(String(level))}</span>`:''}</h4>`;
           const description=slot==='特性'?'':labMoveDescription(poke,name);
-          if(description)html+=`<p class="lab-effect-description ratio-description">${escapeHtml(description)}</p>`;
+          if(description)html+=`<p class="lab-effect-description ratio-description">${/[+＋]$/.test(name)?'強化後の変更点：':''}${escapeHtml(description)}</p>`;
+          else if(slot!=='特性'&&/[+＋]$/.test(name))html+='<p class="lab-effect-description ratio-description">強化後の説明は未収録です。</p>';
           const cds=[...new Set(components.map(r=>r.cd).filter(v=>v!=null))];
           if(cds.length===1) html+=`<div class="ratio-meta">待ち時間：${escapeHtml(String(cds[0]))}秒</div>`;
           const baseRows=rows.filter(r=>r.name===originalName.replace(/[+＋]$/,'')&&ratioMoveName(poke,r)===base);
           if(/[+＋]$/.test(name)&&cds.length<=1&&ratioSameFormulas(poke,components,baseRows))
-            html+='<div class="ratio-row ratio-same">表示している式と回数は通常版と同じです。</div>';
+            html+='<div class="ratio-row ratio-same">この欄の計算式は通常版と同じです。</div>';
           else html+=components.map(r=>ratioRow(r,poke)+(cds.length>1&&r.cd!=null?`<div class="ratio-meta">待ち時間：${escapeHtml(String(r.cd))}秒</div>`:'')).join('');
         }
       }

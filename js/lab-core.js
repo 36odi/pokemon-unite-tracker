@@ -105,7 +105,8 @@ function labEffectUnit(r){return labEffectKind(r)==='rate'||/攻撃速度.*%/.te
 function labDescriptionKey(name){return String(name||'').normalize('NFKC').replace(/[+＋]$/,'').replace('大顎クラッシュバイド','大顎クラッシュバイト');}
 function labMoveDescription(poke,name){
   if(typeof LAB_DESCRIPTIONS==='undefined')return '';
-  return LAB_DESCRIPTIONS.pokemon[poke]?.moves[labDescriptionKey(name)]?.text||'';
+  const kind=/[+＋]$/.test(name||'')?'upgrades':'moves';
+  return LAB_DESCRIPTIONS.pokemon[poke]?.[kind]?.[labDescriptionKey(name)]?.text||'';
 }
 function labPassiveRows(poke){
   const rows=(typeof LAB_SKILLS==='undefined'?[]:LAB_SKILLS[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));

@@ -11,7 +11,7 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ## パッチ時の手順
 
-特性・わざの日本語要約は数値と独立した `lab_descriptions.js` で管理する。原文説明を変更した際は原稿を照合し、`node tools/build_lab_descriptions.js --apply` と `node tests/lab-descriptions.test.js` を実行する。出典・表示範囲・検証は `docs/lab-descriptions.md` を参照。
+特性・わざの日本語要約は数値と独立した `lab_descriptions.js` で管理する。強化後の変更点は `data/lab-move-upgrades.txt` に通常版と分けて記載し、CSVのupgrade/enhanced行と照合する。原文説明を変更した際は原稿を照合し、`node tools/build_lab_descriptions.js --apply` と `node tests/lab-descriptions.test.js` を実行する。出典・表示範囲・検証は `docs/lab-descriptions.md` を参照。
 
 ### 2026-09同期以降の注意
 
