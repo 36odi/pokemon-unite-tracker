@@ -55,7 +55,7 @@ function ratioRow(r,poke){
   const label=ratioLabel(poke,r),note=ratioComponentNote(poke,r);
   return `<div class="ratio-row"><div class="ratio-label">${escapeHtml(label)}</div>
     ${hits>1?'<div class="ratio-meta">1回分の式</div>':''}
-    <div class="ratio-formula">${escapeHtml(ratioFormula(r))}</div>
+    <div class="ratio-formula${r.descriptionEntry?' ratio-effect-description':''}">${escapeHtml(ratioFormula(r))}</div>
     ${hits>1&&r.coeff!=null?`<div class="ratio-meta">${r.hitsVar?'最大':''}${hits}回分${note?'（表示式の部分のみ）':''}：${escapeHtml(ratioFormula(r,hits))}</div>`:''}
     ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}</div>`;
 }
@@ -72,7 +72,7 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   let html=`<div class="card"><h2>${iconImg(poke,'',36)} ${escapeHtml(poke)}</h2><div>${escapeHtml(role)} ${dmg==='Special'?'特攻':dmg==='Physical'?'攻撃':''}</div>
     <nav class="ratio-jumps" aria-label="わざの種類">${ratioSlots.map((s,i)=>`<button type="button" onclick="document.getElementById('ratioSlot${i}').scrollIntoView()">${s}</button>`).join('')}</nav></div>`;
   ratioSlots.forEach((slot,i)=>{
-    const rows=all.filter(r=>r.slot===slot);
+    const rows=slot==='特性'?labPassiveRows(poke):all.filter(r=>r.slot===slot);
     const bases=[...new Set(rows.map(r=>ratioMoveName(poke,r).replace(/[+＋]$/,'')))];
     html+=`<section id="ratioSlot${i}" class="ratio-section"><h3>${slot}</h3>`;
     if(!rows.length) html+='<div class="card ratio-note">レシオ未収録</div>';
@@ -84,10 +84,12 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
         const levels=[...new Set(namedRows.map(r=>r.upg))];
         for(const level of levels){
           const originalName=namedRows.find(r=>r.upg===level).name;
-          let components=labUpgradeRows(poke,originalName,level).filter(r=>r.slot===slot&&ratioMoveName(poke,r).replace(/[+＋]$/,'')===base);
+          let components=slot==='特性'?namedRows.filter(r=>r.upg===level):labUpgradeRows(poke,originalName,level).filter(r=>r.slot===slot&&ratioMoveName(poke,r).replace(/[+＋]$/,'')===base);
           if(!components.length) components=namedRows.filter(r=>r.upg===level);
           const title=name;
           if(title!==slot||level) html+=`<h4>${escapeHtml(title)}${level?` <span class="ratio-meta">Lv${escapeHtml(String(level))}</span>`:''}</h4>`;
+          const description=slot==='特性'?'':labMoveDescription(poke,name);
+          if(description)html+=`<p class="lab-effect-description ratio-description">${escapeHtml(description)}</p>`;
           const cds=[...new Set(components.map(r=>r.cd).filter(v=>v!=null))];
           if(cds.length===1) html+=`<div class="ratio-meta">待ち時間：${escapeHtml(String(cds[0]))}秒</div>`;
           const baseRows=rows.filter(r=>r.name===originalName.replace(/[+＋]$/,'')&&ratioMoveName(poke,r)===base);
@@ -100,6 +102,7 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
     }
     html+='</section>';
   });
+  if(typeof LAB_DESCRIPTIONS!=='undefined')html+=`<p class="ratio-meta">説明は主な効果の要約です。能力の変化や発動条件は計算へ自動適用しません。<a href="${escapeHtml(LAB_DESCRIPTIONS.meta.source)}" target="_blank" rel="noopener noreferrer">説明の元データ</a>（${escapeHtml(LAB_DESCRIPTIONS.meta.checkedAt)}確認）</p>`;
   document.getElementById('ratioResult').innerHTML=html;
   if(all.length&&document.getElementById('labPage').style.display==='block')usageUsed(usageTicket);
 }

@@ -101,6 +101,26 @@ function labEffectKind(r){
   return 'damage';
 }
 function labEffectUnit(r){return labEffectKind(r)==='rate'||/攻撃速度.*%/.test(r.dmgType||'')?'%':'';}
+// 説明は表示専用。正本の数値行と保存条件の計算データを書き換えない。
+function labDescriptionKey(name){return String(name||'').normalize('NFKC').replace(/[+＋]$/,'').replace('大顎クラッシュバイド','大顎クラッシュバイト');}
+function labMoveDescription(poke,name){
+  if(typeof LAB_DESCRIPTIONS==='undefined')return '';
+  return LAB_DESCRIPTIONS.pokemon[poke]?.moves[labDescriptionKey(name)]?.text||'';
+}
+function labPassiveRows(poke){
+  const rows=(typeof LAB_SKILLS==='undefined'?[]:LAB_SKILLS[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
+  const descriptions=typeof LAB_DESCRIPTIONS==='undefined'?[]:Object.values(LAB_DESCRIPTIONS.pokemon[poke]?.passives||{});
+  if(!descriptions.length)return rows;
+  const out=[],used=new Set();
+  for(const {name,text} of descriptions){
+    const matches=rows.filter(r=>labDescriptionKey(r.name)===labDescriptionKey(name));
+    // 個別に整備済みの説明・条件注記をそのまま使う。
+    if(!matches.some(r=>r.description))out.push({slot:'特性',name,dmgType:'効果',upg:'',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:null,description:text,descriptionEntry:true});
+    out.push(...matches);matches.forEach(r=>used.add(r));
+  }
+  out.push(...rows.filter(r=>!used.has(r)));
+  return out;
+}
 // 通常表示とA/B比較で共用する1成分の計算。画面の入力欄には依存しない。
 function labEvaluateComponent(r,atkStats,defStats,lv,{items=[],activeEffects=[],healTarget='self',spdefPen=0}={}){
   if(!r||r.coeff==null)return null;

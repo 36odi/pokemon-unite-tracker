@@ -39,7 +39,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcDefPoke','カメックス');
   await page.selectOption('#dcAtkPoke','ギルガルド');await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   for(const p of species){
-    await page.selectOption('#dcAtkPoke',p);const count=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').length,p);
+    await page.selectOption('#dcAtkPoke',p);const count=await page.evaluate(p=>labPassiveRows(p).length,p);
     eq(await page.locator('#dcDmgOutPassive .lab-dmg-row').count(),count,'DC all passive components '+p);
   }
   await page.selectOption('#dcAtkPoke','ギルガルド');

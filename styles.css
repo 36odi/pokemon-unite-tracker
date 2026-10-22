@@ -766,6 +766,10 @@
 .ratio-note,.ratio-meta{color:var(--text3);font-size:var(--fs-xs);line-height:1.7}
 .ratio-row{padding:10px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
 .ratio-formula{font-size:var(--fs-lg);font-weight:700;line-height:1.7;color:var(--accent)}
+.lab-effect-description{font-size:var(--fs-md);line-height:1.8;color:var(--text);overflow-wrap:anywhere;}
+.lab-effect-description strong{font-size:var(--fs-sm);font-weight:600;}
+.ratio-description{margin:8px 0 12px;}
+.ratio-formula.ratio-effect-description{font-size:var(--fs-md);font-weight:400;color:var(--text);}
 .ratio-section{scroll-margin-top:70px}.ratio-section h3{font-size:var(--fs-lg)}.ratio-section h4{margin:12px 0 4px}
 #labPage>.analysis-tabs{flex-wrap:wrap}#ratioSearch{margin-top:8px;width:100%;box-sizing:border-box}
 

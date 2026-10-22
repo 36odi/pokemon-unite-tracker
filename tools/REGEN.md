@@ -11,6 +11,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ## パッチ時の手順
 
+特性・わざの日本語要約は数値と独立した `lab_descriptions.js` で管理する。原文説明を変更した際は原稿を照合し、`node tools/build_lab_descriptions.js --apply` と `node tests/lab-descriptions.test.js` を実行する。出典・表示範囲・検証は `docs/lab-descriptions.md` を参照。
+
 ### 2026-09同期以降の注意
 
 - 2026-10-22同期：ステータス103体、レシオ12,104行。サンダース・ブースターの数値24成分と特性説明を `lab_eevee_october.js` で生成。出典・計算範囲は `docs/lab-data-20261022.md` を参照。進化後特性名3件の移行は `lab_passive_ratios.js` が担当する。

@@ -23,14 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=99"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=99" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDataScript" src="lab_data.js?v=99" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=99"></script>
-<script src="js/utils.js?v=99"></script>
-<script src="js/lab-core.js?v=99"></script>
-<script src="js/usage-analytics.js?v=99"></script>
-<link rel="stylesheet" href="styles.css?v=99" />
+<script src="vendor/supabase.min.js?v=100"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=100" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=100" defer></script>
+<script id="labDataScript" src="lab_data.js?v=100" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=100"></script>
+<script src="js/utils.js?v=100"></script>
+<script src="js/lab-core.js?v=100"></script>
+<script src="js/usage-analytics.js?v=100"></script>
+<link rel="stylesheet" href="styles.css?v=100" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2243,6 +2244,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.72',date:'2026-10-22',items:[
+    'ラボの全ポケモンに、特性の発動条件や進化前後の違いが分かる説明を追加しました。ステータス計算・ダメージ計算・レシオ一覧で確認できます。',
+    'レシオ一覧にわざの主な効果の説明を追加しました。効果を読んでから、威力・回復量の式を確認できます。'
+  ]},
   {version:'v5.71',date:'2026-10-22',items:[
     'ラボにサンダース・ブースターを追加しました。Lv1〜15のステータスと、わざ・回復・特性のレシオを確認し、計算できるようになりました。',
     '10月13日のバランス調整に合わせて、ラボのステータス・わざの威力・待ち時間を更新しました。',
@@ -6689,7 +6694,7 @@ function labUpdateSkillSection(poke){
   fillSlot('わざ1','labSkill1Sel','labSkill1Upg','labDmgOut1');
   fillSlot('わざ2','labSkill2Sel','labSkill2Upg','labDmgOut2');
 
-  const passiveRows=rows.filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
+  const passiveRows=labPassiveRows(poke);
   const passiveSec=document.getElementById('labPassiveSection');
   if(passiveSec){
     passiveSec.style.display=passiveRows.length?'block':'none';
@@ -6770,7 +6775,7 @@ function calcLabDamageAll(){
   calcLabDamageSlot(2);
   const poke=document.getElementById('labPokeSelect')?.value;
   if(!poke||!labCalcResult) return;
-  const passiveRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
+  const passiveRows=labPassiveRows(poke);
   if(passiveRows.length) _renderDmgRows('labDmgOutPassive',passiveRows);
   // 通常攻撃も更新
   const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
@@ -6801,7 +6806,7 @@ function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   if(!labCalcResult) return '';
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
-  if(coeff==null&&r.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
+  if(coeff==null&&r.description) return labPassiveDescriptionHtml(r);
   if(coeff==null) return '';
   const kind=labEffectKind(r),unit=labEffectUnit(r);
   // ステータス種別（日本語・英語両対応）
@@ -6940,8 +6945,11 @@ function labRefreshCalcMedalSelect(){
 // ================================================================
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
+function labPassiveDescriptionHtml(r){
+  return `<div class="lab-dmg-row lab-effect-description">${r.descriptionEntry?`<strong>${escapeHtml(r.name)}</strong>`:''}<div>${escapeHtml(r.description)}</div></div>`;
+}
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
-  if(r?.coeff==null&&r?.description) return `<div class="lab-dmg-row">${escapeHtml(r.description)}</div>`;
+  if(r?.coeff==null&&r?.description) return labPassiveDescriptionHtml(r);
   if(!r||r.coeff==null) return null;
   const {kind,unit,rawPerHit,actPerHit,hits}=labEvaluateComponent(r,atkStats,defStats,atkLv,{items:labReadItems('dcAtk'),activeEffects:labReadEffects('dcAtk'),healTarget:labHealTarget('dcAtk'),spdefPen});
   const label=labEffectLabelHtml(poke,r);
@@ -7131,7 +7139,7 @@ function dcUpdateDmgOutput(){
     out.innerHTML=html||'<div class="empty u-fs-fs-xs">ダメージなし</div>';
   }
   // 通常攻撃
-  const passiveRows=skills.filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
+  const passiveRows=labPassiveRows(poke);
   const ps=document.getElementById('dcPassiveSection'), po=document.getElementById('dcDmgOutPassive');
   if(ps&&po){
     ps.style.display=passiveRows.length?'block':'none';
@@ -7627,13 +7635,13 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=99"></script>
-<script src="ratio.js?v=99"></script>
-<script src="js/lab-review.js?v=99"></script>
-<script src="js/calc-conditions-core.js?v=99"></script>
-<script src="js/calc-conditions.js?v=99"></script>
-<script src="js/patch-analysis-core.js?v=99"></script>
-<script src="js/patch-analysis.js?v=99"></script>
+<script src="ratio-labels.js?v=100"></script>
+<script src="ratio.js?v=100"></script>
+<script src="js/lab-review.js?v=100"></script>
+<script src="js/calc-conditions-core.js?v=100"></script>
+<script src="js/calc-conditions.js?v=100"></script>
+<script src="js/patch-analysis-core.js?v=100"></script>
+<script src="js/patch-analysis.js?v=100"></script>
 <!-- 訪問計測は設定を確認してから読み込む。利用規模の計測とは別設定。 -->
 <script>
 function loadVisitAnalytics(){

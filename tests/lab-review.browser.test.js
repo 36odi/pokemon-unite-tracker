@@ -22,7 +22,7 @@ let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
    localStorage.setItem('guest_series',JSON.stringify([{id:'review-fixture',name:'画面確認用サンプル',created_at:'2026-10-15T00:00:00Z'}]));
    const medal={label:'試合時点のセット',slots:['ピジョン',...Array(9).fill(null)],rarities:Array(10).fill('gold')};
    const r={id:'r1',result:'win',match_type:'solo',pokemon:'ピカチュウ',skill1:'エレキボール',skill2:'ボルテッカー',items:'こだわりメガネ,すりぬけスプーン,きょうめいガード',battle_item:'だっしゅつボタン',medal_set:medal,created_at:'2026-10-14T13:00:00Z',series_id:'review-fixture'};
-   localStorage.setItem('guest_battles_review-fixture',JSON.stringify([r,{...r,id:'r2',result:'loss',items:r.items.split(',').reverse().join(','),created_at:'2026-10-13T13:00:00Z'},{...r,id:'r3',items:'ものしりメガネ,すりぬけスプーン,きょうめいガード',medal_set:{...medal,label:'同名でも中身違い',slots:['ポッポ',...Array(9).fill(null)]}},{...r,id:'missing',skill1:null,skill2:null,items:null,medal_set:null},{...r,id:'unsupported',pokemon:'ブースター',skill1:'だいもんじ',skill2:'フレアドライブ'}]));
+   localStorage.setItem('guest_battles_review-fixture',JSON.stringify([r,{...r,id:'r2',result:'loss',items:r.items.split(',').reverse().join(','),created_at:'2026-10-13T13:00:00Z'},{...r,id:'r3',items:'ものしりメガネ,すりぬけスプーン,きょうめいガード',medal_set:{...medal,label:'同名でも中身違い',slots:['ポッポ',...Array(9).fill(null)]}},{...r,id:'missing',skill1:null,skill2:null,items:null,medal_set:null},{...r,id:'unsupported',pokemon:'未収録のポケモン',skill1:'だいもんじ',skill2:'フレアドライブ'}]));
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);
  await page.waitForFunction(()=>typeof LabReview!=='undefined'&&battles.length===5);
@@ -106,7 +106,7 @@ let browser,checks=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);checks++
  eq(await page.locator('#dcAtkMedal').inputValue(),'record','account-mode restores snapshot');
  await page.selectOption('#dcDefPoke','カビゴン');await page.locator('#labDmgCalcPanel button',{hasText:'計算する',exact:true}).click();
  eq(await page.locator('#dcResultCard').isVisible(),true,'account-mode calculator works with loaded record');
- await page.evaluate(()=>LabReview.openPokemonTool('ブースター','calc'));
+ await page.evaluate(()=>LabReview.openPokemonTool('未収録のポケモン','calc'));
  eq(await page.locator('#dcResultCard').isVisible(),false,'unsupported stat navigation clears previous result');
  eq((await page.locator('#lrRecordNotice').innerText()).includes('未収録'),true,'unsupported stat navigation explains missing data');
  await page.evaluate(()=>LabReview.openRecord('r1'));await page.selectOption('#dcDefPoke','カビゴン');
