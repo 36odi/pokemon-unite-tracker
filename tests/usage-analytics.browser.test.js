@@ -19,10 +19,11 @@ let checks=0,browser;
 function equal(a,b,l){assert.deepEqual(a,b,l);checks++;}
 async function setup({logged=false,excluded=false,local=false}={}){
  const context=await browser.newContext({viewport:{width:1100,height:900},serviceWorkers:'block',timezoneId:'America/Los_Angeles'});
- const state={sends:[],errors:[],status:201,code:null,failSave:false};
+ const state={sends:[],errors:[],visitRequests:[],status:201,code:null,failSave:false};
  const appBase=local?'http://localhost/pokemon-unite-tracker/':base;
  await context.route('**/*',async route=>{
   const req=route.request(),url=new URL(req.url());
+  if(/goatcounter\.com$|gc\.zgo\.at$/.test(url.hostname))state.visitRequests.push(req.url());
   if(req.url().startsWith(appBase)){
    const rel=decodeURIComponent(url.pathname.slice('/pokemon-unite-tracker/'.length))||'index.html';
    const file=path.resolve(ROOT,rel);
@@ -51,7 +52,6 @@ async function setup({logged=false,excluded=false,local=false}={}){
   if(localStorage.getItem('usage-test-seeded'))return;
   localStorage.setItem('usage-test-seeded','1');
   localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('pwaBarHidden','1');
-  localStorage.setItem('visits_disabled','1');
   if(excluded)localStorage.setItem('usage_excluded','1');
   if(logged)localStorage.setItem('sb-'+new URL(api).hostname.split('.')[0]+'-auth-token',JSON.stringify(session));
   else{
@@ -105,6 +105,7 @@ async function resetDay(page){await page.evaluate(()=>localStorage.removeItem('u
   equal(state.sends.length,5,'medal edit counts even if clicked DOM was replaced');
   await resetDay(page);
   await page.locator('[data-lab-tab="dmg"]').click();
+  await page.locator('#lcEdit').click();
   for(const selector of ['#dcAtkPoke','#dcDefPoke']){
    await page.locator(selector).focus();await page.locator(selector).press('Home');await page.locator(selector).press('ArrowDown');await page.locator(selector).press('Enter');
   }
@@ -112,6 +113,9 @@ async function resetDay(page){await page.evaluate(()=>localStorage.removeItem('u
   await page.locator('#labDmgCalcPanel').getByRole('button',{name:'計算する',exact:true}).click();
   await settled(page);equal(state.sends.length,6,'valid damage result counts');
   await resetDay(page);await page.evaluate(()=>openUsageSettings());
+  equal(await page.locator('#visitsEnabled').count(),0,'removed visit-count setting');
+  equal((await page.locator('#usageSettingsModal').innerText()).includes('GoatCounter'),false,'removed visit-count explanation');
+  equal(state.visitRequests,[],'no visit-count script or tracking requests without old opt-out');
   await page.locator('#usageEnabled').uncheck();await page.locator('#usageSettingsModal button').click();
   await page.locator('[data-lab-tab="medal"]').click();
   await page.locator('.medal-chip').nth(1).click();await settled(page);

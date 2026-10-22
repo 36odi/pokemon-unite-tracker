@@ -103,7 +103,7 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
     }
     html+='</section>';
   });
-  if(typeof LAB_DESCRIPTIONS!=='undefined')html+=`<p class="ratio-meta">説明は主な効果の要約です。能力の変化や発動条件は計算へ自動適用しません。<a href="${escapeHtml(LAB_DESCRIPTIONS.meta.source)}" target="_blank" rel="noopener noreferrer">説明の元データ</a>（${escapeHtml(LAB_DESCRIPTIONS.meta.checkedAt)}確認）</p>`;
+  if(typeof LAB_DESCRIPTIONS!=='undefined')html+=`<p class="ratio-meta">説明は主な効果の要約です。能力の変化や発動条件は計算へ自動適用しません。（${escapeHtml(LAB_DESCRIPTIONS.meta.checkedAt)}確認）</p>`;
   document.getElementById('ratioResult').innerHTML=html;
   if(all.length&&document.getElementById('labPage').style.display==='block')usageUsed(usageTicket);
 }

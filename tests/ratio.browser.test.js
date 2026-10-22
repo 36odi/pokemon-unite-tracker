@@ -31,6 +31,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq(await page.locator('#ratioChoices button').count(),1,'hiragana search');
   await page.locator('#ratioChoices button').click();
   const text=await page.locator('#ratioResult').innerText();
+  eq(await page.locator('#ratioResult a').count(),0,'description source link removed');
   eq(text.includes('特攻 × 40％ ＋ 120'),true,'raw Overdrive formula');
   eq(text.includes('直接ダメージなし'),true,'effect-only Gear');
   eq(text.includes('オーバードライブ+'),true,'plus variant');
