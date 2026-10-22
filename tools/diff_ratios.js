@@ -23,19 +23,20 @@ const STAT={'Atk':'攻撃','SpAtk':'特攻'};
 const num=v=>{ if(v===''||v==null) return 0; const n=parseFloat(String(v).replace(/,/g,'')); return isNaN(n)?0:n; };
 
 // CSV候補: pokemon -> [{stat,coeff,lv,fix,move}]
-const db={};
+const db={},sourceComponents={};
 for(let r=1;r<csv.length;r++){
   const row=csv[r];
   const rp=row[col['ratio_percent']], bv=row[col['base_value']], ls=row[col['level_scaling']];
   if(rp==='' && bv==='' && ls==='') continue;
   const p=norm(row[col['pokemon_ja']]);
+  sourceComponents[['pokemon_en','skill_slot','move_en','source_object','ratio_component'].map(k=>row[col[k]]).join('|')]={stat:STAT[row[col['stat_type']]]||row[col['stat_type']]||'',coeff:num(rp),lv:num(ls),fix:num(bv)};
   (db[p]=db[p]||[]).push({stat:STAT[row[col['stat_type']]]||row[col['stat_type']]||'', coeff:num(rp), lv:num(ls), fix:num(bv), move:row[col['move_ja']]});
 }
 
 const lab=fs.readFileSync(path.join(ROOT,'lab_data.js'),'utf8').replace(/const LAB_/g,'globalThis.LAB_');
 eval(lab);
 
-let okN=0, total=0;
+let okN=0, total=0,derivedN=0;
 const catB=[], catC=[], catBC=[], catE=[]; // B=lvScaleのみ, C=fixedのみ, BC=lv&fix, E=不明
 const seen=new Set();
 for(const p of Object.keys(globalThis.LAB_SKILLS)){
@@ -44,6 +45,11 @@ for(const p of Object.keys(globalThis.LAB_SKILLS)){
     if(r.coeff==null) continue;
     total++;
     const tc=num(r.coeff), tl=num(r.lvScale), tf=num(r.fixed), ts=r.stat||'';
+    if(r.derivedFrom){
+      const s=sourceComponents[r.derivedFrom.sourceKey],f=r.derivedFrom.factor;
+      if(s&&ts===s.stat&&[tc-s.coeff*f,tl-s.lv*f,tf-s.fix*f].every(n=>Math.abs(n)<1e-7)){okN++;derivedN++;continue;}
+      catE.push({p,name:r.name,key:'導出元・倍率との不一致'});continue;
+    }
     if(cand.some(c=>c.stat===ts&&c.coeff===tc&&c.lv===tl&&c.fix===tf)){ okN++; continue; }
     // 重複(+)を集約: ポケ+わざ名(末尾+除去)+coeff+fixed
     const baseName=r.name.replace(/\+$/,'');
@@ -62,6 +68,7 @@ for(const p of Object.keys(globalThis.LAB_SKILLS)){
 }
 
 console.log('ツール側レシオ行(ダメージ系): '+total+' / 完全一致: '+okN);
+console.log('うち出典の式と明記倍率からの導出: '+derivedN);
 console.log('--- 不一致の分類（+重複は集約） ---');
 console.log('B: lvScaleのみ違い  = '+catB.length);
 console.log('C: fixedのみ違い    = '+catC.length);
@@ -75,3 +82,4 @@ console.log('\n=== BC: lv&fix両方（'+catBC.length+'）===');
 for(const x of catBC) console.log(`  ${x.p} / ${x.name} (coeff=${x.coeff})  tool(lv${x.toolLv},fix${x.toolFix}) -> db(lv${x.dbLv},fix${x.dbFix})`);
 console.log('\n=== E: 同coeff候補なし（'+catE.length+'）===');
 for(const x of catE) console.log(`  ${x.p} / ${x.name}  tool=${x.key}`);
+if(catB.length||catC.length||catBC.length||catE.length)process.exitCode=1;

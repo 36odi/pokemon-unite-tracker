@@ -100,7 +100,7 @@ function labEffectKind(r){
   if(/^シールド/.test(dt))return 'shield';
   return 'damage';
 }
-function labEffectUnit(r){return labEffectKind(r)==='rate'||/攻撃速度.*%/.test(r.dmgType||'')?'%':'';}
+function labEffectUnit(r){return r.effectUnit||(labEffectKind(r)==='rate'||/攻撃速度.*%/.test(r.dmgType||'')?'%':'');}
 // 説明は表示専用。正本の数値行と保存条件の計算データを書き換えない。
 function labDescriptionKey(name){return String(name||'').normalize('NFKC').replace(/[+＋]$/,'').replace('大顎クラッシュバイド','大顎クラッシュバイト');}
 function labMoveDescription(poke,name){

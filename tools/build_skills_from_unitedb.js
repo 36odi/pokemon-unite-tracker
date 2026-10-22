@@ -109,7 +109,7 @@ if(!SK['ソルガレオ']){
 function toolMoves(rows){
   const bySlot={};
   rows.forEach((row,idx)=>{
-    if(row.coeff==null || row.sourceKey) return;
+    if(row.coeff==null || row.sourceKey || row.derivedFrom) return;
     const enh=/[+＋]$/.test(row.name); const base=row.name.replace(/[+＋]$/,'');
     bySlot[row.slot]=bySlot[row.slot]||[];
     let arr=bySlot[row.slot]; let mv=arr.length?arr[arr.length-1]:null;
@@ -166,7 +166,8 @@ if(catFixes.length){ console.log('\n--- 分類是正(回復/シールド) ---');
 if(!APPLY){
   // ドライラン＝検証用途: 現行データ(=既知の正)を再現できるか。再生成前後の整合チェックに使う。
   console.log('\n(ドライラン。--apply で lab_data.js に書き込み)');
-  process.exit(diffN===0&&!additionsChanged?0:1);
+  const preview=JSON.parse(JSON.stringify(SK));require('./lab_component_supplements')(preview,csv.slice(1).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]]))));
+  process.exit(diffN===0&&!additionsChanged&&JSON.stringify(preview)===JSON.stringify(SK)?0:1);
 }
 // --apply＝再生成時の上書き用途: 値の差分(diffN)は「スプレッドシートのバグをunite-dbで是正」なので正常。
 // 構造ドリフト（対応先なしの急増）だけ中止条件にする。
@@ -179,12 +180,14 @@ for(const p of Object.keys(SK)) for(const ri of Object.keys(newVals[p])){ const 
 const decl='const LAB_SKILLS='; const start=labSrc.indexOf(decl);
 let i=labSrc.indexOf('{',start), depth=0, qq=null, end=-1;
 for(;i<labSrc.length;i++){ const c=labSrc[i]; if(qq){ if(c==='\\'){i++;} else if(c===qq)qq=null; continue;} if(c==='"'||c==="'"||c==='`'){qq=c;continue;} if(c==='{')depth++; else if(c==='}'){depth--; if(depth===0){end=i+1;break;}} }
+const supplementReport=require('./lab_component_supplements')(SK,csv.slice(1).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]]))));
+console.log('未収録成分の補完: '+JSON.stringify(supplementReport));
 const updated=labSrc.slice(0,labSrc.indexOf('{',start))+JSON.stringify(SK)+labSrc.slice(end);
 // 検証: 他フィールド不変
 const g2={};(function(){const globalThis=g2;eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));})();
 const g3={};(function(){const globalThis=g3;eval(updated.replace(/const LAB_/g,'globalThis.LAB_'));})();
 let bad=0;
-for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType','cd'].includes(key))continue; if(['name','sourceKey'].includes(key)&&require('./lab_passive_ratios').isSourceRename(o,n))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
+for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].filter(r=>!r.supplement).forEach((o,k)=>{const n=g3.LAB_SKILLS[p].filter(r=>!r.supplement)[k];if(!n){bad++;return;}for(const key of Object.keys(o)){if(['coeff','fixed','lvScale','dmgType','cd'].includes(key))continue;if(['hits','hitsVar','componentNote'].includes(key)&&require('./lab_component_supplements').isSingleHitChange(p,o,n))continue;if(['name','sourceKey'].includes(key)&&(require('./lab_passive_ratios').isSourceRename(o,n)||p==='ハッサム'&&require('./lab_component_supplements').isSourceRename(o,n)))continue;if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'/'+o.name+'.'+key);}}});
 if(bad){ console.error('ABORT: 数値以外が変化'); process.exit(1); }
 fs.writeFileSync(path.join(ROOT,'lab_data.js'), updated);
 console.log('\nOK 適用完了（冪等チェック: 現行と同値を書き戻し。差分があればgitで確認可）');

@@ -5,6 +5,9 @@ let n=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);n++;};const bad=(f,la
 const equipment={items:[{name:'こだわりメガネ',grade:1},{name:'すりぬけスプーン',grade:40},{name:'',grade:30}],activeEffects:['こだわりメガネ'],goalCount:6,koStack:20,dmgStack:4,healTarget:'ally',proc:{TargetPct:50.5,SelfPct:null,HPDamage:321}};
 const c={schema:1,dataVersion:'test',attacker:'ピカチュウ',defender:'カビゴン',attackLevel:15,defendLevel:1,skills:[{name:'エレキボール',upgrade:'4'},{name:'',upgrade:''}],medal:{label:'秘密の名前',slots:['ピジョン',...Array(9).fill(null)],rarities:Array(10).fill('silver')},attack:equipment,defense:equipment,baseline:equipment,name:'共有しない',note:'共有しない',user_id:'共有しない',battles:[{id:'共有しない'}]};
 const clean=codec.sanitize(c);eq(codec.decode(codec.encode(c)),clean,'Japanese fractional inputs and both sides roundtrip');
+const scizor={...c,attacker:'ハッサム',skills:[{name:'ダブルウイング+',upgrade:'11'},{name:'つるぎのまい',upgrade:'13'}]};
+eq(codec.decode(codec.encode(scizor)).skills[0],{name:'バレットパンチ+',upgrade:'11'},'old saved Scizor calculation uses corrected move name');
+eq(codec.sanitize({...scizor,attacker:'ストライク'}).skills[0].name,'ダブルウイング+','Scyther move is not renamed');
 eq(Object.keys(clean).sort(),['schema','dataVersion','attacker','defender','attackLevel','defendLevel','skills','medal','attack','defense','baseline'].sort(),'only calculation fields');
 eq(clean.medal.label,undefined,'medal personal label removed');eq(JSON.stringify(clean).includes('共有しない'),false,'private metadata removed');
 for(const [key,value] of [['schema',2],['attackLevel',0],['defendLevel',16],['attackLevel',1.5],['attacker',''],['skills',[]],['medal',{slots:[],rarities:[]}],['baseline',{}]])bad(()=>codec.sanitize({...c,[key]:value}),'reject '+key);

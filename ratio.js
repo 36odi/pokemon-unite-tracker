@@ -55,7 +55,7 @@ function ratioRow(r,poke){
   const label=ratioLabel(poke,r),note=ratioComponentNote(poke,r);
   return `<div class="ratio-row"><div class="ratio-label">${escapeHtml(label)}</div>
     ${hits>1?'<div class="ratio-meta">1回分の式</div>':''}
-    <div class="ratio-formula${r.descriptionEntry?' ratio-effect-description':''}">${escapeHtml(ratioFormula(r))}</div>
+    <div class="ratio-formula${r.descriptionEntry||r.formulaText?' ratio-effect-description':''}">${escapeHtml(ratioFormula(r))}</div>
     ${hits>1&&r.coeff!=null?`<div class="ratio-meta">${r.hitsVar?'最大':''}${hits}回分${note?'（表示式の部分のみ）':''}：${escapeHtml(ratioFormula(r,hits))}</div>`:''}
     ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}</div>`;
 }

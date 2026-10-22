@@ -11,6 +11,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ## パッチ時の手順
 
+後続ヒット・追加成分は `tools/lab_component_supplements.js` が数値同期の最後に補完する。通常攻撃の未収録数値は出典キーを持ち、本文からの倍率展開は `data/lab-component-rules.json` の出典キー・根拠文・倍率を持つ。条件式は `data/lab-conditional-formulas.json` で管理する。再生成時は `node tests/lab-components.test.js` で正本の全1,502数値成分の存在と、倍率・重複のない補完を確認する。詳細は `docs/lab-component-fixes.md`。
+
 特性・わざの日本語要約は数値と独立した `lab_descriptions.js` で管理する。強化後の変更点は `data/lab-move-upgrades.txt` に通常版と分けて記載し、CSVのupgrade/enhanced行と照合する。原文説明を変更した際は原稿を照合し、`node tools/build_lab_descriptions.js --apply` と `node tests/lab-descriptions.test.js` を実行する。出典・表示範囲・検証は `docs/lab-descriptions.md` を参照。
 
 ### 2026-09同期以降の注意

@@ -1,0 +1,344 @@
+[
+  {
+    "pokemon": "ニンフィア",
+    "move": "マジカルフレイム",
+    "sourceKey": "Sylveon|Move 1|Mystical Fire|rsb|base",
+    "factors": [
+      0.28
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "subsequent flames on the same target deal 28% damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "アブソル",
+    "move": "ダークスラッシャー",
+    "sourceKey": "Absol|Unite Move|Midnight Slash|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "最後の斬撃で同じ相手に重なる追加ヒット",
+    "evidence": "subsequent hits deal 30%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "マリルリ",
+    "move": "あわ",
+    "sourceKey": "Azumarill|Move 2|Bubble|rsb|base",
+    "factors": [
+      0.25
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "Subsequent hits on the same target deal 25%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "グレンアルマ",
+    "move": "サイコショック",
+    "sourceKey": "Armarouge|Move 2|Psyshock|rsb|base",
+    "factors": [
+      0.75,
+      0.5
+    ],
+    "label": "同じ相手への2・3ヒット目",
+    "evidence": "second damage instance will be reduced by 25% and the third by 50%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ソウブレイズ",
+    "move": "くだけるよろい",
+    "sourceKey": "Ceruledge|Passive|Weak Armor|rsb2|base",
+    "factors": [
+      0.5
+    ],
+    "label": "2〜6段階目に加算する1段階分（初段階の50%）",
+    "evidence": "each stack after the first adding 50%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "フリーザー",
+    "move": "アイスウィングブリザード",
+    "sourceKey": "Articuno|Unite Move|Ice Wing Whiteout|rsb|base",
+    "factors": [
+      1.05,
+      1.1,
+      1.15,
+      2
+    ],
+    "label": "2〜5回目の波（初回の105・110・115・200%）",
+    "evidence": "second wave deals 5% more damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "マフォクシー",
+    "move": "ニトロチャージ",
+    "sourceKey": "Delphox|Move 2|Flame Charge|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "Each subsequent flame that hits deals 70% less",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ワタシラガ",
+    "move": "グラスミキサー",
+    "sourceKey": "Eldegoss|Move 1|Leaf Tornado|rsb|base",
+    "factors": [
+      0.25
+    ],
+    "label": "2ヒット目",
+    "evidence": "25% of the damage of the first hit",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ドラパルト",
+    "move": "ドラグーンショット",
+    "sourceKey": "Dragapult|Unite Move|Dreep and Destroy|rsb|add1",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2発目の固定・特攻部分（減少HP部分とは別）",
+    "evidence": "second Dreepy deals 30%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "エーフィ",
+    "move": "スピードスター",
+    "sourceKey": "Espeon|Move 1|Swift|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "70% less",
+    "variant": "both"
+  },
+  {
+    "pokemon": "エーフィ",
+    "move": "サイコショック",
+    "sourceKey": "Espeon|Move 1|Psyshock|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "70% less",
+    "variant": "both"
+  },
+  {
+    "pokemon": "エーフィ",
+    "move": "アシストパワー",
+    "sourceKey": "Espeon|Move 1|Stored Power|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2ヒット目以降",
+    "evidence": "70% less",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ゲンガー",
+    "move": "おにび",
+    "sourceKey": "Gengar|Move 1|Will-o-Wisp|rsb|base",
+    "factors": [
+      0.5
+    ],
+    "label": "同じ相手への2つ目以降の炎",
+    "evidence": "subsequent flames deal 50%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ラティアス",
+    "move": "りゅうのはどう",
+    "sourceKey": "Latias|Move 2|Dragon Pulse|rsb|add1",
+    "factors": [
+      0.85,
+      0.7,
+      0.55,
+      0.4,
+      0.25
+    ],
+    "label": "同じ相手への2〜6発目（初発の85〜25%、エオンパワー100超の補正は別）",
+    "evidence": "Subsequent projectiles hitting the same target deal 15% less damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ラティオス",
+    "move": "りゅうのはどう",
+    "sourceKey": "Latios|Move 2|Dragon Pulse|rsb|add1",
+    "factors": [
+      0.85,
+      0.7,
+      0.55,
+      0.4,
+      0.25
+    ],
+    "label": "同じ相手への2〜6発目（初発の85〜25%、エオンパワー100超の補正は別）",
+    "evidence": "Subsequent projectiles hitting the same target deal 15% less damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ラティオス",
+    "move": "りゅうせいぐん",
+    "sourceKey": "Latios|Move 2|Draco Meteor|rsb|base",
+    "factors": [
+      0.5
+    ],
+    "label": "同じ相手への2発目以降（エオンパワー100超の補正は別）",
+    "evidence": "Subsequent comets that hit the same target deal 50% less",
+    "variant": "both"
+  },
+  {
+    "pokemon": "リーフィア",
+    "move": "スピードスター",
+    "sourceKey": "Leafeon|Move 1|Swift|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2つ目以降の星",
+    "evidence": "subsequent stars to deal 70% reduced damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "リーフィア",
+    "move": "はっぱカッター",
+    "sourceKey": "Leafeon|Move 1|Razor Leaf|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "往路で同じ相手への2枚目以降",
+    "evidence": "subsequent leaves within the same fan",
+    "variant": "both"
+  },
+  {
+    "pokemon": "リーフィア",
+    "move": "はっぱカッター",
+    "sourceKey": "Leafeon|Move 1|Razor Leaf|rsb|add1",
+    "factors": [
+      0.3
+    ],
+    "label": "1秒未満の手動回収で同じ相手への2枚目以降",
+    "evidence": "subsequent leaves within the same fan",
+    "variant": "both"
+  },
+  {
+    "pokemon": "リーフィア",
+    "move": "はっぱカッター",
+    "sourceKey": "Leafeon|Move 1|Razor Leaf|rsb|add2",
+    "factors": [
+      0.3
+    ],
+    "label": "自動回収・1秒以降の手動回収で同じ相手への2枚目以降",
+    "evidence": "subsequent leaves within the same fan",
+    "variant": "both"
+  },
+  {
+    "pokemon": "メガニウム",
+    "move": "はなふぶき",
+    "sourceKey": "Meganium|Move 2|Petal Blizzard|rsb|base",
+    "factors": [
+      0.15
+    ],
+    "label": "満開時の2回目以降のダメージ",
+    "evidence": "15% of the first hit",
+    "variant": "both"
+  },
+  {
+    "pokemon": "メガニウム",
+    "move": "はなふぶき",
+    "sourceKey": "Meganium|Move 2|Petal Blizzard|rsb|add1",
+    "factors": [
+      0.05
+    ],
+    "label": "満開時の2回目以降の回復",
+    "evidence": "5% of the first tick",
+    "variant": "base"
+  },
+  {
+    "pokemon": "メガニウム",
+    "move": "はなふぶき",
+    "sourceKey": "Meganium|Move 2|Petal Blizzard|rsb|enhanced",
+    "factors": [
+      0.05
+    ],
+    "label": "満開時の2回目以降の回復",
+    "evidence": "5% of the first tick",
+    "variant": "plus"
+  },
+  {
+    "pokemon": "メガニウム",
+    "move": "こうごうせい",
+    "sourceKey": "Meganium|Move 2|Synthesis|rsb|base",
+    "factors": [
+      0.5
+    ],
+    "label": "2つの円が重なったときの2つ目の回復",
+    "evidence": "second circle's healing is halved",
+    "variant": "both"
+  },
+  {
+    "pokemon": "マスカーニャ",
+    "move": "このは",
+    "sourceKey": "Meowscarada|Move 1|Leafage|rsb|base",
+    "factors": [
+      0.8
+    ],
+    "label": "同じ相手への2枚目以降",
+    "evidence": "subsequent leaves deal 20% reduced damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "マスカーニャ",
+    "move": "つじぎり",
+    "sourceKey": "Meowscarada|Move 1|Night Slash|rsb|base",
+    "factors": [
+      0.7
+    ],
+    "label": "2波目以降",
+    "evidence": "Subsequent waves deal 70%",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ミミッキュ",
+    "move": "じゃれつく",
+    "sourceKey": "Mimikyu|Move 1|Play Rough|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "2ヒット目以降",
+    "evidence": "Hits after the first deal 70% reduced damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ハッサム",
+    "move": "バレットパンチ",
+    "sourceKey": "Scizor|Move 1|Bullet Punch|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "初撃以外のパンチ",
+    "evidence": "30% damage of initial punch",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ストライク",
+    "move": "グリーンスターダイブ",
+    "sourceKey": "Scyther|Unite Move|Green Illusion Dive|rsb|base",
+    "factors": [
+      0.3
+    ],
+    "label": "同じ相手への2体目以降の分身",
+    "evidence": "Subsequent copies hitting the same target deal 70% reduced damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ゼラオラ",
+    "move": "ワイルドボルト",
+    "sourceKey": "Zeraora|Move 2|Wild Charge|rsb|base",
+    "factors": [
+      0.5
+    ],
+    "label": "2ヒット目以降",
+    "evidence": "Deals half damage",
+    "variant": "both"
+  }
+]

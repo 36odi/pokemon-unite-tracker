@@ -19,7 +19,7 @@ const CalcConditionCodec=(()=>{
       if(!m||!Array.isArray(m.slots)||m.slots.length!==10||!m.slots.every(n=>n===null||text(n))||!Array.isArray(m.rarities)||m.rarities.length!==10||!m.rarities.every(r=>['gold','silver','bronze'].includes(r)))throw Error('メダルの条件が不正です。');
       medal={slots:[...m.slots],rarities:[...m.rarities]};
     }
-    return {schema:1,dataVersion:c.dataVersion,attacker:c.attacker,defender:c.defender,attackLevel:c.attackLevel,defendLevel:c.defendLevel,skills:c.skills.map(s=>({name:s.name,upgrade:s.upgrade})),medal,attack:equipment(c.attack),defense:equipment(c.defense),baseline:c.baseline===null?null:equipment(c.baseline)};
+    return {schema:1,dataVersion:c.dataVersion,attacker:c.attacker,defender:c.defender,attackLevel:c.attackLevel,defendLevel:c.defendLevel,skills:c.skills.map(s=>({name:c.attacker==='ハッサム'?s.name.replace('ダブルウイング','バレットパンチ'):s.name,upgrade:s.upgrade})),medal,attack:equipment(c.attack),defense:equipment(c.defense),baseline:c.baseline===null?null:equipment(c.baseline)};
   }
   function encode(c){const bytes=new TextEncoder().encode(JSON.stringify(sanitize(c)));if(bytes.length>12000)throw Error('共有する条件が大きすぎます。');return btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
   function decode(s){if(typeof s!=='string'||s.length>16000||!/^[-_A-Za-z0-9]+$/.test(s))throw Error('共有リンクの形式が不正です。');return sanitize(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(s.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0)))));}

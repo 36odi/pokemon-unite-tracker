@@ -26,8 +26,6 @@ for(const [p,base] of Object.entries({'メガリザードンX':'リザードン'
   const names=new Set(K[p].filter(r=>!['特性','通常攻撃'].includes(r.slot)).map(r=>norm(r.name)));
   for(const kind of ['moves','upgrades'])for(const name of names)if(!data[p][kind][name]&&data[base][kind][name])data[p][kind][name]={...data[base][kind][name]};
 }
-for(const name of ['ダブルウイング','グリーンスターダイブ'])data['ハッサム'].moves[name]={...data['ストライク'].moves[name]};
-data['ハッサム'].upgrades['ダブルウイング']={...data['ストライク'].upgrades['ダブルウイング']};
 const missing=[];
 const invalid=[];
 const shared={'メガリザードンX':'リザードン','メガリザードンY':'リザードン','メガギャラドス':'ギャラドス','メガルカリオ':'ルカリオ'};
