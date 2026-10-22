@@ -1,4 +1,4 @@
-const CACHE = 'unite-tracker-v103';
+const CACHE = 'unite-tracker-v104';
 
 // オフラインで動作させるために必要なアプリシェル一式（ローカル資産）。
 // JS/CSS は index.html と同じ ?v=版数 付きURLで持つ（版数は CACHE の数字と同じ。更新のたびに両方を上げる）。
@@ -6,29 +6,29 @@ const CACHE = 'unite-tracker-v103';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=103',
+  './styles.css?v=104',
   './manifest.json',
-  './lab_data.js?v=103',
-  './lab_descriptions.js?v=103',
-  './ratio.js?v=103',
-  './ratio-labels.js?v=103',
-  './js/constants.js?v=103',
-  './js/utils.js?v=103',
-  './js/lab-core.js?v=103',
-  './js/lab-review.js?v=103',
-  './js/calc-conditions-core.js?v=103',
-  './js/calc-conditions.js?v=103',
-  './js/patch-analysis-core.js?v=103',
-  './js/patch-analysis.js?v=103',
-  './js/usage-analytics.js?v=103',
+  './lab_data.js?v=104',
+  './lab_descriptions.js?v=104',
+  './ratio.js?v=104',
+  './ratio-labels.js?v=104',
+  './js/constants.js?v=104',
+  './js/utils.js?v=104',
+  './js/lab-core.js?v=104',
+  './js/lab-review.js?v=104',
+  './js/calc-conditions-core.js?v=104',
+  './js/calc-conditions.js?v=104',
+  './js/patch-analysis-core.js?v=104',
+  './js/patch-analysis.js?v=104',
+  './js/usage-analytics.js?v=104',
   './images/pokemon/25.png',
   './images/app-icon-192.png',
   './images/app-icon-512.png',
   './images/app-icon-maskable-512.png',
   './images/apple-touch-icon.png',
   './images/brand-mark.svg',
-  './vendor/supabase.min.js?v=103',
-  './vendor/chart.umd.min.js?v=103',
+  './vendor/supabase.min.js?v=104',
+  './vendor/chart.umd.min.js?v=104',
 ];
 
 self.addEventListener('install', e => {
