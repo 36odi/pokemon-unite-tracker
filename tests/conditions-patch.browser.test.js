@@ -75,7 +75,10 @@ let browser,checks=0,writes=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label)
  await page.locator('#paBots').uncheck();eq(await page.locator('#paOutput .pa-metric p').allTextContents(),['1試合 ／ 1勝 0敗','4試合 ／ 2勝 2敗'],'BOT toggle works even if global analysis excludes BOT');
  await page.selectOption('#paRank','レジェンド');eq((await page.locator('#paOutput').innerText()).includes('前後の比較はできません'),true,'empty side explicitly not comparable');await page.selectOption('#paRank','');
  await page.getByText('わざ・もちものなどで個別に絞る',{exact:true}).click();await page.selectOption('#paItem','ものしりメガネ');eq(await page.locator('#paOutput .pa-metric p').allTextContents(),['0試合 ／ 0勝 0敗','1試合 ／ 0勝 1敗'],'individual item filter');await page.selectOption('#paItem','');
+ await page.clock.setFixedTime(new Date('2026-10-15T12:00:00+09:00'));
  await page.selectOption('#paPatch','20261013');eq((await page.locator('#paOutput').innerText()).includes('指定期間はまだ終わっていません'),true,'recent post period incomplete warning');
+ await page.clock.setFixedTime(new Date('2026-10-22T12:00:00+09:00'));
+ await page.selectOption('#paPatch','20261013');eq((await page.locator('#paOutput').innerText()).includes('指定期間はまだ終わっていません'),false,'completed post period clears warning');
  await page.selectOption('#paPatch','20260903');await page.locator('#pokeHubPatch').screenshot({path:path.join(OUT,'patch-mobile.png')});eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'patch mobile no overflow');
  eq(await page.evaluate(()=>localStorage.getItem('guest_battles_patch-fixture')),original,'records never changed');eq(errors,[],'no page errors');eq(writes,0,'no external writes');
  await page.evaluate(()=>{showPage('lab');switchLab('dmg');});page.once('dialog',d=>d.accept());await page.locator('#lcSavedList [data-action="delete"]').click();eq(await page.locator('#lcSavedCount').innerText(),'0件','delete removes only saved calculation condition');eq(await page.evaluate(()=>localStorage.getItem('guest_battles_patch-fixture')),original,'delete does not change battle records');

@@ -13,6 +13,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ### 2026-09同期以降の注意
 
+- 2026-10-22同期：ステータス103体、レシオ12,104行。サンダース・ブースターの数値24成分と特性説明を `lab_eevee_october.js` で生成。出典・計算範囲は `docs/lab-data-20261022.md` を参照。進化後特性名3件の移行は `lab_passive_ratios.js` が担当する。
+
 - 2026-09-28更新：`lab_toxtricity.js` がストリンダーの11数値成分を固定の出典キーで検証する。4つの+成分は元の式を継承し、ギアチェンジは数値を作らず効果説明2行を生成する。現在はステータス101体・レシオ1,774行。
 
 - 今回受領した2冊だけを同期する場合は、構造比較後に `node tools/build_skills_from_unitedb.js --apply` と `node tools/build_status_from_unitedb.js --apply` を実行する。持ち物・メダル用シートの再生成は不要。

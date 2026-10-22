@@ -20,7 +20,7 @@ for(const [p,rows] of Object.entries(K))for(const r of rows.filter(r=>r.sourceKe
   eq([r.coeff,r.fixed,r.lvScale],[num(s.ratio_percent),num(s.base_value),num(s.level_scaling)],r.sourceKey);
   eq(r.stat,s.stat_type==='SpAtk'?'特攻':'攻撃','scaling stat');linked++;
 }
-eq(linked,80,'existing 46 source-linked rows plus 34 passive ratio components');
+eq(linked,108,'80 existing source-linked rows plus 28 Jolteon/Flareon formula rows');
 const mor=stats.filter(r=>r.pokemon_name==='Morpeko').sort((a,b)=>num(a.level)-num(b.level));
 eq(mor.map(r=>num(r.level)),Array.from({length:15},(_,i)=>i+1),'complete Morpeko levels');
 for(const [dest,src] of Object.entries({hp:'hp',atk:'attack',def:'defense',spatk:'sp_attack',spdef:'sp_defense',ms:'move_speed'}))eq(S['モルペコ'][dest],mor.map(r=>num(r[src])),dest);
@@ -30,8 +30,9 @@ eq(K['モルペコ'].length,15,'Morpeko complete lab structure');
 for(const [name,lv] of Object.entries({'スパーク':'5','スパーク+':'11','ダメおし':'7','ダメおし+':'13','ハラペコ超電ホイール':'9'}))eq(K['モルペコ'].filter(r=>r.name===name).map(r=>r.upg),[lv,lv],name+' user levels');
 eq(K['ピクシー'].filter(r=>r.sourceKey?.includes('|Unite Move|')).map(r=>r.hits),[1,3,1,7,7,1],'Clefable per-hit counts');
 eq(K['フーパ'].filter(r=>r.sourceKey?.includes('|Unite Move|')).map(r=>r.hits),[1,7,1],'Hoopa per-hit counts');
-const cds={'マッシブーン':{'ばかぢから':7.5},'キュワワー':{'てんしのキッス':7},'イワパレス':{'ユナイトわざ':123},'ドードリオ':{'とびげり':6,'ユナイトわざ':123},'ジュラルドン':{'ラスターカノン':6,'ユナイトわざ':123},'オーダイル':{'たきのぼり':7.5},'ガブリアス':{'ドラゴンダイブ':6,'ドラゴンクロー':5},'ヨクバリス':{'ユナイトわざ':112}};
+const cds={'マッシブーン':{'ばかぢから':7.5},'キュワワー':{'てんしのキッス':7},'イワパレス':{'ユナイトわざ':123},'ドードリオ':{'とびげり':6,'ユナイトわざ':123},'ジュラルドン':{'ラスターカノン':6,'ユナイトわざ':123},'オーダイル':{'たきのぼり':7.5},'ガブリアス':{'ドラゴンダイブ':6,'ドラゴンクロー':5},'ヨクバリス':{'ユナイトわざ':112},'エースバーン':{'フェイント':9.5},'インテレオン':{'ユナイトわざ':100},'ラティオス':{'テレキネシス':9},'ミライドン':{'かみなり':9,'パラボラチャージ':10},'ヤドラン':{'なみのり':6.5},'ソルガレオ':{'アイアンヘッド':6}};
 for(const [p,moves] of Object.entries(cds))for(const [name,cd] of Object.entries(moves)){
   const rows=K[p].filter(r=>r.slot===name||r.name.replace(/[+＋]$/,'')===name);eq(rows.length>0,true,p+name+' exists');eq(rows.every(r=>r.cd===cd),true,p+name+' cooldown');
 }
+eq([S['ヤドラン'].def[14],S['ヤドラン'].spdef[14]],[540,480],'October 13 Slowbro Lv15 defenses');
 console.log('ALL PASS — '+checks+' source checks');

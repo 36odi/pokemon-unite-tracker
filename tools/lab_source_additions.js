@@ -1,5 +1,6 @@
 // 2026-09同期で追加された成分。行番号や並び順を使わず、出典の成分キーで接続する。
 module.exports=function(SK, source){
+  require('./lab_eevee_october')(SK,source);
   require('./lab_toxtricity')(SK,source);
   const num=v=>Number(String(v||0).replace(/,/g,''));
   const slots={'Passive':'特性','Basic':'通常攻撃','Move 1':'わざ1','Move 2':'わざ2','Unite Move':'ユナイトわざ'};
@@ -38,7 +39,9 @@ module.exports=function(SK, source){
   // 今回CSVで変更された待ち時間だけを同期。既存のユーザー指定Lv等には触れない。
   const moves={'Buzzwole':['Superpower'],'Comfey':['Sweet Kiss'],'Crustle':['Rubble Rouser'],
     'Dodrio':['Jump Kick','Triple Trample'],'Duraludon':['Flash Cannon','Revolving Ruin'],
-    'Feraligatr':['Waterfall'],'Garchomp':['Dragon Rush','Dragon Claw'],'Greedent':['Berry Belly Flop']};
+    'Feraligatr':['Waterfall'],'Garchomp':['Dragon Rush','Dragon Claw'],'Greedent':['Berry Belly Flop'],
+    'Cinderace':['Feint'],'Inteleon':['Azure Spy Vision'],'Latios':['Telekinesis'],
+    'Miraidon':['Thunder','Parabolic Charge'],'Slowbro':['Surf'],'Solgaleo':['Iron Head']};
   for(const [en,names] of Object.entries(moves))for(const name of names){
     const found=source.filter(r=>r.pokemon_en===en&&r.move_en===name&&r.cooldown!=='');
     const cds=[...new Set(found.map(r=>num(r.cooldown)))];

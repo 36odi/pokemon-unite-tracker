@@ -12,8 +12,8 @@ const numeric=r=>['ratio_percent','base_value','level_scaling'].some(k=>r[k]!=='
 const passives=source.filter(r=>r.skill_slot==='Passive'&&numeric(r));
 const key=r=>[r.pokemon_en,r.skill_slot,r.move_en,r.source_object,r.ratio_component].join('|');
 let checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
-eq(passives.length,43,'source contains 43 numeric passive rows');
-eq(new Set(passives.map(r=>r.pokemon_ja)).size,31,'31 Pokemon have numeric passive ratios in source');
+eq(passives.length,44,'source includes Flareon numeric passive');
+eq(new Set(passives.map(r=>r.pokemon_ja)).size,32,'32 Pokemon have numeric passive ratios in source');
 for(const s of passives){
   const matches=K[s.pokemon_ja].filter(r=>r.sourceKey===key(s)&&r.slot==='特性');
   eq(matches.length,1,'exactly one component: '+key(s));const r=matches[0];
@@ -21,6 +21,17 @@ for(const s of passives){
 }
 const before=JSON.stringify(K);require('../tools/lab_passive_ratios')(K,source);
 eq(JSON.stringify(K),before,'regeneration does not duplicate or change existing rows');
+const legacy=JSON.parse(before);
+for(const [p,oldName,newName,oldMove,newMove] of [
+  ['エーフィ','きけんよち','マジックミラー','Anticipation','Magic Bounce'],
+  ['バンギラス','こんじょう','すなおこし','Guts','Sand Stream'],
+  ['シャワーズ','にげあし','ちょすい','Run Away','Water Absorb']
+]){
+  const row=legacy[p].find(r=>r.slot==='特性'&&r.name===newName);
+  row.name=oldName;row.sourceKey=row.sourceKey.replace('|'+newMove+'|','|'+oldMove+'|');
+}
+require('../tools/lab_passive_ratios')(legacy,source);
+eq(JSON.stringify(legacy),before,'evolved passive renames migrate in place without double counting');
 const revised=source.map(r=>r.pokemon_en==='Eldegoss'&&r.skill_slot==='Passive'&&r.ratio_component==='add1'?{...r,base_value:'166.'}:r);
 const copy=JSON.parse(before);require('../tools/lab_passive_ratios')(copy,revised);
 eq(copy['ワタシラガ'].find(r=>r.sourceKey?.endsWith('Cotton Down|rsb|add1')).fixed,166,'source update refreshes added passive numbers');
@@ -45,5 +56,5 @@ for(const [p,n,d,kind,value] of cases){const r=pick(p,n,d);assert.ok(r,p+'/'+n+'
 eq(F.labEffectUnit(pick('ジュナイパー','はっぱカッター','攻撃速度 - % 増加')),'%','speed is a percent');
 eq(F.labEffectUnit(pick('ギルガルド','バトルスイッチ')),'','flat defense is not percent');
 eq(F.labEffectUnit(pick('マッシブーン','きゅうけつ','回復 - 与ダメージ割合 (ヒットごと)')),'%','damage-based recovery is a ratio, not HP');
-for(const [p,n,h] of [['サーナイト','シンクロ',4],['ファイヤー','ほのおのからだ',8],['バンギラス','こんじょう',7],['サンダー','せいでんき',5]])eq(pick(p,n).hits,h,'source hit count '+p);
+for(const [p,n,h] of [['サーナイト','シンクロ',4],['ファイヤー','ほのおのからだ',8],['バンギラス','すなおこし',7],['サンダー','せいでんき',5]])eq(pick(p,n).hits,h,'source hit count '+p);
 console.log('ALL PASS — '+checks+' ratio effect checks');

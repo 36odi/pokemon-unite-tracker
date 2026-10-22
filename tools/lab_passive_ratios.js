@@ -24,7 +24,7 @@ module.exports=function(SK,source){
   };
   for(const r of source.filter(r=>r.skill_slot==='Passive'&&numeric(r))){
     const rows=SK[r.pokemon_ja];if(!rows)throw Error('特性のポケモン未登録: '+r.pokemon_ja);
-    const existing=rows.find(x=>x.sourceKey===key(r));
+    const existing=rows.find(x=>x.sourceKey===key(r))||rows.find(x=>module.exports.isSourceRename(x,{sourceKey:key(r),name:r.move_ja}));
     // 既存9成分は従来の個別同期処理が管理する。追加34成分は出典の更新にも追従する。
     if(existing&&!existing.effectKind)continue;
     const label=labels[r.effect_label];if(!label)throw Error('特性ラベル未定義: '+r.effect_label);
@@ -42,3 +42,12 @@ module.exports=function(SK,source){
     if(existing)rows[rows.indexOf(existing)]=entry;else rows.push(entry);
   }
 };
+
+// 進化前の特性名で記録されていた式を、出典の進化後の名前へ移す。
+// 同じ数式を古い特性と新しい特性の両方に残さない。
+const renames={
+  'Espeon|Passive|Anticipation|rsb|base':['Espeon|Passive|Magic Bounce|rsb|base','マジックミラー'],
+  'Tyranitar|Passive|Guts|rsb|base':['Tyranitar|Passive|Sand Stream|rsb|base','すなおこし'],
+  'Vaporeon|Passive|Run Away|rsb|base':['Vaporeon|Passive|Water Absorb|rsb|base','ちょすい']
+};
+module.exports.isSourceRename=(before,after)=>renames[before.sourceKey]?.[0]===after.sourceKey&&renames[before.sourceKey]?.[1]===after.name;

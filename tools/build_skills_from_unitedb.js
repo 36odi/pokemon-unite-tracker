@@ -184,7 +184,7 @@ const updated=labSrc.slice(0,labSrc.indexOf('{',start))+JSON.stringify(SK)+labSr
 const g2={};(function(){const globalThis=g2;eval(labSrc.replace(/const LAB_/g,'globalThis.LAB_'));})();
 const g3={};(function(){const globalThis=g3;eval(updated.replace(/const LAB_/g,'globalThis.LAB_'));})();
 let bad=0;
-for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType','cd'].includes(key))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
+for(const p of Object.keys(g2.LAB_SKILLS)) g2.LAB_SKILLS[p].forEach((o,k)=>{ const n=g3.LAB_SKILLS[p][k]; for(const key of Object.keys(o)){ if(['coeff','fixed','lvScale','dmgType','cd'].includes(key))continue; if(['name','sourceKey'].includes(key)&&require('./lab_passive_ratios').isSourceRename(o,n))continue; if(JSON.stringify(o[key])!==JSON.stringify(n[key])){bad++;console.error('BAD '+p+'['+k+'].'+key);} }});
 if(bad){ console.error('ABORT: 数値以外が変化'); process.exit(1); }
 fs.writeFileSync(path.join(ROOT,'lab_data.js'), updated);
 console.log('\nOK 適用完了（冪等チェック: 現行と同値を書き戻し。差分があればgitで確認可）');

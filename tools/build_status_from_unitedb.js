@@ -41,7 +41,8 @@ const EN2JP={
   'Tsareena':'アマージョ','Typhlosion':'バクフーン','Tyranitar':'バンギラス','Umbreon':'ブラッキー',
   'Urshifu':'ウーラオス','Vaporeon':'シャワーズ','Venusaur':'フシギバナ','Wigglytuff':'プクリン',
   'Zacian':'ザシアン','Zapdos':'サンダー','Zeraora':'ゼラオラ','Zoroark':'ゾロアーク',
-  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル','Morpeko':'モルペコ','Toxtricity':'ストリンダー'
+  'Quaquaval':'ウェーニバル','Yveltal':'イベルタル','Morpeko':'モルペコ','Toxtricity':'ストリンダー',
+  'Jolteon':'サンダース','Flareon':'ブースター'
 };
 
 const rows=parseCSV(fs.readFileSync(path.join(ROOT,'data','unitedb_stats.csv'),'utf8'));
@@ -78,7 +79,7 @@ for(const [en,sourceRows] of Object.entries(grouped)){
   }
   canonical[jp]=entry;
 }
-if(Object.keys(canonical).length!==101){ console.error('ABORT: 正本ポケモン数が101ではない: '+Object.keys(canonical).length); process.exit(1); }
+if(Object.keys(canonical).length!==103){ console.error('ABORT: 正本ポケモン数が103ではない: '+Object.keys(canonical).length); process.exit(1); }
 
 const labPath=path.join(ROOT,'lab_data.js');
 const labSrc=fs.readFileSync(labPath,'utf8');

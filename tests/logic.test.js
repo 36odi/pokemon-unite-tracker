@@ -325,8 +325,8 @@ ok(badSkill.length === 0, `all skill rows valid (bad: ${badSkill.slice(0, 5).joi
 // STATUS と SKILLS のポケモン集合が概ね一致（SKILLSはSTATUSに含まれるべき）
 const missing = Object.keys(K).filter(p => !S[p]);
 ok(missing.length === 0, `every SKILLS pokemon has STATUS (missing: ${missing.slice(0, 5).join(', ')})`);
-eq(Object.keys(S).length, 101, 'LAB_STATUS contains 101 Pokemon including Toxtricity');
-eq(Object.keys(K).length, 101, 'LAB_SKILLS contains 101 Pokemon including Toxtricity');
+eq(Object.keys(S).length, 103, 'LAB_STATUS includes Jolteon and Flareon');
+eq(Object.keys(K).length, 103, 'LAB_SKILLS includes Jolteon and Flareon');
 eq(S['パルキア']?.role, 'All-Rounder', 'Palkia lab role is All-Rounder');
 eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
@@ -374,7 +374,7 @@ const ratioSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_ratios.csv'
 const statsSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_stats.csv'), 'utf8');
 ok((ratioSource.match(/Reshiram/g) || []).length >= 96, 'ratio source contains all Reshiram source rows');
 eq((statsSource.match(/,Reshiram,Reshiram,/g) || []).length, 15, 'stats source contains exactly 15 Reshiram levels');
-eq((ratioSource.match(/,Solgaleo,ソルガレオ,/g) || []).length, 96, 'ratio source contains exactly 96 Solgaleo source rows');
+eq((ratioSource.match(/,Solgaleo,ソルガレオ,/g) || []).length, 102, 'Solgaleo source contains 96 structure rows and 6 description records');
 eq((statsSource.match(/,Solgaleo,Solgaleo,/g) || []).length, 15, 'stats source contains exactly 15 Solgaleo levels');
 
 // ---- 定数データの整合性（js/constants.js） ----

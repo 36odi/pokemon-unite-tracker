@@ -41,7 +41,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     for(const p of Object.keys(LAB_SKILLS)){ratioPokemon=p;ratioRender();if(!document.getElementById('ratioResult').textContent.includes(p))throw Error(p);}
     return Object.keys(LAB_SKILLS).length;
   });
-  eq(count,101,'all Pokemon render');
+  eq(count,103,'all Pokemon render');
   const coverage=await page.evaluate(()=>{
     const previous=labCalcResult,stats={HP:6000,攻撃:300,特攻:400,防御:200,特防:200};
     labCalcResult=stats;let rows=0,calc=0,dc=0;
@@ -60,7 +60,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     }finally{labCalcResult=previous;}
     return {rows,calc,dc};
   });
-  eq(coverage.rows,1885,'all ratio rows including 34 additional passive components audited across renderers');
+  eq(coverage.rows,1917,'all ratio rows including Jolteon and Flareon audited across renderers');
   eq(coverage.calc>1500&&coverage.dc>1500,true,'both calculation renderers checked');
   await page.evaluate(()=>switchLab('calc'));await page.selectOption('#labPokeSelect','アブソル');
   await page.selectOption('#labSkill1Sel','つじぎり');

@@ -1,4 +1,4 @@
-// レシオ一覧・両計算画面で特性43成分と係数0の式の表示を確認。外部通信は遮断。
+// レシオ一覧・両計算画面で特性44成分と係数0の式の表示を確認。外部通信は遮断。
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const ROOT=path.resolve(__dirname,'..'),OUT=path.join(ROOT,'work/lab-ratio-effects');
@@ -13,7 +13,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await context.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('guest_series',JSON.stringify([{id:'ratio-fixture',name:'ラボ検証',created_at:'2026-10-11T00:00:00Z'}]));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);await page.evaluate(()=>showPage('lab'));
   const species=await page.evaluate(()=>Object.keys(LAB_SKILLS).filter(p=>LAB_SKILLS[p].some(r=>r.slot==='特性'&&r.coeff!=null)));
-  eq(species.length,31,'31 species with source numeric passives');
+  eq(species.length,32,'32 species with source numeric passives');
   for(const p of species){
     await page.evaluate(p=>{ratioPokemon=p;ratioRender();},p);
     const labels=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').map(r=>ratioLabel(p,r)),p);
@@ -23,8 +23,11 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.evaluate(()=>switchLab('calc'));
   for(const p of species){
     await page.selectOption('#labPokeSelect',p);
-    const count=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').length,p);
+    const count=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性'&&r.coeff!=null).length,p);
     eq(await page.locator('#labDmgOutPassive .lab-damage-box').count(),count,'stat all passive components '+p);
+    const descriptions=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性'&&r.description).map(r=>r.description),p);
+    const passiveText=await page.locator('#labDmgOutPassive').innerText();
+    eq(descriptions.every(d=>passiveText.includes(d)),true,'stat passive descriptions '+p);
   }
   await page.selectOption('#labPokeSelect','ヌメルゴン');await page.selectOption('#labSkill1Sel','りゅうのはどう');
   eq(await page.locator('#labDmgOut1 .lab-damage-box').count(),4,'Goodra two damages and two fixed healing rows');
