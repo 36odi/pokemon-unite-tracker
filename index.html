@@ -23,15 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=106"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=106" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=106" defer></script>
-<script id="labDataScript" src="lab_data.js?v=106" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=106"></script>
-<script src="js/utils.js?v=106"></script>
-<script src="js/lab-core.js?v=106"></script>
-<script src="js/usage-analytics.js?v=106"></script>
-<link rel="stylesheet" href="styles.css?v=106" />
+<script src="vendor/supabase.min.js?v=107"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=107" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=107" defer></script>
+<script id="labDataScript" src="lab_data.js?v=107" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=107"></script>
+<script src="js/utils.js?v=107"></script>
+<script src="js/lab-core.js?v=107"></script>
+<script src="js/usage-analytics.js?v=107"></script>
+<link rel="stylesheet" href="styles.css?v=107" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2231,7 +2231,6 @@ const CHANGELOG = [
   {version:'v5.77',date:'2026-10-25',items:[
     'ラボのわざ・特性に、ダメージと妨害の区別、対象外の効果、使用中や再使用時の制限、形態・モード別の条件を補いました。',
     '全ポケモンに急所の対象・HP吸収などの仕様を追加しました。メガギャラドスの通常攻撃と、ミュウのなみのりの説明も修正しました。ウーラオス・バシャーモは、形態ごとのユナイトわざを計算画面でも正しい名前で表示します。',
-    '海外データサイトも照合し、出典に食い違いがある仕様や、追加確認が必要な補足を区別して表示します。',
     'ソルガレオのわざが＋になるレベルを出典に合わせ、アイアンヘッドはLv9、サイコショックはLv11へ修正しました。ダメージ計算で＋版の数値が通常版へ戻る場合がある問題も修正しました。'
   ]},
   {version:'v5.76',date:'2026-10-25',items:[
@@ -7670,12 +7669,12 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=106"></script>
-<script src="ratio.js?v=106"></script>
-<script src="js/lab-review.js?v=106"></script>
-<script src="js/calc-conditions-core.js?v=106"></script>
-<script src="js/calc-conditions.js?v=106"></script>
-<script src="js/patch-analysis-core.js?v=106"></script>
-<script src="js/patch-analysis.js?v=106"></script>
+<script src="ratio-labels.js?v=107"></script>
+<script src="ratio.js?v=107"></script>
+<script src="js/lab-review.js?v=107"></script>
+<script src="js/calc-conditions-core.js?v=107"></script>
+<script src="js/calc-conditions.js?v=107"></script>
+<script src="js/patch-analysis-core.js?v=107"></script>
+<script src="js/patch-analysis.js?v=107"></script>
 </body>
 </html>

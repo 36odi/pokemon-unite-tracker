@@ -120,7 +120,7 @@ function labDescriptionDetails(poke,name,kind='moves'){
   if(!p)return [];
   const key=labDescriptionKey(name),plus=/[+＋]$/.test(name||'');
   const base=p[kind]?.[key]?.details||[],extra=kind==='moves'&&plus?p.upgrades?.[key]?.details||[]:[];
-  return [...new Map([...base,...extra].map(r=>[r.id,r])).values()];
+  return [...new Map([...base,...extra].filter(r=>r.status==='documented').map(r=>[r.id,r])).values()];
 }
 function labPassiveRows(poke){
   const rows=(typeof LAB_SKILLS==='undefined'?[]:LAB_SKILLS[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));

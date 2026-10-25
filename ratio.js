@@ -62,10 +62,7 @@ function ratioRow(r,poke){
 }
 function labDetailsHtml(poke,name,kind='moves'){
   const rows=labDescriptionDetails(poke,name,kind);if(!rows.length)return '';
-  return `<div class="lab-effect-description">${rows.map(r=>{
-    const state=({needs_review:'未確定の仕様：',single_source:'資料限定の補足：',conflict:'出典間で相違：'})[r.status]||'';
-    return `<p><strong>${escapeHtml(state+r.label)}</strong><br>${escapeHtml(r.text)}</p>`;
-  }).join('')}</div>`;
+  return `<div class="lab-effect-description">${rows.map(r=>`<p><strong>${escapeHtml(r.label)}</strong><br>${escapeHtml(r.text)}</p>`).join('')}</div>`;
 }
 function labCombatNotesHtml(poke){
   const c=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.combat;if(!c)return '';
