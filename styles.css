@@ -767,6 +767,7 @@
 .ratio-row{padding:10px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
 .ratio-formula{font-size:var(--fs-lg);font-weight:700;line-height:1.7;color:var(--accent)}
 .lab-effect-description{font-size:var(--fs-md);line-height:1.8;color:var(--text);overflow-wrap:anywhere;}
+.lab-combat-notes>summary{cursor:pointer;min-height:44px;padding:10px 0;}
 .lab-effect-description strong{font-size:var(--fs-sm);font-weight:600;}
 .ratio-description{margin:8px 0 12px;}
 .ratio-formula.ratio-effect-description{font-size:var(--fs-md);font-weight:400;color:var(--text);}

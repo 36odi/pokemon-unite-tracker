@@ -23,15 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=105"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=105" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=105" defer></script>
-<script id="labDataScript" src="lab_data.js?v=105" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=105"></script>
-<script src="js/utils.js?v=105"></script>
-<script src="js/lab-core.js?v=105"></script>
-<script src="js/usage-analytics.js?v=105"></script>
-<link rel="stylesheet" href="styles.css?v=105" />
+<script src="vendor/supabase.min.js?v=106"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=106" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=106" defer></script>
+<script id="labDataScript" src="lab_data.js?v=106" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=106"></script>
+<script src="js/utils.js?v=106"></script>
+<script src="js/lab-core.js?v=106"></script>
+<script src="js/usage-analytics.js?v=106"></script>
+<link rel="stylesheet" href="styles.css?v=106" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2228,6 +2228,12 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.77',date:'2026-10-25',items:[
+    'ラボのわざ・特性に、ダメージと妨害の区別、対象外の効果、使用中や再使用時の制限、形態・モード別の条件を補いました。',
+    '全ポケモンに急所の対象・HP吸収などの仕様を追加しました。メガギャラドスの通常攻撃と、ミュウのなみのりの説明も修正しました。ウーラオス・バシャーモは、形態ごとのユナイトわざを計算画面でも正しい名前で表示します。',
+    '海外データサイトも照合し、出典に食い違いがある仕様や、追加確認が必要な補足を区別して表示します。',
+    'ソルガレオのわざが＋になるレベルを出典に合わせ、アイアンヘッドはLv9、サイコショックはLv11へ修正しました。ダメージ計算で＋版の数値が通常版へ戻る場合がある問題も修正しました。'
+  ]},
   {version:'v5.76',date:'2026-10-25',items:[
     'ラボの急所率などにポケモン本来の値を反映し、シールド・防御を無視する攻撃・一部の連続攻撃の計算を修正しました。',
     '全ポケモンの通常攻撃の説明と、ユナイトわざ使用後の共通強化を追加しました。＋版や追加わざ、習得レベル・待ち時間の不足も補いました。',
@@ -6733,7 +6739,8 @@ function labSkillChanged(slotNum){
 // dmgType文字列ごとの件数で、+が持たない/不足分のベース行だけ繰り越す（重複・取り違え防止）。
 function labUpgradeRows(poke, name, upg){
   const all=LAB_SKILLS?.[poke]||[];
-  const plus=all.filter(r=>r.name===name&&r.upg===upg);
+  // レベルの選択欄が省略される場合も、選んだ＋版の成分を先に取得する。
+  const plus=all.filter(r=>r.name===name&&(upg==null||upg===''||r.upg===upg));
   if(!/[+＋]$/.test(name||'')) return plus;
   const baseName=name.replace(/[+＋]$/,'');
   const base=all.filter(r=>r.name===baseName);
@@ -6793,7 +6800,7 @@ function _renderDmgRows(outId, rows){
   if(!rows.length){ out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">データなし</div>'; return; }
   const poke=document.getElementById('labPokeSelect')?.value;
   const selectedName=/^labDmgOut[12]$/.test(outId)?document.getElementById('labSkill'+outId.slice(-1)+'Sel')?.value:rows[0]?.name;
-  const intro=outId==='labDmgOutNormal'?`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`:labMoveIntroHtml(poke,selectedName,rows);
+  const intro=outId==='labDmgOutNormal'?`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+labDetailsHtml(poke,'通常攻撃','basics')+labCombatNotesHtml(poke):labMoveIntroHtml(poke,selectedName,rows);
   out.innerHTML=outId==='labDmgOutUnite'?labUniteEffectsHtml(poke,rows,r=>_calcDmgHtml(r)):intro+rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
   if(!out.innerHTML) out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">計算不可</div>';
   else usageResult('labCalcPanel',out.textContent,outId);
@@ -6812,7 +6819,7 @@ function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   if(r.calculationStatus==='conditional')return labPendingEffectHtml(r,poke);
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
-  if(coeff==null&&r.description) return labPassiveDescriptionHtml(r);
+  if(coeff==null&&r.description) return labPassiveDescriptionHtml(r,poke);
   if(labEffectDescriptionKnown(poke,r))return labDescribedEffectHtml();
   if(coeff==null) return labUnknownEffectHtml(r);
   const kind=labEffectKind(r),unit=labEffectUnit(r);
@@ -6952,9 +6959,9 @@ function labRefreshCalcMedalSelect(){
 // ================================================================
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
-function labPassiveDescriptionHtml(r){
+function labPassiveDescriptionHtml(r,poke){
   const title=r.descriptionEntry?r.name:r.formulaText?r.dmgType:'';
-  return `<div class="lab-dmg-row lab-effect-description">${title?`<strong>${escapeHtml(title)}</strong>`:''}<div>${escapeHtml(r.description)}</div>${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}</div>`;
+  return `<div class="lab-dmg-row lab-effect-description">${title?`<strong>${escapeHtml(title)}</strong>`:''}<div>${escapeHtml(r.description)}</div>${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}${r.slot==='特性'&&!r.formulaText?labDetailsHtml(poke,r.name,'passives'):''}</div>`;
 }
 function labUnknownEffectHtml(r){return `<div class="lab-dmg-row lab-effect-description"><span>${escapeHtml(r.name||r.slot)}：この成分の計算式は未確認です。直接ダメージがないことを示すものではありません。</span></div>`;}
 function labDescribedEffectHtml(){return '<div class="ratio-meta">効果の内容は説明欄に記載しています。</div>';}
@@ -6962,7 +6969,7 @@ function labMoveIntroHtml(poke,name,rows){
   const text=labMoveDescription(poke,name),unknown=rows.some(r=>r.cdStatus==='unconfirmed'),cds=[...new Set(rows.map(r=>r.cd).filter(v=>v!=null))];
   const normal=rows.find(r=>r.normalCD!=null)?.normalCD;
   const timing=unknown?'＋版の待ち時間：未確認'+(normal!=null?'（通常版は'+normal+'秒）':''):cds.length===1?'待ち時間：'+cds[0]+'秒':'';
-  return (text?`<p class="lab-effect-description">${/[+＋]$/.test(name||'')?'＋版の変更点：':''}${escapeHtml(text)}</p>`:'')+(timing?`<p class="ratio-meta">${escapeHtml(timing)}</p>`:'');
+  return (text?`<p class="lab-effect-description">${/[+＋]$/.test(name||'')?'＋版の変更点：':''}${escapeHtml(text)}</p>`:'')+labDetailsHtml(poke,name)+(timing?`<p class="ratio-meta">${escapeHtml(timing)}</p>`:'');
 }
 function labUniteEffectsHtml(poke,rows,renderRow){
   return labUniteInfoHtml(poke)+[...new Set(rows.map(r=>r.name))].map(name=>{
@@ -6975,7 +6982,7 @@ function labPendingEffectHtml(r,poke){
 }
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
   if(r?.calculationStatus==='conditional')return labPendingEffectHtml(r,poke);
-  if(r?.coeff==null&&r?.description) return labPassiveDescriptionHtml(r);
+  if(r?.coeff==null&&r?.description) return labPassiveDescriptionHtml(r,poke);
   if(!r)return null;
   if(labEffectDescriptionKnown(poke,r))return labDescribedEffectHtml();
   if(r.coeff==null)return labUnknownEffectHtml(r);
@@ -7178,7 +7185,7 @@ function dcUpdateDmgOutput(){
   const no=document.getElementById('dcDmgOutNormal');
   if(ns&&no){
     ns.style.display=normalRows.length?'block':'none';
-    no.innerHTML=`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+    no.innerHTML=`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+labDetailsHtml(poke,'通常攻撃','basics')+labCombatNotesHtml(poke)+normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
   // ユナイトわざ
   const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ');
@@ -7663,12 +7670,12 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=105"></script>
-<script src="ratio.js?v=105"></script>
-<script src="js/lab-review.js?v=105"></script>
-<script src="js/calc-conditions-core.js?v=105"></script>
-<script src="js/calc-conditions.js?v=105"></script>
-<script src="js/patch-analysis-core.js?v=105"></script>
-<script src="js/patch-analysis.js?v=105"></script>
+<script src="ratio-labels.js?v=106"></script>
+<script src="ratio.js?v=106"></script>
+<script src="js/lab-review.js?v=106"></script>
+<script src="js/calc-conditions-core.js?v=106"></script>
+<script src="js/calc-conditions.js?v=106"></script>
+<script src="js/patch-analysis-core.js?v=106"></script>
+<script src="js/patch-analysis.js?v=106"></script>
 </body>
 </html>

@@ -8,12 +8,14 @@ function sync(SK,source,{additions=false}={}){
  for(const [p,rows]of Object.entries(SK))for(const r of rows){
   const s=r.sourceKey?byKey.get(r.sourceKey):null;
   if(r.sourceKey&&!s)throw Error('出典成分の削除を確認してください: '+r.sourceKey);
+  // 形態ごとに異なるユナイトわざを同じ名称へまとめない。
+  if(s?.skill_slot==='Unite Move'&&norm(r.name)!==norm(s.move_ja))r.name=s.move_ja;
   if(s&&r.coeff!=null){const stat=s.stat_type.trim();r.stat=stat==='SpAtk'?'特攻':stat==='Atk'?'攻撃':stat;r.coeff=num(s.ratio_percent);r.lvScale=num(s.level_scaling);r.fixed=num(s.base_value);updated++;}
   const slot=s?.skill_slot||Object.keys(slots).find(k=>slots[k]===r.slot);
   const m=metadata.pokemon[p]?.moves.find(m=>m.slot===slot&&(s?m.sourceName===s.move_en:norm(m.name)===norm(r.name)));
   if(m){
    if(/[+＋]$/.test(r.name)){
-    if(m.plusLevel!==null&&!(p==='ソルガレオ'&&['アイアンヘッド','サイコショック'].includes(norm(r.name))))r.upg=String(m.plusLevel);
+    if(m.plusLevel!==null)r.upg=String(m.plusLevel);
     if(m.plusCD!==null){r.cd=m.plusCD;delete r.cdStatus;delete r.normalCD;}
     else{r.cd=null;r.cdStatus='unconfirmed';r.normalCD=m.cd;}
    }else{

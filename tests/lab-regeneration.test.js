@@ -12,4 +12,10 @@ const withUnknown=JSON.parse(before);withUnknown['ピカチュウ'].push({slot:'
 const changed=S.map(s=>key(s)==='Pikachu|Move 1|Electro Ball|rsb|base'?{...s,ratio_percent:'123'}:s),revised=JSON.parse(before);require('../tools/lab_reference_updates')(revised,changed);
 eq(revised['ピカチュウ'].find(r=>r.name==='エレキボール'&&r.sourceKey==='Pikachu|Move 1|Electro Ball|rsb|base').coeff,123,'patch follows source key, not old tuple or neighboring row');
 eq(JSON.stringify(S)===JSON.stringify(csv(fs.readFileSync('data/unitedb_ratios.csv','utf8'))),true,'source table never mutated');
+const solgaleoMetadata=require('../data/lab-reference-metadata.json').pokemon['ソルガレオ'];
+for(const name of ['アイアンヘッド','サイコショック']){
+ const move=solgaleoMetadata.moves.find(m=>m.name===name),oldLevel=move.plusLevel;
+ try{move.plusLevel=oldLevel+1;const future=JSON.parse(before);require('../tools/lab_reference_updates')(future,S);eq(future['ソルガレオ'].filter(r=>r.name===name+'+').map(r=>r.upg),[String(move.plusLevel)],'Solgaleo upgrade follows future source metadata '+name);}
+ finally{move.plusLevel=oldLevel;}
+}
 console.log('ALL PASS — '+n+' source identity regeneration checks');

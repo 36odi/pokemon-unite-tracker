@@ -49,7 +49,8 @@ for(const [p,skills] of Object.entries(K)){
   for(const name of new Set(skills.filter(r=>!['特性','通常攻撃'].includes(r.slot)).map(r=>norm(r.name))))if(!data[p]?.moves[name])missing.push(p+'/'+name);
   for(const name of new Set(skills.filter(r=>!['特性','通常攻撃'].includes(r.slot)&&/[+＋]$/.test(r.name)).map(r=>norm(r.name))))if(!data[p]?.upgrades[name])missing.push(p+'/'+name+'+');
 }
-const report={pokemon:Object.keys(K).length,passives:Object.values(data).reduce((n,p)=>n+Object.keys(p.passives).length,0),moves:Object.values(data).reduce((n,p)=>n+Object.keys(p.moves).length,0),upgrades:Object.values(data).reduce((n,p)=>n+Object.keys(p.upgrades).length,0),missing,invalid};
+const detailReport=require('./lab_detail_notes')(data,source);
+const report={pokemon:Object.keys(K).length,passives:Object.values(data).reduce((n,p)=>n+Object.keys(p.passives).length,0),moves:Object.values(data).reduce((n,p)=>n+Object.keys(p.moves).length,0),upgrades:Object.values(data).reduce((n,p)=>n+Object.keys(p.upgrades).length,0),missing,invalid,...detailReport};
 console.log(JSON.stringify(report,null,2));if(missing.length||invalid.length)process.exit(1);
 const meta={checkedAt:reference.meta.checkedAt,source:'https://docs.google.com/spreadsheets/d/13m4W2oLU__PPKQrHVPRqBHopQbXBggSJCdse6BXAqys/edit',sourceSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'data','unitedb_ratios.csv'))).digest('hex'),referenceSha256:reference.meta.sha256,gameVersion:null,...report};
 const output='// tools/build_lab_descriptions.js で生成。主な効果の日本語要約。数式や発動を自動適用しない。\nconst LAB_DESCRIPTIONS='+JSON.stringify({meta,pokemon:data})+';\n';

@@ -115,6 +115,13 @@ function labBasicDescription(poke){return typeof LAB_DESCRIPTIONS==='undefined'?
 function labEffectDescriptionKnown(poke,r){
   return r?.coeff==null&&r.effectStatus==='described'&&!!labMoveDescription(poke,r.name);
 }
+function labDescriptionDetails(poke,name,kind='moves'){
+  const p=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke];
+  if(!p)return [];
+  const key=labDescriptionKey(name),plus=/[+＋]$/.test(name||'');
+  const base=p[kind]?.[key]?.details||[],extra=kind==='moves'&&plus?p.upgrades?.[key]?.details||[]:[];
+  return [...new Map([...base,...extra].map(r=>[r.id,r])).values()];
+}
 function labPassiveRows(poke){
   const rows=(typeof LAB_SKILLS==='undefined'?[]:LAB_SKILLS[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
   const descriptions=typeof LAB_DESCRIPTIONS==='undefined'?[]:Object.values(LAB_DESCRIPTIONS.pokemon[poke]?.passives||{});

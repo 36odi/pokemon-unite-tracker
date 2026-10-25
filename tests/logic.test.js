@@ -365,10 +365,10 @@ eq([sol('通常攻撃','通常攻撃','ダメージ - 通常（コスモッグ�
 eq([sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.coeff, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.fixed, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.hits], [34, 102, 3], 'Solgaleo Cosmoem boosted attack uses three hits');
 eq([sol('わざ1','アイアンヘッド','ダメージ')?.coeff, sol('わざ1','アイアンヘッド','ダメージ')?.fixed, sol('わざ1','アイアンヘッド','ダメージ')?.upg], [98, 294, '7'], 'Iron Head base ratio is in move slot 1 at Lv7');
 eq([sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.coeff, sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.fixed, sol('わざ1','アイアンヘッド','ダメージ - 連撃（1ヒット）')?.hitsVar], [65, 195, true], 'Iron Head barrage is variable per hit');
-eq([sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.coeff, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.fixed, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.upg], [325, 975, '11'], 'Iron Head+ enhanced component keeps the user-provided Lv11');
+eq([sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.coeff, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.fixed, sol('わざ1','アイアンヘッド+','ダメージ - 連撃（妨害無効の相手）')?.upg], [325, 975, '9'], 'Iron Head+ enhanced component follows source Lv9');
 eq([sol('わざ2','サイコショック','ダメージ - チャージ3')?.coeff, sol('わざ2','サイコショック','ダメージ - チャージ3')?.fixed], [143, 429], 'Psyshock maximum charge ratio is in move slot 2');
 eq([sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.coeff, sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.fixed, sol('わざ2','サイコショック','ダメージ - ツメ（2ヒット）')?.hits], [68, 204, 2], 'Psyshock claw swipe uses two hits');
-eq([sol('わざ2','サイコショック+','回復 - ツメ')?.coeff, sol('わざ2','サイコショック+','回復 - ツメ')?.fixed, sol('わざ2','サイコショック+','回復 - ツメ')?.upg], [84, 252, '13'], 'Psyshock+ healing keeps the user-provided Lv13');
+eq([sol('わざ2','サイコショック+','回復 - ツメ')?.coeff, sol('わざ2','サイコショック+','回復 - ツメ')?.fixed, sol('わざ2','サイコショック+','回復 - ツメ')?.upg], [84, 252, '11'], 'Psyshock+ healing follows source Lv11');
 eq([sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.coeff, sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.fixed, sol('ユナイトわざ','シャイニングメテオクラッシャー','ダメージ')?.upg], [220, 660, '7'], 'Solgaleo Unite ratio is present at Lv7');
 const ratioSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_ratios.csv'), 'utf8');
 const statsSource = fs.readFileSync(path.join(ROOT, 'data', 'unitedb_stats.csv'), 'utf8');

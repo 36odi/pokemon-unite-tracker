@@ -58,7 +58,18 @@ function ratioRow(r,poke){
     ${hits>1?'<div class="ratio-meta">1回分の式</div>':''}
     <div class="ratio-formula${r.descriptionEntry||r.formulaText?' ratio-effect-description':''}">${escapeHtml(ratioFormula(r))}</div>
     ${hits>1&&r.coeff!=null?`<div class="ratio-meta">${r.hitsVar?'最大':''}${hits}回分${note?'（表示式の部分のみ）':''}：${escapeHtml(ratioFormula(r,hits))}</div>`:''}
-    ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}</div>`;
+    ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}${r.slot==='特性'&&r.description&&!r.formulaText?labDetailsHtml(poke,r.name,'passives'):''}</div>`;
+}
+function labDetailsHtml(poke,name,kind='moves'){
+  const rows=labDescriptionDetails(poke,name,kind);if(!rows.length)return '';
+  return `<div class="lab-effect-description">${rows.map(r=>{
+    const state=({needs_review:'未確定の仕様：',single_source:'資料限定の補足：',conflict:'出典間で相違：'})[r.status]||'';
+    return `<p><strong>${escapeHtml(state+r.label)}</strong><br>${escapeHtml(r.text)}</p>`;
+  }).join('')}</div>`;
+}
+function labCombatNotesHtml(poke){
+  const c=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.combat;if(!c)return '';
+  return `<details class="lab-effect-description lab-combat-notes"><summary>急所・HP吸収などの仕様</summary><p>${escapeHtml(c.critical)}</p>${c.additional.map(text=>`<p>${escapeHtml(text)}</p>`).join('')}<p class="ratio-meta">急所の発生や、特性・わざによる能力変化は計算へ自動適用しません。各成分の式・注記と合わせて確認してください。</p></details>`;
 }
 function ratioSameFormulas(poke,rows,baseRows){
   // 未収録・部分式は「同じ」と断定しない。条件、回数、説明も含めて比較する。
@@ -69,7 +80,8 @@ function ratioSameFormulas(poke,rows,baseRows){
 function labUniteInfoHtml(poke){
   const list=typeof LAB_DESCRIPTIONS==='undefined'?[]:LAB_DESCRIPTIONS.pokemon[poke]?.unite||[];
   if(!list.length)return '';
-  return `<div class="lab-effect-description"><strong>ユナイトわざ使用後の共通強化</strong>${list.map(m=>`<p>${list.length>1?escapeHtml(m.name)+'：':''}${escapeHtml(m.text)}${m.duration!=null?'（'+escapeHtml(String(m.duration))+'秒）':''}${m.energy!=null?`<br><span class="ratio-meta">必要エナジー：${escapeHtml(Number(m.energy).toLocaleString())}（待ち時間の秒数とは別の値）</span>`:'<br><span class="ratio-meta">必要エナジー：未確認</span>'}</p>`).join('')}<p class="ratio-meta">わざ固有の強化とは別の情報です。能力変化や発動中の効果は計算へ自動適用しません。</p></div>`;
+  const condition=LAB_DESCRIPTIONS.pokemon[poke]?.uniteCondition;
+  return `<div class="lab-effect-description"><strong>ユナイトわざ使用後の共通強化</strong>${condition?`<p><strong>${escapeHtml(condition)}</strong></p>`:''}${list.map(m=>`<p>${list.length>1?escapeHtml(m.name)+'：':''}${escapeHtml(m.text)}${m.duration!=null?'（'+escapeHtml(String(m.duration))+'秒）':''}${m.energy!=null?`<br><span class="ratio-meta">必要エナジー：${escapeHtml(Number(m.energy).toLocaleString())}（待ち時間の秒数とは別の値）</span>`:'<br><span class="ratio-meta">必要エナジー：未確認</span>'}</p>`).join('')}<p class="ratio-meta">わざ固有の強化とは別の情報です。能力変化や発動中の効果は計算へ自動適用しません。</p></div>`;
 }
 function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   const poke=ratioPokemon,all=LAB_SKILLS[poke]||[];
@@ -80,7 +92,8 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   const sourceDate=reference?.sourceUpdatedAt?new Date(reference.sourceUpdatedAt):null;
   const sourceDateLabel=sourceDate&&!Number.isNaN(sourceDate.getTime())?sourceDate.toLocaleDateString('ja-JP',{timeZone:'UTC'}):reference?.sourceUpdatedAt||'未提供';
   let html=`<div class="card"><h2>${iconImg(poke,'',36)} ${escapeHtml(poke)}</h2><div>${escapeHtml(role)} ${dmg==='Special'?'特攻':dmg==='Physical'?'攻撃':''}${range?' ／ '+range:''}</div>
-    ${reference?`<p class="ratio-meta">原文確認：${escapeHtml(reference.checkedAt)} ／ 出典の更新日：${escapeHtml(sourceDateLabel)}<br>取得日と出典の更新日は別です。全項目の対象ゲーム版は未確認です。</p>`:''}
+    ${reference?`<p class="ratio-meta">原文確認：${escapeHtml(reference.checkedAt)} ／ 出典の更新日：${escapeHtml(sourceDateLabel)}<br>詳細仕様の確認：${escapeHtml(LAB_DESCRIPTIONS.meta.detailsCheckedAt||reference.checkedAt)}<br>取得日と出典の更新日は別です。全項目の対象ゲーム版は未確認です。</p>`:''}
+    ${labCombatNotesHtml(poke)}
     <nav class="ratio-jumps" aria-label="わざの種類">${ratioSlots.map((s,i)=>`<button type="button" onclick="document.getElementById('ratioSlot${i}').scrollIntoView()">${s}</button>`).join('')}</nav></div>`;
   ratioSlots.forEach((slot,i)=>{
     const rows=slot==='特性'?labPassiveRows(poke):all.filter(r=>r.slot===slot);
@@ -103,6 +116,7 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
           const description=slot==='特性'?'':slot==='通常攻撃'?labBasicDescription(poke):labMoveDescription(poke,name);
           if(description)html+=`<p class="lab-effect-description ratio-description">${/[+＋]$/.test(name)?'強化後の変更点：':''}${escapeHtml(description)}</p>`;
           else if(slot!=='特性'&&/[+＋]$/.test(name))html+='<p class="lab-effect-description ratio-description">強化後の説明は未収録です。</p>';
+          if(slot!=='特性')html+=labDetailsHtml(poke,name,slot==='通常攻撃'?'basics':'moves');
           const unknownCD=/[+＋]$/.test(name)&&components.some(r=>r.cdStatus==='unconfirmed');
           const cds=[...new Set(components.map(r=>r.cd).filter(v=>v!=null))];
           if(unknownCD){const normal=components.find(r=>r.normalCD!=null)?.normalCD;html+=`<div class="ratio-meta">＋版の待ち時間：未確認${normal!=null?`（通常版は${escapeHtml(String(normal))}秒）`:''}</div>`;}
