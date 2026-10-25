@@ -15,9 +15,9 @@ for(const s of source.filter(numeric)){
  eq(peers.some(r=>r.sourceKey===key(s)||JSON.stringify([r.stat,r.coeff,r.lvScale||0,r.fixed||0])===JSON.stringify(tuple(s))),true,'source component exists: '+key(s));
 }
 const supplements=Object.values(K).flat().filter(r=>r.supplement),derived=supplements.filter(r=>r.derivedFrom);
-eq(supplements.filter(r=>r.supplement==='numeric').length,93,'92 basic components plus Yveltal upgrade');
+eq(supplements.filter(r=>r.supplement==='numeric').length,99,'98 basic components including same-formula conditions plus Yveltal upgrade');
 eq(derived.length,68,'42 conditional formulas expanded to base and plus');
-eq(supplements.filter(r=>r.formulaText).length,19,'19 explicit conditional formula notes');
+eq(supplements.filter(r=>r.supplement==='conditional').length,19,'19 existing conditional formula notes');
 for(const [p,m] of [['イワパレス','ステルスロック'],['ネギガナイト','れんぞくぎり']])for(const r of K[p].filter(r=>r.name.startsWith(m)&&r.coeff!=null&&r.componentNote))eq(r.hits,1,'do not multiply first-hit value into a false total');
 for(const r of derived){const s=source.find(s=>key(s)===r.derivedFrom.sourceKey&&numeric(s)),factor=r.derivedFrom.factor;eq([r.coeff,r.lvScale,r.fixed],tuple(s).slice(1).map(v=>Math.round(v*factor*1e8)/1e8),'derived formula: '+r.derivedKey);eq(r.hits,1,'alternative hit formula is not automatically multiplied');}
 const syl=K['ニンフィア'].filter(r=>r.derivedFrom&&r.name.startsWith('マジカルフレイム'));
@@ -28,7 +28,7 @@ const up=new Function('LAB_SKILLS',fs.readFileSync('index.html','utf8').match(/f
 const petal=up('メガニウム','はなふぶき+','13').filter(r=>r.derivedFrom&&r.dmgType.startsWith('回復'));
 eq(petal.map(r=>[r.coeff,r.fixed]),[[10.65,11]],'upgraded repeated healing replaces old healing instead of inheriting both');
 eq(unit(K['ガブリアス'].find(r=>r.supplement&&r.effectKind==='stat')),'%','attack speed unit');
-const original=JSON.stringify(K),apply=require('../tools/lab_component_supplements');apply(K,source);eq(JSON.stringify(K),original,'supplement generation is idempotent');
+const original=JSON.stringify(K),apply=(K,S)=>{require('../tools/lab_component_supplements')(K,S);require('../tools/lab_reference_updates')(K,S,{additions:true});};apply(K,source);eq(JSON.stringify(K),original,'supplement generation is idempotent');
 const missing=JSON.parse(original);for(const p of Object.keys(missing))missing[p]=missing[p].filter(r=>!r.supplement);apply(missing,source);eq(JSON.stringify(missing),original,'regeneration restores all missing components');
 const changed=source.map(s=>s.pokemon_en==='Sylveon'&&s.move_en==='Mystical Fire'&&s.ratio_component==='base'?{...s,true_description:'Source changed'}:s);assert.throws(()=>apply(JSON.parse(original),changed),/要再確認/);checks++;
 console.log('ALL PASS — '+checks+' component coverage and derivation checks');

@@ -1,0 +1,34 @@
+// 全103体を3画面で開く。実DB・外部サービスへの送信を遮断する。
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('playwright');
+const root=path.resolve(__dirname,'..'),out=path.join(root,'work/tracker-improvement-20261024/screens'),base='https://36odi.github.io/pokemon-unite-tracker/';
+let checks=0;const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
+(async()=>{let browser;try{
+ fs.mkdirSync(out,{recursive:true});browser=await chromium.launch({channel:'msedge',headless:true});
+ const ctx=await browser.newContext({viewport:{width:1100,height:900},serviceWorkers:'block'}),errors=[],writes=[];
+ await ctx.route('**/*',r=>{const q=r.request();if(q.method()!=='GET'){writes.push(q.url());return r.abort();}if(!q.url().startsWith(base))return r.abort();const u=new URL(q.url()),f=path.resolve(root,decodeURIComponent(u.pathname.slice('/pokemon-unite-tracker/'.length))||'index.html');if(path.relative(root,f).startsWith('..')||!fs.existsSync(f))return r.abort();return r.fulfill({body:fs.readFileSync(f),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png'})[path.extname(f)]||'application/octet-stream'});});
+ await ctx.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('usage_disabled','1');localStorage.setItem('theme','dark');});
+ const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);await page.evaluate(()=>showPage('lab'));await page.waitForFunction(()=>typeof LAB_DESCRIPTIONS!=='undefined'&&libReady('lab'));
+ const before=await page.evaluate(()=>JSON.stringify({S:LAB_STATUS,K:LAB_SKILLS,I:LAB_ITEMS}));
+ const ratios=await page.evaluate(()=>{switchLab('ratio');let n=0;for(const p of Object.keys(LAB_SKILLS)){ratioPokemon=p;ratioRender();if(!document.querySelector('#ratioSlot0').textContent.includes(labBasicDescription(p)))throw Error(p+' basic explanation absent');if(!document.querySelector('#ratioSlot3').textContent.includes('使用後の共通強化'))throw Error(p+' Unite metadata absent');if(/NaN|undefined/.test(document.querySelector('#ratioResult').textContent))throw Error(p+' invalid ratio value');n++;}return n;});eq(ratios,103,'all ratio pages');
+ const stats=await page.evaluate(()=>{switchLab('calc');let n=0;for(let i=1;i<=3;i++)document.getElementById('labItem'+i).value='';for(const p of Object.keys(LAB_STATUS)){document.getElementById('labPokeSelect').value=p;document.getElementById('labLvSlider').value=15;calcLabStats(false);if(!document.querySelector('#labDmgOutNormal').textContent.includes(labBasicDescription(p)))throw Error(p+' calculator basic explanation absent');if(/NaN|undefined/.test(document.querySelector('#labResultCard').textContent))throw Error(p+' invalid stat value');n++;}return n;});eq(stats,103,'all stat calculators');
+ await page.evaluate(()=>{document.getElementById('labPokeSelect').value='リザードン';document.getElementById('labItem1').value='ピントレンズ';document.getElementById('labGrade1').value=30;calcLabStats(false);});
+ eq((await page.locator('#labTotalStats').innerText()).includes('急所率\n36%'),true,'critical rate includes intrinsic 30% plus item 6%');
+ await page.evaluate(()=>{document.getElementById('labPokeSelect').value='ハピナス';calcLabStats(false);document.getElementById('labSkill1Sel').value='てだすけ';labSkillChanged(1);});eq((await page.locator('#labDmgOut1').innerText()).includes('4秒間30%'),true,'known support effect stays selectable and displays its amount and duration');
+ const damage=await page.evaluate(()=>{switchLab('dmg');document.getElementById('dcDefPoke').value='カビゴン';let n=0;for(const p of Object.keys(LAB_STATUS)){document.getElementById('dcAtkPoke').value=p;calcDmgCalcMain(false);if(!document.querySelector('#dcDmgOutNormal').textContent.includes(labBasicDescription(p)))throw Error(p+' damage basic explanation absent');if(/NaN|undefined/.test(document.querySelector('#dcResultCard').textContent))throw Error(p+' invalid damage output');n++;}return n;});eq(damage,103,'all damage calculators');
+ await page.evaluate(()=>{document.getElementById('dcAtkPoke').value='キュワワー';calcDmgCalcMain(false);document.getElementById('dcSkill1Sel').value='フラワーヒール';dcSkillChanged(1);LabReview.captureA();});
+ const pending=await page.evaluate(()=>[...document.querySelectorAll('#lrComparisonOutput tbody tr')].filter(r=>r.querySelector('th')?.textContent.includes('最大HPを超えた分')).map(r=>[...r.querySelectorAll('td')].slice(0,2).map(t=>t.textContent)));
+ eq(pending.length>0,true,'comparison includes overheal components');eq(pending.every(v=>v.every(t=>t==='条件未確認')),true,'unknown overheal is never zero in comparison');
+ await page.evaluate(()=>{switchLab('ratio');ratioPokemon='ニンフィア';ratioRender();});eq((await page.locator('#ratioSlot2').innerText()).includes('＋版の待ち時間：未確認（通常版は8秒）'),true,'missing independent plus CD is explicit');
+ const views=[];
+ for(const width of [1100,390])for(const theme of ['dark','light']){
+  await page.setViewportSize({width,height:900});await page.evaluate(theme=>document.documentElement.classList.toggle('light-mode',theme==='light'),theme);
+  await page.evaluate(()=>{switchLab('calc');document.getElementById('labPokeSelect').value='リザードン';calcLabStats(false);});await page.locator('#labResultCard').screenshot({path:path.join(out,'stats-'+theme+'-'+width+'.png')});
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'stat no overflow '+theme+width);
+  await page.evaluate(()=>{switchLab('ratio');ratioPokemon='キュワワー';ratioRender();});await page.locator('#ratioSlot1').screenshot({path:path.join(out,'shield-'+theme+'-'+width+'.png')});
+  eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'formula no overflow '+theme+width);
+  await page.evaluate(()=>{ratioPokemon='ニンフィア';ratioRender();});await page.locator('#ratioSlot3').screenshot({path:path.join(out,'unite-'+theme+'-'+width+'.png')});views.push({width,theme});
+ }
+ await page.locator('#ratioSearch').focus();await page.keyboard.press('Tab');eq(await page.evaluate(()=>document.activeElement!==document.getElementById('ratioSearch')),true,'keyboard moves from search');
+ eq(await page.evaluate(()=>JSON.stringify({S:LAB_STATUS,K:LAB_SKILLS,I:LAB_ITEMS})),before,'rendering never mutates source data');eq(errors,[],'no browser runtime errors');eq(writes,[],'no external writes');
+ const result={checks,ratioSpecies:ratios,statSpecies:stats,damageSpecies:damage,views,errors,writes};fs.writeFileSync(path.join(out,'../browser-verification.json'),JSON.stringify(result,null,2));console.log('ALL PASS — '+checks+' reviewed browser checks (309 species/views)');
+}finally{if(browser)await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -10,6 +10,8 @@ const tuple=r=>[stat(r),num(r.ratio_percent),num(r.level_scaling),num(r.base_val
 const equal=(r,s)=>JSON.stringify([r.stat,r.coeff,r.lvScale||0,r.fixed||0])===JSON.stringify(tuple(s));
 const slots={'Basic':'通常攻撃','Passive':'特性','Move 1':'わざ1','Move 2':'わざ2','Unite Move':'ユナイトわざ'};
 const basicLabels={
+ 'Stage One - Boosted':'ダメージ（強化攻撃・1段目）','Stage Two - Boosted':'ダメージ（強化攻撃・2段目）',
+ 'Stage Three - Boosted':'ダメージ（強化攻撃・3段目）','Stage Four - Boosted':'ダメージ（強化攻撃・4段目）',
  'Damage - Boosted':'ダメージ（強化攻撃）','Damage - Single Target Bonus':'追加ダメージ（強化攻撃が1体だけに命中）',
  'Damage - Boosted (Sword Stance)':'ダメージ（強化攻撃・ブレードフォルム）',
  'Damage - Boosted/Rapid Spin Boosted (3x)':'ダメージ（強化攻撃・こうそくスピン中も共通）',
@@ -44,7 +46,7 @@ function apply(SK,source){
  let addedNumeric=0,derived=0;
  for(const s of source.filter(r=>r.skill_slot==='Basic'&&numeric(r))){
   const p=pokemon(s.pokemon_ja),rows=SK[p];if(!rows)continue;
-  if(rows.some(r=>r.slot==='通常攻撃'&&(r.sourceKey===key(s)||equal(r,s))))continue;
+  if(rows.some(r=>r.slot==='通常攻撃'&&r.sourceKey===key(s)))continue;
   const label=basicLabels[s.effect_label];if(!label)throw Error('通常攻撃ラベル未登録: '+key(s)+' '+s.effect_label);
   const r=entry(s,label),h=s.effect_label.match(/\((\d+)x\)|\(x(\d+)\)|\((\d+) Ticks\)|[ -](\d+) Hits\)| x(\d+)$/);
   r.hits=h?Number(h.slice(1).find(Boolean)):1;

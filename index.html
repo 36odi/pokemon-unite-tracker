@@ -23,15 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=104"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=104" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=104" defer></script>
-<script id="labDataScript" src="lab_data.js?v=104" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=104"></script>
-<script src="js/utils.js?v=104"></script>
-<script src="js/lab-core.js?v=104"></script>
-<script src="js/usage-analytics.js?v=104"></script>
-<link rel="stylesheet" href="styles.css?v=104" />
+<script src="vendor/supabase.min.js?v=105"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=105" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=105" defer></script>
+<script id="labDataScript" src="lab_data.js?v=105" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=105"></script>
+<script src="js/utils.js?v=105"></script>
+<script src="js/lab-core.js?v=105"></script>
+<script src="js/usage-analytics.js?v=105"></script>
+<link rel="stylesheet" href="styles.css?v=105" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -991,6 +991,7 @@ SOFTWARE.
           </div>
         </div>
         <div id="labTotalStats"></div>
+        <p class="ratio-meta">基本値・もちもの・メダルの合計です。特性やわざによる能力変化、急所率・待ち時間短縮の上限は自動適用しません。通常攻撃速度は補正値で、実際の攻撃回数ではありません。貫通の適用条件は未確認のため、ダメージへ加算しません。</p>
         <div id="labItemEffectResults" class="u-mt-10px" style="display:none;"></div>
       </div>
 
@@ -2227,6 +2228,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.76',date:'2026-10-25',items:[
+    'ラボの急所率などにポケモン本来の値を反映し、シールド・防御を無視する攻撃・一部の連続攻撃の計算を修正しました。',
+    '全ポケモンの通常攻撃の説明と、ユナイトわざ使用後の共通強化を追加しました。＋版や追加わざ、習得レベル・待ち時間の不足も補いました。',
+    '回復・シールド・追加ダメージの条件式を追加し、能力上昇・弱体効果の割合と持続時間を説明へ補いました。説明済みの効果と未確認の式を区別して表示します。'
+  ]},
   {version:'v5.74',date:'2026-10-22',items:[
     'ラボで、一部のわざの2ヒット目以降や強化攻撃の式が表示されない不具合を修正しました。連続命中で威力が変わるわざには、条件ごとの式と計算範囲を表示します。',
     'ハッサムのバレットパンチ・レッドスターダイブの名称と、イベルタルのデスウイング＋の表示を修正しました。'
@@ -6363,9 +6369,10 @@ function dcGetSpDefPenPct(atkItems){
 }
 
 // isHeal=true: 回復行（おおきなねっこも加算）/ false: シールド行（レスキューフードのみ）
-function labGetHealShieldMult(isHeal){
-  const mult=labSupportMultiplier(labReadItems('lab'),isHeal,labHealTarget('lab'));
-  return {mult,pct:Math.round((mult-1)*100),items:[labHealTarget('lab')==='ally'?'味方への効果':'自分への効果']};
+function labGetHealShieldMult(isHeal,supportTarget){
+  const target=supportTarget||labHealTarget('lab');
+  const mult=labSupportMultiplier(labReadItems('lab'),isHeal,target);
+  return {mult,pct:Math.round((mult-1)*100),items:[target==='ally'?'味方への効果':'自分への効果']};
 }
 
 const LAB_GOAL_ITEMS = {
@@ -6416,6 +6423,7 @@ function labClearSnapshot(){
 function labRenderTotals(totals){
   const el=document.getElementById('labTotalStats');
   if(!el) return;
+  el.classList.toggle('lab-stat-grid',!labSnapshotA);
   if(!labSnapshotA){ labRenderStatGrid(el, totals, 'var(--accent)'); return; }
   const keys=[...new Set([...Object.keys(labSnapshotA),...Object.keys(totals)])];
   const ordered=[...LAB_STAT_ORDER.filter(k=>keys.includes(k)),...keys.filter(k=>!LAB_STAT_ORDER.includes(k))];
@@ -6430,10 +6438,11 @@ function labRenderTotals(totals){
       const dc=diff>0?'lab-cmp-up':diff<0?'lab-cmp-down':'lab-cmp-same';
       const ds=diff>0?'+'+diff:diff===0?'±0':String(diff);
       const fmt=v=>Number(v.toFixed(2)).toLocaleString();
-      return `<div class="lab-cmp-name">${k}</div>
-        <div class="lab-cmp-val u-c-text3">${fmt(a)}</div>
-        <div class="lab-cmp-val u-c-accent">${fmt(b)}</div>
-        <div class="lab-cmp-diff ${dc}">${ds}</div>`;
+      const suffix=labStatPercent(k)?'%':'';
+      return `<div class="lab-cmp-name">${labStatLabel(k)}</div>
+        <div class="lab-cmp-val u-c-text3">${fmt(a)}${suffix}</div>
+        <div class="lab-cmp-val u-c-accent">${fmt(b)}${suffix}</div>
+        <div class="lab-cmp-diff ${dc}">${ds}${suffix?'ポイント':''}</div>`;
     }).join('')}
   </div>`;
 }
@@ -6652,14 +6661,17 @@ function labRenderStatGrid(el,stats,color){
   }
   el.innerHTML=entries.map(([name,val])=>{
     const c=(typeof val==='number'&&val<0)?'var(--loss)':color;
-    const disp=typeof val==='number'?Number(val.toFixed(2)).toLocaleString():val;
-    const label=name==='通常攻撃の速さ'?'通常攻撃速度の補正（%）':name==='移動速度'?'移動速度（減衰前）':name;
+    const disp=(typeof val==='number'?Number(val.toFixed(2)).toLocaleString():val)+(labStatPercent(name)?'%':'');
+    const label=labStatLabel(name);
     return `<div class="lab-stat-box">
       <div class="lab-stat-name">${label}</div>
       <div class="lab-stat-val" style="color:${c};">${disp}</div>
     </div>`;
   }).join('');
 }
+
+function labStatPercent(name){return ['急所率','急所ダメージ増加','待ち時間','HP吸収率','通常攻撃の速さ','ユナイトわざゲージ'].includes(name);}
+function labStatLabel(name){return ({'通常攻撃の速さ':'通常攻撃速度の補正（%）','移動速度':'移動速度（減衰前）','待ち時間':'わざの待ち時間短縮','貫通':'貫通（適用条件未確認）'})[name]||name;}
 
 // ---- スキルダメージ ----
 function labUpdateSkillSection(poke){
@@ -6669,7 +6681,7 @@ function labUpdateSkillSection(poke){
   if(!rows||!rows.length){ card.style.display='none'; return; }
 
   const fillSlot=(slotKey, selId, upgId, outId)=>{
-    const skills=[...new Set(rows.filter(r=>r.slot===slotKey&&(r.coeff!=null||r.description)).map(r=>r.name).filter(Boolean))];
+    const skills=[...new Set(rows.filter(r=>r.slot===slotKey).map(r=>r.name).filter(Boolean))];
     const sel=document.getElementById(selId);
     const upg=document.getElementById(upgId);
     const out=document.getElementById(outId);
@@ -6692,7 +6704,7 @@ function labUpdateSkillSection(poke){
   }
 
   // 通常攻撃（選択肢なし、全行を直接表示）
-  const normalRows=rows.filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
+  const normalRows=rows.filter(r=>r.slot==='通常攻撃');
   const normalSec=document.getElementById('labNormalSection');
   if(normalSec){
     normalSec.style.display=normalRows.length?'block':'none';
@@ -6700,7 +6712,7 @@ function labUpdateSkillSection(poke){
   }
 
   // ユナイトわざ（選択肢なし、全行を直接表示）
-  const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description));
+  const uniteRows=rows.filter(r=>r.slot==='ユナイトわざ');
   const uniteSec=document.getElementById('labUniteSection');
   if(uniteSec){
     uniteSec.style.display=uniteRows.length?'block':'none';
@@ -6721,10 +6733,10 @@ function labSkillChanged(slotNum){
 // dmgType文字列ごとの件数で、+が持たない/不足分のベース行だけ繰り越す（重複・取り違え防止）。
 function labUpgradeRows(poke, name, upg){
   const all=LAB_SKILLS?.[poke]||[];
-  const plus=all.filter(r=>r.name===name&&r.upg===upg&&(r.coeff!=null||r.description));
+  const plus=all.filter(r=>r.name===name&&r.upg===upg);
   if(!/[+＋]$/.test(name||'')) return plus;
   const baseName=name.replace(/[+＋]$/,'');
-  const base=all.filter(r=>r.name===baseName&&(r.coeff!=null||r.description));
+  const base=all.filter(r=>r.name===baseName);
   if(!base.length) return plus;
   const plusByDt={}; plus.forEach(r=>{plusByDt[r.dmgType]=(plusByDt[r.dmgType]||0)+1;});
   const seen={}; const carried=[];
@@ -6739,12 +6751,12 @@ function _fillUpgrades(poke, skillName, upgId, outId){
   upg.innerHTML='';
   out.innerHTML='';
   if(!poke||!skillName) return;
-  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName&&(r.coeff!=null||r.description));
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.name===skillName);
   const upgs=[...new Set(rows.map(r=>r.upg))];
   upgs.forEach(u=>{
     const o=document.createElement('option');
     o.value=u;
-    o.textContent=u?`Lv${u} アップグレード後`:'アップグレードなし';
+    o.textContent=u?`Lv${u} ${/[+＋]$/.test(skillName)?'＋版':'通常版'}`:'初期わざ・習得レベル未登録';
     upg.appendChild(o);
   });
   // 最初のアップグレード選択肢のダメージを表示
@@ -6768,10 +6780,10 @@ function calcLabDamageAll(){
   const passiveRows=labPassiveRows(poke);
   if(passiveRows.length) _renderDmgRows('labDmgOutPassive',passiveRows);
   // 通常攻撃も更新
-  const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
+  const normalRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='通常攻撃');
   if(normalRows.length) _renderDmgRows('labDmgOutNormal', normalRows);
   // ユナイトわざも更新
-  const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description));
+  const uniteRows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='ユナイトわざ');
   if(uniteRows.length) _renderDmgRows('labDmgOutUnite', uniteRows);
 }
 
@@ -6779,7 +6791,10 @@ function _renderDmgRows(outId, rows){
   const out=document.getElementById(outId);
   if(!out||!labCalcResult) return;
   if(!rows.length){ out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">データなし</div>'; return; }
-  out.innerHTML=rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
+  const poke=document.getElementById('labPokeSelect')?.value;
+  const selectedName=/^labDmgOut[12]$/.test(outId)?document.getElementById('labSkill'+outId.slice(-1)+'Sel')?.value:rows[0]?.name;
+  const intro=outId==='labDmgOutNormal'?`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`:labMoveIntroHtml(poke,selectedName,rows);
+  out.innerHTML=outId==='labDmgOutUnite'?labUniteEffectsHtml(poke,rows,r=>_calcDmgHtml(r)):intro+rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
   if(!out.innerHTML) out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">計算不可</div>';
   else usageResult('labCalcPanel',out.textContent,outId);
 }
@@ -6794,10 +6809,12 @@ function labEffectLabelHtml(poke,r){
 
 function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   if(!labCalcResult) return '';
+  if(r.calculationStatus==='conditional')return labPendingEffectHtml(r,poke);
   const st=r.stat||'';
   const coeff=r.coeff; const fixed=r.fixed||0; const lvScale=r.lvScale||0;
   if(coeff==null&&r.description) return labPassiveDescriptionHtml(r);
-  if(coeff==null) return '';
+  if(labEffectDescriptionKnown(poke,r))return labDescribedEffectHtml();
+  if(coeff==null) return labUnknownEffectHtml(r);
   const kind=labEffectKind(r),unit=labEffectUnit(r);
   // ステータス種別（日本語・英語両対応）
   let base=0; let statLabel='';
@@ -6809,7 +6826,7 @@ function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   const baseVal = labRawValue(r,labCalcResult,lv);
   // 回復・シールド行にレスキューフード倍率を適用
   const isHealShield = kind==='heal'||kind==='shield';
-  const {mult, pct, items:hsItems} = isHealShield ? labGetHealShieldMult(/回復/.test(r.dmgType||'')) : {mult:1, pct:0, items:[]};
+  const {mult, pct, items:hsItems} = isHealShield ? labGetHealShieldMult(kind==='heal',r.supportTarget) : {mult:1, pct:0, items:[]};
   const damageMult=labItemDamageMultiplier(labReadItems('lab'),labReadEffects('lab'));
   const appliedMult=isHealShield?mult:kind==='damage'?damageMult:1;
   const perHit=Math.floor(baseVal*appliedMult+1e-9);
@@ -6936,11 +6953,32 @@ function labRefreshCalcMedalSelect(){
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
 function labPassiveDescriptionHtml(r){
-  return `<div class="lab-dmg-row lab-effect-description">${r.descriptionEntry?`<strong>${escapeHtml(r.name)}</strong>`:''}<div>${escapeHtml(r.description)}</div></div>`;
+  const title=r.descriptionEntry?r.name:r.formulaText?r.dmgType:'';
+  return `<div class="lab-dmg-row lab-effect-description">${title?`<strong>${escapeHtml(title)}</strong>`:''}<div>${escapeHtml(r.description)}</div>${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}</div>`;
+}
+function labUnknownEffectHtml(r){return `<div class="lab-dmg-row lab-effect-description"><span>${escapeHtml(r.name||r.slot)}：この成分の計算式は未確認です。直接ダメージがないことを示すものではありません。</span></div>`;}
+function labDescribedEffectHtml(){return '<div class="ratio-meta">効果の内容は説明欄に記載しています。</div>';}
+function labMoveIntroHtml(poke,name,rows){
+  const text=labMoveDescription(poke,name),unknown=rows.some(r=>r.cdStatus==='unconfirmed'),cds=[...new Set(rows.map(r=>r.cd).filter(v=>v!=null))];
+  const normal=rows.find(r=>r.normalCD!=null)?.normalCD;
+  const timing=unknown?'＋版の待ち時間：未確認'+(normal!=null?'（通常版は'+normal+'秒）':''):cds.length===1?'待ち時間：'+cds[0]+'秒':'';
+  return (text?`<p class="lab-effect-description">${/[+＋]$/.test(name||'')?'＋版の変更点：':''}${escapeHtml(text)}</p>`:'')+(timing?`<p class="ratio-meta">${escapeHtml(timing)}</p>`:'');
+}
+function labUniteEffectsHtml(poke,rows,renderRow){
+  return labUniteInfoHtml(poke)+[...new Set(rows.map(r=>r.name))].map(name=>{
+    const group=rows.filter(r=>r.name===name);
+    return `<div class="lab-effect-description"><strong>${escapeHtml(name)}</strong></div>`+labMoveIntroHtml(poke,name,group)+group.map(renderRow).filter(Boolean).join('');
+  }).join('');
+}
+function labPendingEffectHtml(r,poke){
+  return `<div class="lab-dmg-row lab-effect-description"><strong>${escapeHtml(ratioLabel(poke,r))}</strong><div class="ratio-formula">${escapeHtml(ratioFormula(r))}</div><div class="u-c-text2">${escapeHtml(r.calculationNotice||'発動条件が必要なため、自動計算しません。')}</div></div>`;
 }
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
+  if(r?.calculationStatus==='conditional')return labPendingEffectHtml(r,poke);
   if(r?.coeff==null&&r?.description) return labPassiveDescriptionHtml(r);
-  if(!r||r.coeff==null) return null;
+  if(!r)return null;
+  if(labEffectDescriptionKnown(poke,r))return labDescribedEffectHtml();
+  if(r.coeff==null)return labUnknownEffectHtml(r);
   const {kind,unit,rawPerHit,actPerHit,hits}=labEvaluateComponent(r,atkStats,defStats,atkLv,{items:labReadItems('dcAtk'),activeEffects:labReadEffects('dcAtk'),healTarget:labHealTarget('dcAtk'),spdefPen});
   const label=labEffectLabelHtml(poke,r);
   const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">[${r.upg}]</span>`:'';
@@ -7075,7 +7113,7 @@ function dcUpdateSkillSelects(poke){
     const sel=document.getElementById(`dcSkill${slot}Sel`);
     const upgSel=document.getElementById(`dcSkill${slot}Upg`);
     if(!sel) continue;
-    const names=[...new Set(skills.filter(r=>r.slot==='わざ'+slot&&(r.coeff!=null||r.description)).map(r=>r.name))];
+    const names=[...new Set(skills.filter(r=>r.slot==='わざ'+slot).map(r=>r.name))];
     sel.innerHTML='<option value="">— わざを選択 —</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
     sel.value='';
     if(upgSel){ upgSel.innerHTML='<option value="">—</option>'; upgSel.style.display='none'; }
@@ -7095,10 +7133,10 @@ function dcSkillChanged(slot){
   const name=document.getElementById(`dcSkill${slot}Sel`)?.value;
   const upgSel=document.getElementById(`dcSkill${slot}Upg`);
   if(!upgSel) return;
-  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='わざ'+slot&&r.name===name&&(r.coeff!=null||r.description));
+  const rows=(LAB_SKILLS?.[poke]||[]).filter(r=>r.slot==='わざ'+slot&&r.name===name);
   const upgs=[...new Set(rows.map(r=>r.upg))];
   if(upgs.length>1){
-    upgSel.innerHTML=upgs.map(u=>u?`<option value="${u}">Lv${u} アップグレード後</option>`:`<option value="">アップグレードなし</option>`).join('');
+    upgSel.innerHTML=upgs.map(u=>u?`<option value="${u}">Lv${u} ${/[+＋]$/.test(name)?'＋版':'通常版'}</option>`:`<option value="">習得レベル未登録</option>`).join('');
     upgSel.style.display='';
   } else {
     upgSel.innerHTML='<option value="">—</option>';
@@ -7124,9 +7162,9 @@ function dcUpdateDmgOutput(){
     if(!out) continue;
     if(!name){ out.innerHTML=''; continue; }
     let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
-    if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name&&(r.coeff!=null||r.description));
+    if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name);
     const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
-    out.innerHTML=html||'<div class="empty u-fs-fs-xs">ダメージなし</div>';
+    out.innerHTML=labMoveIntroHtml(poke,name,rows)+(html||'<div class="empty u-fs-fs-xs">計算式は未確認です。</div>');
   }
   // 通常攻撃
   const passiveRows=labPassiveRows(poke);
@@ -7135,20 +7173,20 @@ function dcUpdateDmgOutput(){
     ps.style.display=passiveRows.length?'block':'none';
     po.innerHTML=passiveRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
-  const normalRows=skills.filter(r=>r.slot==='通常攻撃'&&(r.coeff!=null||r.description));
+  const normalRows=skills.filter(r=>r.slot==='通常攻撃');
   const ns=document.getElementById('dcNormalSection');
   const no=document.getElementById('dcDmgOutNormal');
   if(ns&&no){
     ns.style.display=normalRows.length?'block':'none';
-    no.innerHTML=normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+    no.innerHTML=`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
   }
   // ユナイトわざ
-  const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ'&&(r.coeff!=null||r.description));
+  const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ');
   const us=document.getElementById('dcUniteSection');
   const uo=document.getElementById('dcDmgOutUnite');
   if(us&&uo){
     us.style.display=uniteRows.length?'block':'none';
-    uo.innerHTML=uniteRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+    uo.innerHTML=labUniteEffectsHtml(poke,uniteRows,r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen));
   }
   dcRenderProcResults();
   if(typeof LabReview!=='undefined')LabReview.renderComparison();
@@ -7625,12 +7663,12 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=104"></script>
-<script src="ratio.js?v=104"></script>
-<script src="js/lab-review.js?v=104"></script>
-<script src="js/calc-conditions-core.js?v=104"></script>
-<script src="js/calc-conditions.js?v=104"></script>
-<script src="js/patch-analysis-core.js?v=104"></script>
-<script src="js/patch-analysis.js?v=104"></script>
+<script src="ratio-labels.js?v=105"></script>
+<script src="ratio.js?v=105"></script>
+<script src="js/lab-review.js?v=105"></script>
+<script src="js/calc-conditions-core.js?v=105"></script>
+<script src="js/calc-conditions.js?v=105"></script>
+<script src="js/patch-analysis-core.js?v=105"></script>
+<script src="js/patch-analysis.js?v=105"></script>
 </body>
 </html>

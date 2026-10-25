@@ -37,6 +37,9 @@ const lab=fs.readFileSync(path.join(ROOT,'lab_data.js'),'utf8').replace(/const L
 eval(lab);
 
 let okN=0, total=0,derivedN=0;
+const narrativeRules=new Map(require('../data/lab-reviewed-narratives.json').map(r=>[r.sourceKey,r]));
+const {csv:parseRecords,key:sourceKey,hasEvidence}=require('./lab-data-utils');
+const sourceRecords=new Map(parseRecords(fs.readFileSync(path.join(ROOT,'data','unitedb_ratios.csv'),'utf8')).map(s=>[sourceKey(s),s]));
 const catB=[], catC=[], catBC=[], catE=[]; // B=lvScaleのみ, C=fixedのみ, BC=lv&fix, E=不明
 const seen=new Set();
 for(const p of Object.keys(globalThis.LAB_SKILLS)){
@@ -45,6 +48,11 @@ for(const p of Object.keys(globalThis.LAB_SKILLS)){
     if(r.coeff==null) continue;
     total++;
     const tc=num(r.coeff), tl=num(r.lvScale), tf=num(r.fixed), ts=r.stat||'';
+    if(r.narrativeKey){
+      const sk=r.narrativeKey.split('|').slice(0,5).join('|'),rule=narrativeRules.get(sk),s=sourceRecords.get(sk),n=rule?.numeric;
+      if(n&&s&&hasEvidence(s,rule.evidence)&&JSON.stringify([tc,tl,tf,ts])===JSON.stringify([n.coeff,n.lvScale,n.fixed,n.coeff?'HP':''])){okN++;derivedN++;continue;}
+      catE.push({p,name:r.name,key:'文章中の式・原文との不一致'});continue;
+    }
     if(r.derivedFrom){
       const s=sourceComponents[r.derivedFrom.sourceKey],f=r.derivedFrom.factor;
       if(s&&ts===s.stat&&[tc-s.coeff*f,tl-s.lv*f,tf-s.fix*f].every(n=>Math.abs(n)<1e-7)){okN++;derivedN++;continue;}

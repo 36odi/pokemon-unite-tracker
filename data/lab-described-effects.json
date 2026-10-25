@@ -1,0 +1,1374 @@
+{
+  "checkedAt": "2026-10-25",
+  "sourceCheckedAt": "2026-10-24",
+  "rules": [
+    {
+      "pokemon": "ギルガルド",
+      "slot": "わざ2",
+      "name": "てっぺき",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Aegislash|Move 2|Iron Defense|rsb|base",
+          "trueDescription": "Envelops the user in a powerful protective force for up to 3s, blocking the next attack.",
+          "notes": "Increases the boost count by 1 when this move blocks an attack.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ハピナス",
+      "slot": "わざ1",
+      "name": "てだすけ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Blissey|Move 1|Helping Hand|rsb|base",
+          "trueDescription": "The user increases the movement speed and basic attack speed of themself and nearby teammates by 30% for 4s. When buffed, the user's auto attacks also become boosted attacks.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Blissey|Move 1|Helping Hand|rsb|enhanced",
+          "trueDescription": "Increases the auto attack damage of all teammates buffed by this move by 15% for 4s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ハピナス",
+      "slot": "わざ1",
+      "name": "てだすけ+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Blissey|Move 1|Helping Hand|rsb|base",
+          "trueDescription": "The user increases the movement speed and basic attack speed of themself and nearby teammates by 30% for 4s. When buffed, the user's auto attacks also become boosted attacks.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Blissey|Move 1|Helping Hand|rsb|enhanced",
+          "trueDescription": "Increases the auto attack damage of all teammates buffed by this move by 15% for 4s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "シャンデラ",
+      "slot": "わざ2",
+      "name": "ふういん",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Chandelure|Move 2|Imprison|rsb|base",
+          "trueDescription": "Creates a zone in front of itself lasting 4s. The first enemy caught in the zone will be immobilized for 0.7s. Furthermore, all enemy Pokémon in the zone or enter the zone become imprisoned and cannot use Moves.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Chandelure|Move 2|Imprison|rsb|enhanced",
+          "trueDescription": "Changes the Imprison to briefly immobilize all Pokémon caught in the zone on creation.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "シャンデラ",
+      "slot": "わざ2",
+      "name": "ふういん+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Chandelure|Move 2|Imprison|rsb|base",
+          "trueDescription": "Creates a zone in front of itself lasting 4s. The first enemy caught in the zone will be immobilized for 0.7s. Furthermore, all enemy Pokémon in the zone or enter the zone become imprisoned and cannot use Moves.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Chandelure|Move 2|Imprison|rsb|enhanced",
+          "trueDescription": "Changes the Imprison to briefly immobilize all Pokémon caught in the zone on creation.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "エースバーン",
+      "slot": "わざ2",
+      "name": "フェイント",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Cinderace|Move 2|Feint|rsb|base",
+          "trueDescription": "Becomes invincible for 0.73s while dodging, cleansing any slows, and increasing movement speed by 40% for 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Cinderace|Move 2|Feint|rsb|enhanced",
+          "trueDescription": "The next 3 auto attacks after dodging restore HP for 30% of damage dealt. These 3 auto attacks cannot critically hit.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "エースバーン",
+      "slot": "わざ2",
+      "name": "フェイント+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Cinderace|Move 2|Feint|rsb|base",
+          "trueDescription": "Becomes invincible for 0.73s while dodging, cleansing any slows, and increasing movement speed by 40% for 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Cinderace|Move 2|Feint|rsb|enhanced",
+          "trueDescription": "The next 3 auto attacks after dodging restore HP for 30% of damage dealt. These 3 auto attacks cannot critically hit.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ピクシー",
+      "slot": "ユナイトわざ",
+      "name": "ゆびにねがいを",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Clefable|Unite Move|Wonder Wish|rsb|base",
+          "trueDescription": "Clefable waggles their finger, restoring HP to allies in the area-of-effect. The lower an ally's HP is, the more HP this move restores to that ally. Afterward, Clefable gets a random move that can be performed by using the Unite Move again within 10s.",
+          "notes": "Note: Some random moves will activate immediately.",
+          "info": ""
+        },
+        {
+          "key": "Clefable|Unite Move|Wonder Wish|rsb|add1",
+          "trueDescription": "30% missing HP",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ウッウ",
+      "slot": "わざ2",
+      "name": "フェザーダンス",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Cramorant|Move 2|Feather Dance|rsb|base",
+          "trueDescription": "The user throws a circle of feathers at the designated area, decreasing the Attack of opposing Pokémon in the area of effect by 30% and their movement speed by 20% for 4s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "イワパレス",
+      "slot": "わざ1",
+      "name": "からをやぶる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Crustle|Move 1|Shell Smash|rsb|base",
+          "trueDescription": "The user becomes unstoppable as they smash their shell over 0.8s, reducing their base Defense and Sp. Def stats to 0 and converting 40% of the value lost to bonus Attack and Sp. Atk respectively for 4.5s. The user's movement speed is increased by 75% for the duration of the buff (decaying by 5% every 1s; minimum 55% increased movement speed before the buff ends).",
+          "notes": "All modifiers (except emblem color bonuses) work with 0 base Defense and Sp. Def for the duration of this buff.",
+          "info": ""
+        },
+        {
+          "key": "Crustle|Move 1|Shell Smash|rsb|enhanced",
+          "trueDescription": "Strengthens the conversion rate from lost Defense and Sp. Def to bonus Attack and Sp. Atk to 50%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "イワパレス",
+      "slot": "わざ1",
+      "name": "からをやぶる+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Crustle|Move 1|Shell Smash|rsb|base",
+          "trueDescription": "The user becomes unstoppable as they smash their shell over 0.8s, reducing their base Defense and Sp. Def stats to 0 and converting 40% of the value lost to bonus Attack and Sp. Atk respectively for 4.5s. The user's movement speed is increased by 75% for the duration of the buff (decaying by 5% every 1s; minimum 55% increased movement speed before the buff ends).",
+          "notes": "All modifiers (except emblem color bonuses) work with 0 base Defense and Sp. Def for the duration of this buff.",
+          "info": ""
+        },
+        {
+          "key": "Crustle|Move 1|Shell Smash|rsb|enhanced",
+          "trueDescription": "Strengthens the conversion rate from lost Defense and Sp. Def to bonus Attack and Sp. Atk to 50%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ダークライ",
+      "slot": "わざ2",
+      "name": "めいそう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Darkrai|Move 2|Calm Mind|rsb|base",
+          "trueDescription": "The user focuses their mind, increasing their Special Attack and Special Defense by 30% for 3s and Movement Speed by 50% for 3s, decaying by 10% every 0.5 seconds to a minimum of 10%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ダークライ",
+      "slot": "ユナイトわざ",
+      "name": "深き悪夢へのいざない",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Darkrai|Unite Move|Worst Nightmare|rsb|base",
+          "trueDescription": "The user becomes unstoppable and casts a sleeping spell on the designated Pokémon from the opposing team. If the target is successfully put to sleep, the user's moves' cooldowns are reset, the target is marked to receive 3% max HP damage over time every 0.5s over 10s (up to 21 times; maximum 63% max HP damage as Sp. Atk-based damage), and the user sends that target into a nightmare realm centered on their initial location for up to 8s. The user follows the target into the nightmare realm. While inside the nightmare realm, Darkrai and the target are unaffected by goal zones, jump pads, and Berries. Other Pokémon outside of the nightmare realm cannot target Darkrai or their target while they're inside.",
+          "notes": "If the designated Pokémon from the opposing team cannot be put to sleep, this Unite Move is canceled and 90% of the Unite Move gauge is refunded. This energy regeneration is affected by Energy Amplifier.",
+          "info": ""
+        },
+        {
+          "key": "Darkrai|Unite Move|Worst Nightmare|rsb|add1",
+          "trueDescription": "3% max HP every 0.5s",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ドードリオ",
+      "slot": "わざ2",
+      "name": "こうそくいどう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dodrio|Move 2|Agility|rsb|base",
+          "trueDescription": "Become immune to hindrances for 0.5s and adds to the sprint gauge. Afterward, movement speed is increased by 20% for 4s, and the sprint gauge charges faster.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Dodrio|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Fully charges the sprint gauge on use.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ドードリオ",
+      "slot": "わざ2",
+      "name": "こうそくいどう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dodrio|Move 2|Agility|rsb|base",
+          "trueDescription": "Become immune to hindrances for 0.5s and adds to the sprint gauge. Afterward, movement speed is increased by 20% for 4s, and the sprint gauge charges faster.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Dodrio|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Fully charges the sprint gauge on use.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ドラパルト",
+      "slot": "わざ2",
+      "name": "でんこうせっか",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dragapult|Move 2|Quick Attack|rsb|base",
+          "trueDescription": "Dashes in the designated direction, increasing basic attack speed by 40% for 2s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ドラパルト",
+      "slot": "わざ2",
+      "name": "ゴーストダイブ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dragapult|Move 2|Phantom Force|rsb|base",
+          "trueDescription": "The user enters stealth for up to 6s or until using an attack, increasing their movement speed by 30% and increasing the boosted basic attack gauge by 1 every 1s. When the user exits stealth, the user's basic attack speed is increased by 85% for 3s.",
+          "notes": "When this move is learned, if the user knocks out a Pokémon from the opposing team, this move's cooldown is reset and the user's Attack is increased by 8 until the end of the battle (up to 10 times; maximum 80 bonus Attack).",
+          "info": ""
+        },
+        {
+          "key": "Dragapult|Move 2|Phantom Force|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 0.5s per opposing Pokémon hit by the user's auto attacks.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ドラパルト",
+      "slot": "わざ2",
+      "name": "ゴーストダイブ+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dragapult|Move 2|Phantom Force|rsb|base",
+          "trueDescription": "The user enters stealth for up to 6s or until using an attack, increasing their movement speed by 30% and increasing the boosted basic attack gauge by 1 every 1s. When the user exits stealth, the user's basic attack speed is increased by 85% for 3s.",
+          "notes": "When this move is learned, if the user knocks out a Pokémon from the opposing team, this move's cooldown is reset and the user's Attack is increased by 8 until the end of the battle (up to 10 times; maximum 80 bonus Attack).",
+          "info": ""
+        },
+        {
+          "key": "Dragapult|Move 2|Phantom Force|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 0.5s per opposing Pokémon hit by the user's auto attacks.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カイリュー",
+      "slot": "わざ1",
+      "name": "りゅうのまい",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dragonite|Move 1|Dragon Dance|rsb|base",
+          "trueDescription": "Dash in a designated direction, alternating each use between a left arc, right arc and a direct dash. After using this move, grant a buff increasing attack speed of the next 3 auto attacks by 80% for 4.5s, increasing movement speed by 30% for 1s, increasing Attack by 10% (capping at 30%), as well as increasing the stage of Hyper Beam. This buff stacks up to 3 times, and the duration is reset to full on reuse. All stacks are removed after a few seconds. Auto attacks reduce the cooldown of this ability by 1s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Dragonite|Move 1|Dragon Dance|rsb|enhanced",
+          "trueDescription": "Further increases Dragonite's movement speed by 10% for 4.5s if there are enemies nearby when the dance ends.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カイリュー",
+      "slot": "わざ1",
+      "name": "りゅうのまい+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Dragonite|Move 1|Dragon Dance|rsb|base",
+          "trueDescription": "Dash in a designated direction, alternating each use between a left arc, right arc and a direct dash. After using this move, grant a buff increasing attack speed of the next 3 auto attacks by 80% for 4.5s, increasing movement speed by 30% for 1s, increasing Attack by 10% (capping at 30%), as well as increasing the stage of Hyper Beam. This buff stacks up to 3 times, and the duration is reset to full on reuse. All stacks are removed after a few seconds. Auto attacks reduce the cooldown of this ability by 1s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Dragonite|Move 1|Dragon Dance|rsb|enhanced",
+          "trueDescription": "Further increases Dragonite's movement speed by 10% for 4.5s if there are enemies nearby when the dance ends.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "タイレーツ",
+      "slot": "わざ2",
+      "name": "ビルドアップ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Falinks|Move 2|Bulk Up|rsb|base",
+          "trueDescription": "Increases the user's Defense, Special Defense and Attack Speed by 25%, and Attack by 30% for 3s",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ガブリアス",
+      "slot": "わざ1",
+      "name": "すなかけ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Garchomp|Move 1|Sand Attack|rsb|base",
+          "trueDescription": "The user hurls sand in the designated direction, reducing the field of vision of opposing Pokémon by 50% and decreasing their movement speed by 20% for 2s; increasing the user's movement speed by 30% for 2s and auto attack speed by 30% for 3s when this move hits.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "サーナイト",
+      "slot": "わざ2",
+      "name": "テレポート",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Gardevoir|Move 2|Teleport|rsb|base",
+          "trueDescription": "The user readies a boosted attack and warps forward to the designated location.",
+          "notes": "When this move is learned, passively increases the damage of Synchronize, auto attacks, and Confusion by 15% until this move is replaced.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヌメルゴン",
+      "slot": "ユナイトわざ",
+      "name": "あめあめふれふれ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Goodra|Unite Move|Right as Rain|rsb|base",
+          "trueDescription": "Causes rain to fall around the user, gradually restoring the user’s HP over 6s. While this move is active, all of the user’s basic attacks become boosted attacks.",
+          "notes": "",
+          "info": "4.6% Max HP"
+        }
+      ]
+    },
+    {
+      "pokemon": "ヨクバリス",
+      "slot": "わざ2",
+      "name": "まるくなる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greedent|Move 2|Defense Curl|rsb|base",
+          "trueDescription": "Grants Greedent a shield (10% max HP) for 3s. In addition, an Oran berry will drop in front of Greedent.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヨクバリス",
+      "slot": "わざ2",
+      "name": "ほおばる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greedent|Move 2|Stuff Cheeks|rsb|base",
+          "trueDescription": "Greedent drops 5 Oran berries, which can be eaten to recover HP. Any HP recovered from an Oran berry eaten within 5s that exceeds Greedent's max HP will be converted to a shield for 1.8% max HP per berry (capped at 9% max HP or 5 berries). If Greedent catches sight of a berry while using this move, movement speed is increased by 70% for 6s, but decreasing by 15% every 1s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Greedent|Move 2|Stuff Cheeks|rsb|enhanced",
+          "trueDescription": "Increase the number of Oran berries dropped by 1.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヨクバリス",
+      "slot": "わざ2",
+      "name": "ほおばる+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greedent|Move 2|Stuff Cheeks|rsb|base",
+          "trueDescription": "Greedent drops 5 Oran berries, which can be eaten to recover HP. Any HP recovered from an Oran berry eaten within 5s that exceeds Greedent's max HP will be converted to a shield for 1.8% max HP per berry (capped at 9% max HP or 5 berries). If Greedent catches sight of a berry while using this move, movement speed is increased by 70% for 6s, but decreasing by 15% every 1s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Greedent|Move 2|Stuff Cheeks|rsb|enhanced",
+          "trueDescription": "Increase the number of Oran berries dropped by 1.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ゲッコウガ",
+      "slot": "わざ2",
+      "name": "みがわり",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greninja|Move 2|Substitute|rsb|base",
+          "trueDescription": "Becomes invincible and dashes forward, leaving behind a Substitute doll in their place which lasts for 3s.",
+          "notes": "The Substitute doll has the same HP, Defense and Sp. Def as the user; the Substitute doll receives 500% of the damage the user would take.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ゲッコウガ",
+      "slot": "わざ2",
+      "name": "かげぶんしん",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greninja|Move 2|Double Team|rsb|base",
+          "trueDescription": "Briefly vanishes then becomes unstoppable and dashes forward, sending two illusionary copies diagonally behind which last for 3s.",
+          "notes": "The copies have the same HP, Defense and Sp. Def as Greninja when created, but receive 500% of the damage they would otherwise take. The clones attack nearby opposing Pokémon with Bubble, Water Shuriken, or Surf (whichever move the user has learned), and auto attacks; but deal 15% of the damage they would otherwise deal.",
+          "info": ""
+        },
+        {
+          "key": "Greninja|Move 2|Double Team|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 1s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ゲッコウガ",
+      "slot": "わざ2",
+      "name": "かげぶんしん+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Greninja|Move 2|Double Team|rsb|base",
+          "trueDescription": "Briefly vanishes then becomes unstoppable and dashes forward, sending two illusionary copies diagonally behind which last for 3s.",
+          "notes": "The copies have the same HP, Defense and Sp. Def as Greninja when created, but receive 500% of the damage they would otherwise take. The clones attack nearby opposing Pokémon with Bubble, Water Shuriken, or Surf (whichever move the user has learned), and auto attacks; but deal 15% of the damage they would otherwise deal.",
+          "info": ""
+        },
+        {
+          "key": "Greninja|Move 2|Double Team|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 1s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ギャラドス",
+      "slot": "わざ2",
+      "name": "はねる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Gyarados|Move 2|Splash|rsb|base",
+          "trueDescription": "Jumps to the designated location forward.",
+          "notes": "A maximum of 3 uses can be kept in reserve, with a 2s cooldown between uses.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "メガギャラドス",
+      "slot": "わざ2",
+      "name": "はねる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mega-Gyarados|Move 2|Splash|rsb|base",
+          "trueDescription": "Jumps to the designated location forward.",
+          "notes": "A maximum of 3 uses can be kept in reserve, with a 2s cooldown between uses.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ホウオウ",
+      "slot": "わざ1",
+      "name": "しんぴのまもり",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Ho-Oh|Move 1|Safeguard|rsb|base",
+          "trueDescription": "Create a protective field around the user that reduces the next incoming source of damage by 50%. When this field reduces damage from an attack, the user's movement speed is increased by 40% for 3s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ホウオウ",
+      "slot": "ユナイトわざ",
+      "name": "復活の虹炎",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Ho-Oh|Unite Move|Rekindling Flame|rsb|base",
+          "trueDescription": "When a nearby ally is knocked out, a feather is left in their place until they respawn at base. When Rekindling Flame is used, Ho-oh spreads their wings and consumes all of the Aeos energy held to revive knocked-out allies where their feathers are for 60% of their maximum HP. Rekindling Flame may only be used if there are feathers nearby. The number of available revivals are based on how much Aeos energy is consumed. One ally may be always revived. Up to two allies are revivable if at least 9 energy is consumed. Up to three allies are revivable if at least 17 Aeos energy is consumed. Up to four allies are revivable if at least 25 Aeos energy is consumed.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "フーパ",
+      "slot": "ユナイトわざ",
+      "name": "ときはなたれし光輪",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Hoopa|Unite Move|Rings Unbound|rsb|base",
+          "trueDescription": "Hoopa becomes invincible for 0.6s while transforming into Hoopa Unbound, then becomes unstoppable for 0.3s as it opens a large portal ring at a designated location. Hoopa Unbound lasts for 15s, increasing max HP by 40% and changes Hoopa's regular moves to Hyperspace Fury and Psybeam. Hoopa Unbound cannot score goals or activate the Magician ability.",
+          "notes": "The portal ring created stays open for 10s, and allies can warp to that location once within the duration of the ring. This portal is indicated on the mini map where all players may see where it is.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "インテレオン",
+      "slot": "わざ1",
+      "name": "なみだめ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Inteleon|Move 1|Tearful Look|rsb|base",
+          "trueDescription": "Decreases the Attack and Sp. Atk of the target Pokémon by 20% for 3s. Inteleon gains a critical counter and increases its movement speed by 40% for 3s (decreasing over time).",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "インテレオン",
+      "slot": "ユナイトわざ",
+      "name": "アズールスパイビジョン",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Inteleon|Unite Move|Azure Spy Vision|rsb|base",
+          "trueDescription": "For 10.5s, Inteleon can see nearby Pokémon that are in stealth or hiding in tall grass.",
+          "notes": "While active, also doubles Inteleon's critical-hit rate, and gives 1 critical counter per second.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カイリキー",
+      "slot": "わざ2",
+      "name": "ビルドアップ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Machamp|Move 2|Bulk Up|rsb|base",
+          "trueDescription": "Machop buffs themselves for 3s becoming unstoppable, increasing attack by 15%, attack speed by 40% and movement speed by 30% inititally, diminishing gradually every 1s. Machop's next attack is boosted.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウ",
+      "slot": "わざ2",
+      "name": "ひかりのかべ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mew|Move 2|Light Screen|rsb|base",
+          "trueDescription": "Create a translucent wall in the designated location for 4s that prevents enemies from passing and shoves them for 0.5s if they make contact with the wall. If Mew's Electro Ball, Solar Beam, or Surf passes through the wall, the effects of those moves will be enhanced (such as increased damage, range, and area-of-effect). If this move is used again within 4s, the wall is pulled towards Mew and follows them as they move for an additional 4s. While the wall moves with Mew, enemy attacks that pass through it will deal 25% reduced damage but will not prevent enemies from passing and does not shove them anymore.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mew|Move 2|Light Screen|rsb|enhanced",
+          "trueDescription": "Increases the size of the wall.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウ",
+      "slot": "わざ2",
+      "name": "ひかりのかべ+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mew|Move 2|Light Screen|rsb|base",
+          "trueDescription": "Create a translucent wall in the designated location for 4s that prevents enemies from passing and shoves them for 0.5s if they make contact with the wall. If Mew's Electro Ball, Solar Beam, or Surf passes through the wall, the effects of those moves will be enhanced (such as increased damage, range, and area-of-effect). If this move is used again within 4s, the wall is pulled towards Mew and follows them as they move for an additional 4s. While the wall moves with Mew, enemy attacks that pass through it will deal 25% reduced damage but will not prevent enemies from passing and does not shove them anymore.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mew|Move 2|Light Screen|rsb|enhanced",
+          "trueDescription": "Increases the size of the wall.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウ",
+      "slot": "わざ2",
+      "name": "こうそくいどう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mew|Move 2|Agility|rsb|base",
+          "trueDescription": "Move quickly in a designated direction, increasing Mew's movement speed by 5% for 2s. Holds 2 uses in reserve and cannot be used more than once every 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mew|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Increases the distance Mew moves in the designated direction.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウ",
+      "slot": "わざ2",
+      "name": "こうそくいどう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mew|Move 2|Agility|rsb|base",
+          "trueDescription": "Move quickly in a designated direction, increasing Mew's movement speed by 5% for 2s. Holds 2 uses in reserve and cannot be used more than once every 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mew|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Increases the distance Mew moves in the designated direction.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウツーX",
+      "slot": "わざ2",
+      "name": "テレポート",
+      "status": "described",
+      "sources": [
+        {
+          "key": "MewtwoX|Move 2|Teleport|rsb|base",
+          "trueDescription": "Mewtwo teleports to the designated location. For 5s, movement speed is increased by 30%, Mewtwo deals 10% more damage, and the Mega gauge increases 50% faster.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "MewtwoX|Move 2|Teleport|rsb|enhanced",
+          "trueDescription": "Damage dealt is increased to 20%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウツーX",
+      "slot": "わざ2",
+      "name": "テレポート+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "MewtwoX|Move 2|Teleport|rsb|base",
+          "trueDescription": "Mewtwo teleports to the designated location. For 5s, movement speed is increased by 30%, Mewtwo deals 10% more damage, and the Mega gauge increases 50% faster.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "MewtwoX|Move 2|Teleport|rsb|enhanced",
+          "trueDescription": "Damage dealt is increased to 20%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウツーY",
+      "slot": "わざ2",
+      "name": "テレポート",
+      "status": "described",
+      "sources": [
+        {
+          "key": "MewtwoY|Move 2|Teleport|rsb|base",
+          "trueDescription": "Mewtwo teleports to the designated location. For 2s after the first cast of Teleport, movement speed is increased by 15%, Mewtwo deals 20% more damage, and the Mega gauge increases 50% faster. During those 2s, Mewtwo can teleport again once.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "MewtwoY|Move 2|Teleport|rsb|enhanced",
+          "trueDescription": "Damage dealt is increased to 30%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミュウツーY",
+      "slot": "わざ2",
+      "name": "テレポート+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "MewtwoY|Move 2|Teleport|rsb|base",
+          "trueDescription": "Mewtwo teleports to the designated location. For 2s after the first cast of Teleport, movement speed is increased by 15%, Mewtwo deals 20% more damage, and the Mega gauge increases 50% faster. During those 2s, Mewtwo can teleport again once.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "MewtwoY|Move 2|Teleport|rsb|enhanced",
+          "trueDescription": "Damage dealt is increased to 30%.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミミッキュ",
+      "slot": "わざ2",
+      "name": "トリックルーム",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mimikyu|Move 2|Trick Room|rsb|base",
+          "trueDescription": "Leap to a location and create a bizarre area around Mimikyu in a square for 6s. If a slow would be applied to Mimikyu within the area, Mimikyu instead receives a movement speed increase equal to the slow rate. While inside the Trick Room, Mimikyu receives 50% reduced damage from enemies outside of the Trick Room. This move can be used as often as desired while inside the Trick Room, teleporting Mimikyu a set distance with each use.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mimikyu|Move 2|Trick Room|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 1s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ミミッキュ",
+      "slot": "わざ2",
+      "name": "トリックルーム+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mimikyu|Move 2|Trick Room|rsb|base",
+          "trueDescription": "Leap to a location and create a bizarre area around Mimikyu in a square for 6s. If a slow would be applied to Mimikyu within the area, Mimikyu instead receives a movement speed increase equal to the slow rate. While inside the Trick Room, Mimikyu receives 50% reduced damage from enemies outside of the Trick Room. This move can be used as often as desired while inside the Trick Room, teleporting Mimikyu a set distance with each use.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mimikyu|Move 2|Trick Room|rsb|enhanced",
+          "trueDescription": "Reduces this move's cooldown by 1s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "バリヤード",
+      "slot": "わざ2",
+      "name": "ひかりのかべ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mr.Mime|Move 2|Light Screen|rsb|base",
+          "trueDescription": "Mr. Mime creates a wall that prevents enemies from passing. If an enemy is near the location where the wall is created, they are shoved and left unable to act for 0.5s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "バリヤード",
+      "slot": "わざ2",
+      "name": "バリアー",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mr.Mime|Move 2|Barrier|rsb|base",
+          "trueDescription": "Mr. Mime creates a wall that prevents enemies from passing. If an enemy is near the location where the wall is created, they are shoved and left unable to act for 0.5s. Holds 2 uses in reserve and cannot be used more than once every 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mr.Mime|Move 2|Barrier|rsb|enhanced",
+          "trueDescription": "Stores 3 uses in reserve instead.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "バリヤード",
+      "slot": "わざ2",
+      "name": "バリアー+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Mr.Mime|Move 2|Barrier|rsb|base",
+          "trueDescription": "Mr. Mime creates a wall that prevents enemies from passing. If an enemy is near the location where the wall is created, they are shoved and left unable to act for 0.5s. Holds 2 uses in reserve and cannot be used more than once every 2s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Mr.Mime|Move 2|Barrier|rsb|enhanced",
+          "trueDescription": "Stores 3 uses in reserve instead.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ガラルギャロップ",
+      "slot": "わざ2",
+      "name": "こうそくいどう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Rapidash|Move 2|Agility|rsb|base",
+          "trueDescription": "The user's movement speed increases by 20% when this move is used, increasing by an additional 7.5% every 0.5s over 3s (maximum 80% increased movement speed).",
+          "notes": "This move's duration increases by 1.5s if the user moves or hits opposing Pokémon with moves (up to 5 times for an additional 7.5s; maximum 10.5s duration).",
+          "info": ""
+        },
+        {
+          "key": "Rapidash|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Also restores 2% of the user's missing HP every 0.5s while their movement speed is increased by this move.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ガラルギャロップ",
+      "slot": "わざ2",
+      "name": "こうそくいどう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Rapidash|Move 2|Agility|rsb|base",
+          "trueDescription": "The user's movement speed increases by 20% when this move is used, increasing by an additional 7.5% every 0.5s over 3s (maximum 80% increased movement speed).",
+          "notes": "This move's duration increases by 1.5s if the user moves or hits opposing Pokémon with moves (up to 5 times for an additional 7.5s; maximum 10.5s duration).",
+          "info": ""
+        },
+        {
+          "key": "Rapidash|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Also restores 2% of the user's missing HP every 0.5s while their movement speed is increased by this move.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヤドラン",
+      "slot": "わざ2",
+      "name": "なまける",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Slowbro|Move 2|Slack Off|rsb|base",
+          "trueDescription": "Slowbro begins channeling a nap and gains a heal over time, healing 2% max HP every 0.5s for 3s. While Slowbro remains channeling its nap, all self-healing is doubled (including Slack Off healing). Slowbro can be manually or forcibly woken up from their nap.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヤドラン",
+      "slot": "わざ2",
+      "name": "ドわすれ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Slowbro|Move 2|Amnesia|rsb|base",
+          "trueDescription": "Slowbro briefly becomes unstoppable, gaining +250 Defense for 4s and restoring 17.5% of Slowbro's Oblivious health (blue HP) every second for 4s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Slowbro|Move 2|Amnesia|rsb|enhanced",
+          "trueDescription": "Also increases Slowbro's Sp. Defense by 125.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヤドラン",
+      "slot": "わざ2",
+      "name": "ドわすれ+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Slowbro|Move 2|Amnesia|rsb|base",
+          "trueDescription": "Slowbro briefly becomes unstoppable, gaining +250 Defense for 4s and restoring 17.5% of Slowbro's Oblivious health (blue HP) every second for 4s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Slowbro|Move 2|Amnesia|rsb|enhanced",
+          "trueDescription": "Also increases Slowbro's Sp. Defense by 125.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヤドラン",
+      "slot": "わざ2",
+      "name": "テレキネシス",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Slowbro|Move 2|Telekinesis|rsb|base",
+          "trueDescription": "Slowbro shoots a beam, causing the first enemy hit to float in the air for 2.3s, restoring 15% of Slowbro's Oblivious health (blue HP) every second for 5s. Slowbro can reactivate the ability to pull the enemy to themself, but otherwise cannot act for the duration.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Slowbro|Move 2|Telekinesis|rsb|enhanced",
+          "trueDescription": "Increases the range and speed of the beam.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ヤドラン",
+      "slot": "わざ2",
+      "name": "テレキネシス+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Slowbro|Move 2|Telekinesis|rsb|base",
+          "trueDescription": "Slowbro shoots a beam, causing the first enemy hit to float in the air for 2.3s, restoring 15% of Slowbro's Oblivious health (blue HP) every second for 5s. Slowbro can reactivate the ability to pull the enemy to themself, but otherwise cannot act for the duration.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Slowbro|Move 2|Telekinesis|rsb|enhanced",
+          "trueDescription": "Increases the range and speed of the beam.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ1",
+      "name": "じたばた",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 1|Flail|rsb|base",
+          "trueDescription": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s.",
+          "notes": "While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 1|Flail|rsb|enhanced",
+          "trueDescription": "Increases the damage dealt by auto attacks used while flailing about.",
+          "notes": "When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ1",
+      "name": "じたばた+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 1|Flail|rsb|base",
+          "trueDescription": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s.",
+          "notes": "While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 1|Flail|rsb|enhanced",
+          "trueDescription": "Increases the damage dealt by auto attacks used while flailing about.",
+          "notes": "When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ2",
+      "name": "ねむる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 2|Rest|rsb|base",
+          "trueDescription": "The user becomes unstoppable and falls asleep on the spot for 3s, restoring 8% max HP every 1s over 3s (maximum 24% max HP). While using this move, opposing Pokémon cannot pass through Snorlax.",
+          "notes": "This move cannot be used within an opposing Miraidon's Electric Terrain.",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ2",
+      "name": "とおせんぼう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 2|Block|rsb|base",
+          "trueDescription": "The user gains a shield for 3.5s; becomes unstoppable, decreases their movement speed by 30% and creates a wall with their arms spread wide in the designated direction for up to 4s. Opposing Pokémon cannot pass through the wall from behind, and those that contact the wall from the front are shoved and stunned for 0.45s; targets cannot be shoved more than once every 1s (maximum 4 times).",
+          "notes": "The user can use this move again to drop the wall early, becoming vulnerable to hindrances and returning to normal movement speed. This move's cooldown begins when the wall ends.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Block|rsb|add1",
+          "trueDescription": "17.4% max HP + 1560",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Block|rsb|enhanced",
+          "trueDescription": "Increases the user's Defense and Sp. Def by 35% while holding up the wall. Shoves opposing Pokémon contacting the wall from the front not more than once every 0.5s (maximum 8 times).",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ2",
+      "name": "とおせんぼう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 2|Block|rsb|base",
+          "trueDescription": "The user gains a shield for 3.5s; becomes unstoppable, decreases their movement speed by 30% and creates a wall with their arms spread wide in the designated direction for up to 4s. Opposing Pokémon cannot pass through the wall from behind, and those that contact the wall from the front are shoved and stunned for 0.45s; targets cannot be shoved more than once every 1s (maximum 4 times).",
+          "notes": "The user can use this move again to drop the wall early, becoming vulnerable to hindrances and returning to normal movement speed. This move's cooldown begins when the wall ends.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Block|rsb|add1",
+          "trueDescription": "17.4% max HP + 1560",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Block|rsb|enhanced",
+          "trueDescription": "Increases the user's Defense and Sp. Def by 35% while holding up the wall. Shoves opposing Pokémon contacting the wall from the front not more than once every 0.5s (maximum 8 times).",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ2",
+      "name": "あくび",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 2|Yawn|rsb|base",
+          "trueDescription": "The user lets out a huge yawn in the designated direction, putting opposing Pokémon in the area of effect to a deep sleep for up to 2.5s.",
+          "notes": "Targets that are hit after their deep sleep is halfway through wake up immediately.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Yawn|rsb|enhanced",
+          "trueDescription": "Decreases the movement speed of opposing Pokémon waking up from a full deep sleep by 35% for 3s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "カビゴン",
+      "slot": "わざ2",
+      "name": "あくび+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Snorlax|Move 2|Yawn|rsb|base",
+          "trueDescription": "The user lets out a huge yawn in the designated direction, putting opposing Pokémon in the area of effect to a deep sleep for up to 2.5s.",
+          "notes": "Targets that are hit after their deep sleep is halfway through wake up immediately.",
+          "info": ""
+        },
+        {
+          "key": "Snorlax|Move 2|Yawn|rsb|enhanced",
+          "trueDescription": "Decreases the movement speed of opposing Pokémon waking up from a full deep sleep by 35% for 3s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ニンフィア",
+      "slot": "わざ2",
+      "name": "めいそう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Sylveon|Move 2|Calm Mind|rsb|base",
+          "trueDescription": "Sylveon quietly focuses their mind and calms their spirit, increasing movement speed by 30%, Sp. Attack by 40% and Sp. Defense by 10%. All buffs last for 3s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Sylveon|Move 2|Calm Mind|rsb|enhanced",
+          "trueDescription": "For up to 3s after using Calm Mind+ Sylveon can block one move (auto attacks will not be blocked), negating the first instance of damage and granting a shield for 3s. Hinderances and status effects will still be applied.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "プクリン",
+      "slot": "わざ2",
+      "name": "まるくなる",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Wigglytuff|Move 2|Defense Curl|rsb|base",
+          "trueDescription": "Wigglytuff gains a 25% max HP shield for 0.5s and rolls forward a short distance, throwing enemies hit in the air for 0.5s. Hitting an obstacle while rolling will change the direction Wigglytuff is moving and reset the cooldown of Pound, Double Slap, or Dazzling Gleam.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "プクリン",
+      "slot": "わざ2",
+      "name": "うたう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Wigglytuff|Move 2|Sing|rsb|base",
+          "trueDescription": "Wigglytuff begins singing, slowing enemies around them by 15% for 2s per 'Note' and increasing Wigglytuff's movement speed by 30% for 2.5s. Enemies that stay inside the song's effect will be put to sleep (when reaching 4 Notes) for 1.5s, and have their Defense and Special Defense reduced by 25% for 1.5s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Wigglytuff|Move 2|Sing|rsb|enhanced",
+          "trueDescription": "Increases the amount of time enemies are asleep to 1.75s and the duration of Defense and Sp. Defense reduction to 1.75s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "プクリン",
+      "slot": "わざ2",
+      "name": "うたう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Wigglytuff|Move 2|Sing|rsb|base",
+          "trueDescription": "Wigglytuff begins singing, slowing enemies around them by 15% for 2s per 'Note' and increasing Wigglytuff's movement speed by 30% for 2.5s. Enemies that stay inside the song's effect will be put to sleep (when reaching 4 Notes) for 1.5s, and have their Defense and Special Defense reduced by 25% for 1.5s.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Wigglytuff|Move 2|Sing|rsb|enhanced",
+          "trueDescription": "Increases the amount of time enemies are asleep to 1.75s and the duration of Defense and Sp. Defense reduction to 1.75s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ザシアン",
+      "slot": "わざ2",
+      "name": "こうそくいどう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Zacian|Move 2|Agility|rsb|base",
+          "trueDescription": "Dashes in the designated direction and increases the user’s movement speed by 30% decaying every 1s by 10% down to a minimum of 7.5% for 3s. Dealing or taking any damage extends this duration by 1 second per attack up to 6 seconds and bypasses the movement speed decay. When this move is boosted with Aeos energy, the user is granted a shield.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Zacian|Move 2|Agility|rsb|add1",
+          "trueDescription": "",
+          "notes": "",
+          "info": "12% Max HP + 50"
+        },
+        {
+          "key": "Zacian|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Further increases movement speed gain to 40% on use.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ザシアン",
+      "slot": "わざ2",
+      "name": "こうそくいどう+",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Zacian|Move 2|Agility|rsb|base",
+          "trueDescription": "Dashes in the designated direction and increases the user’s movement speed by 30% decaying every 1s by 10% down to a minimum of 7.5% for 3s. Dealing or taking any damage extends this duration by 1 second per attack up to 6 seconds and bypasses the movement speed decay. When this move is boosted with Aeos energy, the user is granted a shield.",
+          "notes": "",
+          "info": ""
+        },
+        {
+          "key": "Zacian|Move 2|Agility|rsb|add1",
+          "trueDescription": "",
+          "notes": "",
+          "info": "12% Max HP + 50"
+        },
+        {
+          "key": "Zacian|Move 2|Agility|rsb|enhanced",
+          "trueDescription": "Further increases movement speed gain to 40% on use.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ゼラオラ",
+      "slot": "わざ1",
+      "name": "こうそくいどう",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Zeraora|Move 1|Agility|rsb|base",
+          "trueDescription": "Quickly dashes forward, and increases auto attack speed by 45% for 3s.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "レシラム",
+      "slot": "わざ1",
+      "name": "おいかぜ",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Reshiram|Move 2|Tailwind|rsb|base",
+          "trueDescription": "The user dashes in the designated direction.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ソルガレオ",
+      "slot": "わざ1",
+      "name": "テレポート",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Solgaleo|Move 1|Teleport|rsb|base",
+          "trueDescription": "The user instantly teleports to the designated location, and readies a boosted attack.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    },
+    {
+      "pokemon": "ソルガレオ",
+      "slot": "わざ2",
+      "name": "コスモパワー",
+      "status": "described",
+      "sources": [
+        {
+          "key": "Solgaleo|Move 2|Cosmic Power|rsb|base",
+          "trueDescription": "Increases the user's Def and SpDef by 30% for 5s, and readies a boosted attack.",
+          "notes": "",
+          "info": ""
+        }
+      ]
+    }
+  ]
+}

@@ -36,6 +36,9 @@ function computeStatsDetailed({poke,lv,items=[],dmgStack=0,koStack=0,goalCount=0
   const sd=status?.[poke]; if(!sd)return null;
   const idx=Math.max(0,Math.min(14,Math.trunc(Number(lv)||1)-1));
   const base={HP:sd.hp[idx]||0,攻撃:sd.atk[idx]||0,防御:sd.def[idx]||0,特攻:sd.spatk[idx]||0,特防:sd.spdef[idx]||0,移動速度:sd.ms[idx]||0};
+  for(const [field,label] of Object.entries({crit:'急所率',cdr:'待ち時間',lifesteal:'HP吸収率',attackSpeed:'通常攻撃の速さ',penetration:'貫通'})){
+    if(Array.isArray(sd[field])&&Number.isFinite(sd[field][idx]))base[label]=sd[field][idx];
+  }
   items=labUniqueItems(items);
   const tierFor=g=>g>=20?2:g>=10?1:0;
   const flat={},pct={},active=new Set(activeEffects);
@@ -96,8 +99,8 @@ function labEffectKind(r){
   const dt=r.dmgType||'';
   if(/回復.*与ダメージ割合/.test(dt))return 'rate';
   if(/^(防御|特防|攻撃上昇|攻撃速度|最大HP増加|攻撃 - 増加|HP -)/.test(dt))return 'stat';
+  if(/シールド/.test(dt)&&!/シールドフォ(?:ル|ー)ム/.test(dt))return 'shield';
   if(/回復/.test(dt))return 'heal';
-  if(/^シールド/.test(dt))return 'shield';
   return 'damage';
 }
 function labEffectUnit(r){return r.effectUnit||(labEffectKind(r)==='rate'||/攻撃速度.*%/.test(r.dmgType||'')?'%':'');}
@@ -108,6 +111,10 @@ function labMoveDescription(poke,name){
   const kind=/[+＋]$/.test(name||'')?'upgrades':'moves';
   return LAB_DESCRIPTIONS.pokemon[poke]?.[kind]?.[labDescriptionKey(name)]?.text||'';
 }
+function labBasicDescription(poke){return typeof LAB_DESCRIPTIONS==='undefined'?'':LAB_DESCRIPTIONS.pokemon[poke]?.basics?.['通常攻撃']?.text||'';}
+function labEffectDescriptionKnown(poke,r){
+  return r?.coeff==null&&r.effectStatus==='described'&&!!labMoveDescription(poke,r.name);
+}
 function labPassiveRows(poke){
   const rows=(typeof LAB_SKILLS==='undefined'?[]:LAB_SKILLS[poke]||[]).filter(r=>r.slot==='特性'&&(r.coeff!=null||r.description));
   const descriptions=typeof LAB_DESCRIPTIONS==='undefined'?[]:Object.values(LAB_DESCRIPTIONS.pokemon[poke]?.passives||{});
@@ -116,7 +123,7 @@ function labPassiveRows(poke){
   for(const {name,text} of descriptions){
     const matches=rows.filter(r=>labDescriptionKey(r.name)===labDescriptionKey(name));
     // 個別に整備済みの説明・条件注記をそのまま使う。
-    if(!matches.some(r=>r.description))out.push({slot:'特性',name,dmgType:'効果',upg:'',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:null,description:text,descriptionEntry:true});
+    if(!matches.some(r=>r.description&&!r.formulaText))out.push({slot:'特性',name,dmgType:'効果',upg:'',coeff:null,fixed:null,lvScale:0,hits:1,hitsVar:false,cd:null,description:text,descriptionEntry:true});
     out.push(...matches);matches.forEach(r=>used.add(r));
   }
   out.push(...rows.filter(r=>!used.has(r)));
@@ -126,12 +133,14 @@ function labPassiveRows(poke){
 function labEvaluateComponent(r,atkStats,defStats,lv,{items=[],activeEffects=[],healTarget='self',spdefPen=0}={}){
   if(!r||r.coeff==null)return null;
   const kind=labEffectKind(r),unit=labEffectUnit(r);
-  const special=/特攻|sp_?atk/i.test(r.stat||'攻撃');
+  const special=r.damageClass?r.damageClass==='special':/特攻|sp_?atk/i.test(r.stat||'攻撃');
   const support=kind==='heal'||kind==='shield';
   let rawPerHit=labRawValue(r,atkStats,lv);
-  if(support)rawPerHit=Math.floor(rawPerHit*labSupportMultiplier(items,/回復/.test(r.dmgType||''),healTarget)+1e-9);
-  const actual=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defStats[special?'特防':'防御']||0,0,special&&!support?spdefPen/100:0)*labItemDamageMultiplier(items,activeEffects)+1e-9);
+  if(support)rawPerHit=Math.floor(rawPerHit*labSupportMultiplier(items,kind==='heal',r.supportTarget||healTarget)+1e-9);
+  const defense=r.defenseMode==='ignore'||r.damageClass==='true'?0:defStats[special?'特防':'防御']||0;
+  const actual=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defense,0,special&&!support?spdefPen/100:0)*labItemDamageMultiplier(items,activeEffects)+1e-9);
   const hits=r.hits||1;
+  if(r.calculationStatus==='conditional')return {kind,unit,rawPerHit,actPerHit:null,hits,value:null,pending:r.calculationNotice};
   return {kind,unit,rawPerHit,actPerHit:actual,hits,value:actual*hits};
 }
 function labItemProcValues({items=[],activeEffects=[],stats={},lv=1,targetStats=null,targetHP=null,selfHP=null,hpDamage=null}){

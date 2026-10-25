@@ -13,7 +13,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await context.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('guest_series',JSON.stringify([{id:'ratio-fixture',name:'ラボ検証',created_at:'2026-10-11T00:00:00Z'}]));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);await page.evaluate(()=>showPage('lab'));
   const species=await page.evaluate(()=>Object.keys(LAB_SKILLS).filter(p=>LAB_SKILLS[p].some(r=>r.slot==='特性'&&r.coeff!=null)));
-  eq(species.length,32,'32 species with source numeric passives');
+  eq(species.length,34,'34 species with numeric passives including recovered HP formulas');
   for(const p of species){
     await page.evaluate(p=>{ratioPokemon=p;ratioRender();},p);
     const labels=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').map(r=>ratioLabel(p,r)),p);
@@ -31,7 +31,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   }
   await page.selectOption('#labPokeSelect','ヌメルゴン');await page.selectOption('#labSkill1Sel','りゅうのはどう');
   eq(await page.locator('#labDmgOut1 .lab-damage-box').count(),4,'Goodra two damages and two fixed healing rows');
-  eq((await page.locator('#labDmgOut1').innerText()).includes('自身の減少HPに応じた回復はこの式に含まれません'),true,'partial recovery still identified');
+  eq((await page.locator('#labDmgOut1').innerText()).includes('文章中の追加項はこの数値に含まれません'),true,'partial recovery is identified beside the added HP condition');
   eq((await page.locator('#labDmgOut1').innerText()).includes('94'),true,'fixed healing at Lv9');
   await page.selectOption('#labItem1','おおきなねっこ');eq((await page.locator('#labDmgOut1').innerText()).includes('112'),true,'fixed healing with root floor(94*1.2)');
   await page.selectOption('#labSkill1Sel','りゅうのはどう+');eq(await page.locator('#labDmgOut1 .lab-damage-box').count(),4,'upgrade retains both fixed heal conditions');
@@ -51,7 +51,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq(await page.locator('#dcDmgOutPassive .dc-act').allTextContents(),['280','200','160'],'shield form is not a shield bonus');
   await page.selectOption('#dcAtkItem1','');await page.selectOption('#dcAtkItem2','');
   await page.selectOption('#dcAtkPoke','ヌメルゴン');await page.selectOption('#dcSkill1Sel','りゅうのはどう');
-  eq(await page.locator('#dcDmgOut1 .lab-dmg-row').count(),4,'DC fixed recovery rows');
+  eq(await page.locator('#dcDmgOut1 .lab-dmg-row').count(),6,'DC fixed recovery plus two missing-HP conditions');
   const heals=page.locator('#dcDmgOut1 .lab-dmg-row').filter({hasText:'回復の固定部分'});
   eq(await heals.locator('.dc-act').allTextContents(),['94','94'],'fixed recovery bypasses defense');
   eq(await heals.locator('.dc-arrow').count(),0,'healing no mitigation arrow');

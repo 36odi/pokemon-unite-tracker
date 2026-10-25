@@ -24,7 +24,7 @@ const CalcConditions=(()=>{
       for(const n of e.activeEffects)if(!e.items.some(i=>i.name===n)||(!Object.hasOwn(LAB_TEMP_ITEM_EFFECTS,n)&&!Object.hasOwn(LAB_PROC_ITEM_EFFECTS,n)))errors.push(n+'：発動条件未対応');
     }
     c.skills.forEach((s,i)=>{
-      const rows=(Object.hasOwn(LAB_SKILLS,c.attacker)?LAB_SKILLS[c.attacker]:[]).filter(r=>r.slot==='わざ'+(i+1)&&r.name===s.name&&(r.coeff!=null||r.description));
+      const rows=(Object.hasOwn(LAB_SKILLS,c.attacker)?LAB_SKILLS[c.attacker]:[]).filter(r=>r.slot==='わざ'+(i+1)&&r.name===s.name);
       const upgrades=[...new Set(rows.map(r=>String(r.upg||'')))];
       if(s.name&&(!rows.length||(upgrades.length>1?!upgrades.includes(s.upgrade):s.upgrade!=='')))errors.push(s.name+'：わざ・強化段階未対応');
       if(!s.name&&s.upgrade)errors.push('未選択のわざに強化段階があります。');

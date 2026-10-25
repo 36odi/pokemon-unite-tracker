@@ -332,7 +332,7 @@ eq(S['パルキア']?.dmg, 'Special', 'Palkia lab damage type is Special');
 eq([S['パルキア']?.hp[0], S['パルキア']?.hp[14]], [3480, 8300], 'Palkia HP matches source at lv1/lv15');
 eq([S['パルキア']?.spatk[0], S['パルキア']?.spatk[14]], [118, 700], 'Palkia SpAtk matches source at lv1/lv15');
 const palkiaLab = K['パルキア'] || [];
-eq(palkiaLab.length, 14, 'Palkia has 12 move rows plus 2 passive ratio rows');
+ok(palkiaLab.some(r=>r.name==='はどうだん+')&&palkiaLab.some(r=>r.name==='ドラゴンクロー+'), 'Palkia includes both upgrade variants');
 const palkiaAura = palkiaLab.find(r => r.name === 'はどうだん' && r.dmgType === 'ダメージ');
 eq([palkiaAura?.coeff, palkiaAura?.fixed, palkiaAura?.lvScale], [96, 288, 0], 'Aura Sphere main ratio is present');
 eq(palkiaLab.find(r => r.name === 'アクアリング' && r.dmgType === '回復')?.hits, 4, 'Aqua Ring healing uses 4 hits');

@@ -39,7 +39,7 @@ module.exports=function(SK,source){
     const entry={slot:'特性',name:r.move_ja,dmgType:label,upg:'',stat:r.stat_type==='SpAtk'?'特攻':r.stat_type==='Atk'?'攻撃':r.stat_type,
       coeff:num(r.ratio_percent),fixed:num(r.base_value),lvScale:num(r.level_scaling),hits,hitsVar:false,
       cd:r.cooldown===''?null:num(r.cooldown),sourceKey:key(r),effectKind:kind,...(note?{componentNote:note}:{})};
-    if(existing)rows[rows.indexOf(existing)]=entry;else rows.push(entry);
+    if(existing)Object.assign(existing,entry);else rows.push(entry);
   }
 };
 

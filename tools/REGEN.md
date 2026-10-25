@@ -11,6 +11,23 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 ## パッチ時の手順
 
+2026-10-25以降は、`build_skills_from_unitedb.js` が `build_lab_skills_from_keys.js` を呼び出す。数値やわざ一覧全体の並び順で対応先を推測せず、出典の5項目キーで同期する。同じ式を持つ別条件も保存する。対応表 `data/lab-source-identities.json` にない構造や、正本CSVと原文メタデータの取得時点の不一致では停止する。
+
+原文を更新する場合は、保存した `pokemon.json` と正本CSVを照合し、実際の原文確認日を指定してメタデータも更新する。
+
+```
+node tools/import_lab_reference.js --source <保存したpokemon.json> --checked-at YYYY-MM-DD --apply
+node tools/build_skills_from_unitedb.js --apply
+node tools/build_status_from_unitedb.js --apply
+node tools/build_lab_descriptions.js --apply
+node tests/lab-reference.test.js
+node tests/lab-regeneration.test.js
+```
+
+文章中の式は `data/lab-narrative-formulas.txt` の日本語・計算対象と、`data/lab-reviewed-narratives.json` の原文キー・根拠文を別に保持する。根拠文が変わった場合は停止する。新しい文章成分表を確認した際は `import_lab_narratives.js --source <再照合CSV> --apply` で保存し、数値同期を再実行する。日本語と数式の確認を自動取得だけで済んだものとしない。
+
+説明用の空行75件は `data/lab-described-effects.json` に、対象のわざ・原文キー・確認した原文を保存する。`lab_described_effects.js` が原文と照合して表示用の区分を付ける。数式が空という理由だけで説明済みと判定せず、根拠が変われば再確認を要求する。`node tests/lab-described-effects.test.js` と対応するブラウザー検査で、説明済みの効果と本当の未確認を区別できることを確認する。
+
 後続ヒット・追加成分は `tools/lab_component_supplements.js` が数値同期の最後に補完する。通常攻撃の未収録数値は出典キーを持ち、本文からの倍率展開は `data/lab-component-rules.json` の出典キー・根拠文・倍率を持つ。条件式は `data/lab-conditional-formulas.json` で管理する。再生成時は `node tests/lab-components.test.js` で正本の全1,502数値成分の存在と、倍率・重複のない補完を確認する。詳細は `docs/lab-component-fixes.md`。
 
 特性・わざの日本語要約は数値と独立した `lab_descriptions.js` で管理する。強化後の変更点は `data/lab-move-upgrades.txt` に通常版と分けて記載し、CSVのupgrade/enhanced行と照合する。原文説明を変更した際は原稿を照合し、`node tools/build_lab_descriptions.js --apply` と `node tests/lab-descriptions.test.js` を実行する。出典・表示範囲・検証は `docs/lab-descriptions.md` を参照。
@@ -23,7 +40,7 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 - 今回受領した2冊だけを同期する場合は、構造比較後に `node tools/build_skills_from_unitedb.js --apply` と `node tools/build_status_from_unitedb.js --apply` を実行する。持ち物・メダル用シートの再生成は不要。
 - `lab_source_additions.js` はモルペコ、追加特性、ピクシー・フーパのユナイト成分を出典の5項目キーで対応づける。今回変更された11わざの待ち時間もCSVから読む。`+`に数値のないモルペコの成分は通常値を継承する。
-- モルペコのdamage_type空欄はユーザー指定Physicalで補完する。受領CSV自体は変更しない。
+- モルペコは現行の出典にもPhysicalがある。過去の空欄に対するユーザー指定と、現在の出典値は区別する。受領CSV自体は変更しない。
 - 検証は `node tests/lab-source.test.js` も実行する。2026-09-09時点はレシオ1,759件、ステータス100体。単なる数値一致だけでは成分の対応の正しさを保証できないため、構造変更時は出典キーの追加・削除・順序も比較する。
 - コミット・プッシュは別の操作権限として扱う。
 
@@ -40,8 +57,8 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
    スキル数値を unite-db 準拠に上書きする（`data/unitedb_ratios.csv` がある場合）。
 3. 照合で差分ゼロを確認：
    ```
-   node tools/diff_ratios.js     # レシオ: 完全一致(1701/1701) を確認
-   node tools/diff_stats.js      # ステータス: 97/97体・差分ゼロを確認
+   node tools/diff_ratios.js     # 正本数値・本文の明示式との不一致がないことを確認
+   node tools/build_status_from_unitedb.js # 現行の全数値列との差分ゼロを確認
    node tests/logic.test.js      # 全テスト
    ```
 4. `sw.js` の `CACHE` 版数を +1 してコミット・プッシュ（プッシュ前チェックが検知）。
@@ -50,24 +67,21 @@ unite-db のレシオは成分ごとに正しい lvScale を持つため、こ�
 
 特性の数式は `lab_passive_ratios.js` が既存正本CSVの成分キーから取り込む。空欄を数式0として登録せず、既存9成分を保持し、追加34成分を再生成・更新する。回復や能力上昇の表示・分類は `tests/lab-ratio-effects.test.js` と `tests/lab-ratio-effects.browser.test.js` で確認する。
 
-`tools/build_skills_from_unitedb.js` は **名前や値ではなく「スロット内のわざの並び順 × 成分の並び順 × 強化(+)有無」** で
-ツール行と unite-db 成分を対応づける。これにより：
+各行の `sourceKey` は「出典のポケモン名・スロット・わざ名・オブジェクト名・成分名」の5項目。通常版と＋版の引継ぎもこの根拠を保持する。初回の旧データ移行では、数値が同じ96行の条件を確認し、既存表示名・条件・同名成分の出現番号と出典キーを対応表へ固定した。この出現番号は既存の同名条件を区別するためで、APIの配列全体の位置ではない。
 
-- unite-db 側のわざ名が誤っていても（例: ピクシー・フーパは unite-db の技名が別ポケのもの）影響を受けない
-- パッチで係数が変わっても対応づけは崩れない
-- ユナイトわざは unite-db 側を平坦化（複数わざ→1ストリーム）してツールの1わざ表現に合わせる
-- 例外: メガニウム「はなふぶき+」は unite-db の enhanced 構造が非互換のため現行値を保持
+ユナイト派生は動作名ごとに区別する。＋版のCDは短縮値が明示されたものを計算し、独立値のないものは未確認として表示する。ソルガレオのユーザー指定レベルを維持し、初期わざに残る未確認メタデータから架空の＋版を生成しない。
 
 ### 検証（構造が変わったときに必須）
 
-新ポケ追加やわざ改修で **わざの構成（成分数・並び）が変わった** 場合は、対応づけがずれ得る。
-その時は、まず現行 `lab_data.js` が正しい状態でドライランし、オラクル一致を確認してから運用に戻す：
+新ポケ追加やわざ改修で構造が変わった場合は、原文の識別子と既存の対応表を確認する。ドライランでは保存済みデータの再現性を、成分検査では原文の全数値成分の存在を別に確認する。
 
 ```
-node tools/build_skills_from_unitedb.js      # 「オラクルとの不一致: 0」なら対応づけ健全
+node tools/build_skills_from_unitedb.js      # changed:false、missingSourceComponents:0
+node tests/lab-reference.test.js            # 全11数値列・既知の誤り・条件別成分を検査
+node tests/lab-regeneration.test.js         # 数値変更後の識別・2回再生成・未知構造の停止を検査
 ```
 
-`--apply` は値差分では中止しないが、「対応先なし」が急増（>10）した場合は構造ドリフトとして中止する。
+`--apply` は未対応の出典や数値成分の欠落があれば書き込まない。検査が通っても、全条件の意味やゲーム内実測が検証済みになったとは扱わない。
 
 ## 各ツール
 

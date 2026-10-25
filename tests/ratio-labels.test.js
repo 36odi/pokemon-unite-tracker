@@ -21,7 +21,7 @@ const pick=(p,n,d)=>K[p].filter(r=>r.name===n&&(!d||r.dmgType===d));
 eq(pick('カメックス','しおふき').map(r=>label('カメックス',r)),['ダメージ（通常時）','ダメージ（こうそくスピン中）'],'same formula different modes');
 eq(pick('ヌメルゴン','りゅうのはどう','ダメージ').map(r=>label('ヌメルゴン',r)),['ダメージ（中心）','ダメージ（周囲）'],'center/side damage');
 eq(pick('ヌメルゴン','りゅうのはどう+','回復').map(r=>label('ヌメルゴン',r)),['回復（中心に命中・ぬめぬめなし）','回復（中心に命中・ぬめぬめあり）'],'upgrade healing conditions');
-eq(pick('マッシブーン','ウルトラバルクマスキュラー').map(r=>label('マッシブーン',r)),['ダメージ（最初の範囲攻撃）','ダメージ（HP割合が最も低い相手への追撃）'],'identical numeric rows kept');
+eq(pick('マッシブーン','ウルトラバルクマスキュラー').filter(r=>!r.narrativeKey).map(r=>label('マッシブーン',r)),['ダメージ（最初の範囲攻撃）','ダメージ（HP割合が最も低い相手への追撃）'],'identical numeric rows kept');
 eq(pick('バシャーモ','爆炎旋風拳').map(r=>name('バシャーモ',r)),['爆炎旋風拳','爆炎旋風脚'],'separate names');
 eq(pick('ウーラオス','漆黒の終拳').map(r=>name('ウーラオス',r)),['漆黒の終拳','漆黒の終拳','漆黒の終拳','蒼流の舞踏','蒼流の舞踏','蒼流の舞踏'],'style names preserve all components');
 eq(label('ピカチュウ',pick('ピカチュウ','エレキボール')[0]),'範囲ダメージ','remove incorrect copied six-hit annotation');

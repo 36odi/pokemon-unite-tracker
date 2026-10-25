@@ -47,7 +47,7 @@ const EN2JP={
 
 const rows=parseCSV(fs.readFileSync(path.join(ROOT,'data','unitedb_stats.csv'),'utf8'));
 const head=rows[0]; const col={}; head.forEach((h,i)=>col[h]=i);
-const required=['pokemon_name','level','hp','attack','defense','sp_attack','sp_defense','move_speed','role','damage_type'];
+const required=['pokemon_name','level','hp','attack','defense','sp_attack','sp_defense','move_speed','crit_percent','cdr_percent','lifesteal_percent','attack_speed_percent','penetration','range','role','damage_type'];
 const missingHeaders=required.filter(h=>col[h]==null);
 if(missingHeaders.length){ console.error('ABORT: ステータスCSVの必須列不足: '+missingHeaders.join(',')); process.exit(1); }
 
@@ -69,10 +69,12 @@ for(const [en,sourceRows] of Object.entries(grouped)){
   const jp=EN2JP[en], ordered=[...Array(15)].map((_,i)=>byLevel.get(i+1));
   const values=key=>ordered.map(row=>num(row[col[key]]));
   const entry={
-    // モルペコの出典空欄は2026-09-09のユーザー指定「物理」で補完。元CSVは保持。
+    // 出典が空欄の場合だけ、モルペコのユーザー指定「物理」を維持する。
     role:ordered[0][col.role], dmg:ordered[0][col.damage_type]||(en==='Morpeko'?'Physical':''),
     hp:values('hp'), atk:values('attack'), def:values('defense'),
-    spatk:values('sp_attack'), spdef:values('sp_defense'), ms:values('move_speed')
+    spatk:values('sp_attack'), spdef:values('sp_defense'), ms:values('move_speed'),
+    crit:values('crit_percent'),cdr:values('cdr_percent'),lifesteal:values('lifesteal_percent'),
+    attackSpeed:values('attack_speed_percent'),penetration:values('penetration'),range:ordered[0][col.range]
   };
   if(Object.values(entry).some(v=>Array.isArray(v)&&v.some(n=>n==null))){
     console.error(`ABORT: ${en} に数値欠損`); process.exit(1);
