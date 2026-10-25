@@ -86,10 +86,9 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   const dmg=LAB_STATUS[poke]?.dmg;
   const range=LAB_STATUS[poke]?.range==='Melee'?'近接':LAB_STATUS[poke]?.range==='Ranged'?'遠隔':'';
   const reference=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.reference;
-  const sourceDate=reference?.sourceUpdatedAt?new Date(reference.sourceUpdatedAt):null;
-  const sourceDateLabel=sourceDate&&!Number.isNaN(sourceDate.getTime())?sourceDate.toLocaleDateString('ja-JP',{timeZone:'UTC'}):reference?.sourceUpdatedAt||'未提供';
+  const updatedAt=typeof LAB_DESCRIPTIONS==='undefined'?null:[reference?.checkedAt,LAB_DESCRIPTIONS.meta.checkedAt,LAB_DESCRIPTIONS.meta.detailsCheckedAt].filter(Boolean).sort().at(-1);
   let html=`<div class="card"><h2>${iconImg(poke,'',36)} ${escapeHtml(poke)}</h2><div>${escapeHtml(role)} ${dmg==='Special'?'特攻':dmg==='Physical'?'攻撃':''}${range?' ／ '+range:''}</div>
-    ${reference?`<p class="ratio-meta">原文確認：${escapeHtml(reference.checkedAt)} ／ 出典の更新日：${escapeHtml(sourceDateLabel)}<br>詳細仕様の確認：${escapeHtml(LAB_DESCRIPTIONS.meta.detailsCheckedAt||reference.checkedAt)}<br>取得日と出典の更新日は別です。全項目の対象ゲーム版は未確認です。</p>`:''}
+    ${updatedAt?`<p class="ratio-meta">最終更新日：${escapeHtml(updatedAt)}</p>`:''}
     ${labCombatNotesHtml(poke)}
     <nav class="ratio-jumps" aria-label="わざの種類">${ratioSlots.map((s,i)=>`<button type="button" onclick="document.getElementById('ratioSlot${i}').scrollIntoView()">${s}</button>`).join('')}</nav></div>`;
   ratioSlots.forEach((slot,i)=>{
