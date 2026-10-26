@@ -36,6 +36,95 @@
   .pa-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0;}.pa-metric{padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);}.pa-metric h3{font-size:var(--fs-sm);}.pa-metric strong{font-size:var(--fs-2xl);color:var(--accent);display:block;margin:8px 0;}.pa-metric p{font-size:var(--fs-xs);line-height:1.8;}.pa-difference{font-size:var(--fs-md);font-weight:600;margin:14px 0;}
   .lr-tabs{flex-wrap:wrap;}.lr-tabs .lr-button{min-width:80px;}.pa-controls select{max-width:100%;}.pa-controls a{color:var(--accent);}
   @media(max-width:480px){.pa-filters{grid-template-columns:1fr;}.pa-metrics{gap:8px;}.pa-metric{padding:12px;}.lc-dialog{padding:18px;}.pa-metric strong{font-size:var(--fs-xl);}}
+  /* 計算結果の説明。短い要点と結果を先に、条件の全文は開いたときに読む。 */
+  #labSkillCard .lab-skill-grid{grid-template-columns:minmax(0,1fr);gap:var(--sp-5);}
+  #labSkillCard .lab-skill-col{gap:var(--sp-2);}
+  #labSkillCard .lab-skill-col .lab-select{font-size:var(--fs-sm);min-height:44px;}
+  #labSkillCard .lab-skill-slot-lbl{font-size:var(--fs-lg);font-weight:700;text-align:left;color:var(--text);background:transparent;padding:0;margin-bottom:var(--sp-3);}
+  #labSkillCard>div[id$=Section]{margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border);}
+  .lab-reading-details{margin:var(--sp-2) 0 var(--sp-3);border-bottom:1px solid var(--border);}
+  .lab-reading-details>summary{cursor:pointer;min-height:44px;padding:var(--sp-3) 0;line-height:1.7;}
+  .lab-reading-details>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--radius-sm);}
+  .lab-reading-label{font-size:var(--fs-sm);font-weight:600;}
+  .lab-reading-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:var(--fs-md);line-height:1.8;color:var(--text2);margin-top:var(--sp-2);}
+  .lab-reading-details[open]>summary .lab-reading-preview{display:none;}
+  .lab-reading-body{padding:var(--sp-2) 0 var(--sp-4);}
+  .lab-reading-body .lab-effect-description{font-size:var(--fs-lg);line-height:1.85;}
+  .lab-reading-body .lab-effect-description strong{font-size:var(--fs-md);}
+  .lab-reading-body .lab-effect-description p{margin-top:var(--sp-4);}
+  .lab-reading-body>.lab-effect-description:first-child{margin-top:0;}
+  .lab-reading-body .ratio-prose-sentence{display:block;margin-top:var(--sp-2);}
+  .lab-reading-body .ratio-prose-sentence:first-child{margin-top:0;}
+  .lab-reading-passive+.lab-reading-passive,.lab-reading-unite+.lab-reading-unite{margin-top:var(--sp-5);}
+  .lab-reading-passive h4,.lab-reading-unite h4{font-size:var(--fs-md);font-weight:700;line-height:1.8;margin-top:var(--sp-3);}
+  #labSkillCard .lab-damage-box{text-align:left;border-color:var(--border);background:var(--bg3);padding:var(--sp-3);margin-top:var(--sp-3);}
+  #labSkillCard .lab-damage-sub{font-size:var(--fs-sm);line-height:1.8;overflow-wrap:anywhere;}
+  #labSkillCard .lab-damage-label{font-size:var(--fs-md);line-height:1.8;color:var(--text);font-weight:600;margin-bottom:var(--sp-2);}
+  .lab-reading-formula{margin-top:var(--sp-2);border-top:1px solid var(--border);}
+  .lab-reading-formula>summary{font-size:var(--fs-sm);color:var(--text2);min-height:44px;align-content:center;cursor:pointer;}
+  .lab-reading-formula>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .lab-calculation-values{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);padding:0 var(--sp-3);margin-top:var(--sp-3);}
+  #labSkillCard .lab-calculation-values>.lab-damage-box{border:0;border-radius:0;background:transparent;margin:0;padding:var(--sp-3) 0;}
+  #labSkillCard .lab-calculation-values>.lab-damage-box+.lab-damage-box{border-top:1px solid var(--border);}
+  .lab-calculation-values>.lab-reading-formula{margin-top:0;}
+  .lab-calculation-values .lab-damage-sub{padding:var(--sp-2) 0;}
+  .lab-calculation-warning{font-size:var(--fs-sm);line-height:1.8;color:var(--text2);margin:var(--sp-3) 0;}
+  #labSkillCard .ratio-meta{font-size:var(--fs-sm);line-height:1.8;}
+
+  /* 通常攻撃の速さ：補正値と段階の境界を同じ横軸で示す。 */
+  #labAttackSpeed[hidden]{display:none;}
+  .lab-as{--as-mark:var(--text);font-size:var(--fs-sm);line-height:1.8;scroll-margin-top:80px;}
+  .lab-as-heading{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);flex-wrap:wrap;}
+  .lab-as h2{font-size:var(--fs-lg);font-weight:700;}
+  .lab-as-heading>span{font-size:var(--fs-xs);color:var(--text2);}
+  .lab-as-intro,.lab-as-context{color:var(--text2);margin-top:var(--sp-2);}
+  .lab-as-scope-note{color:var(--text2);font-size:var(--fs-sm);line-height:1.8;margin-top:var(--sp-2);}
+  .lab-as-selected{font-size:var(--fs-sm);line-height:1.8;margin-top:var(--sp-2);}
+  .lab-as-options{border-top:1px solid var(--border);margin-top:var(--sp-3);}
+  .lab-as-options>summary{cursor:pointer;min-height:44px;align-content:center;font-size:var(--fs-sm);}
+  .lab-as-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-2);padding:var(--sp-2) 0 var(--sp-3);}
+  .lab-as-controls label{font-size:var(--fs-sm);color:var(--text2);}
+  .lab-as-controls .lab-select{width:100%;min-width:0;min-height:44px;margin:0;font-size:var(--fs-lg);}
+  .lab-as-controls p{font-size:var(--fs-xs);line-height:1.8;color:var(--text2);}
+  .lab-as-fixed-chart{margin:var(--sp-5) 0;text-align:center;}
+  .lab-as-fixed-chart>div{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-4);font-size:var(--fs-lg);font-weight:600;}
+  .lab-as-fixed-chart figcaption{font-size:var(--fs-sm);color:var(--text2);margin-top:var(--sp-2);}
+  .lab-as-direction{display:flex;justify-content:space-between;color:var(--text2);margin-top:var(--sp-5);font-size:var(--fs-xs);}
+  .lab-as-chart{position:relative;height:228px;margin-top:var(--sp-2);}
+  .lab-as-track{position:absolute;top:58px;left:0;right:0;height:44px;background:var(--bg3);border-radius:var(--radius-sm);overflow:hidden;}
+  .lab-as-fill{height:100%;background:var(--accent);}
+  .lab-as-tick{position:absolute;top:52px;height:56px;background:var(--as-mark);}
+  .lab-as-tick.lab-as-next{height:128px;background:transparent;border-left:2px dashed var(--as-mark);}
+  .lab-as-tick.lab-as-band{min-width:3px;background:var(--as-mark);border-left:0;}
+  .lab-as-current{position:absolute;top:0;transform:translateX(-50%);text-align:center;white-space:nowrap;}
+  .lab-as-current strong{display:block;font-size:var(--fs-lg);line-height:1.4;}
+  .lab-as-current span{font-size:var(--fs-xs);color:var(--text2);}
+  .lab-as-pointer{position:absolute;top:47px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--as-mark);}
+  .lab-as-stage{position:absolute;top:117px;text-align:center;font-size:var(--fs-xs);white-space:nowrap;color:var(--text2);}
+  .lab-as-stage.is-current{font-size:var(--fs-md);font-weight:700;color:var(--text);}
+  .lab-as-stage small{display:block;font-size:var(--fs-xs);font-weight:500;}
+  .lab-as-next-label{position:absolute;top:185px;transform:translateX(-50%);width:100px;text-align:center;font-size:var(--fs-xs);}
+  .lab-as-legend{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4);color:var(--text2);font-size:var(--fs-xs);}
+  .lab-as-legend>span{display:inline-flex;align-items:center;gap:var(--sp-2);}
+  .lab-as-swatch{width:13px;height:13px;background:var(--accent);border-radius:2px;}
+  .lab-as-legend-tick{height:16px;border-left:2px solid var(--as-mark);}
+  .lab-as-range{font-size:var(--fs-xs);color:var(--text2);margin-top:var(--sp-3);}
+  .lab-as-summary{font-size:var(--fs-lg);font-weight:600;margin-top:var(--sp-4);}
+  .lab-as-distance{display:inline-block;}
+  .lab-as-numbers{display:flex;flex-wrap:wrap;gap:var(--sp-2);color:var(--text2);margin-top:var(--sp-2);}
+  .lab-as-numbers strong{color:var(--text);}
+  .lab-as details{border-top:1px solid var(--border);margin-top:var(--sp-4);padding-top:var(--sp-2);}
+  .lab-as summary{cursor:pointer;min-height:44px;align-content:center;}
+  .lab-as summary>span{float:right;margin-left:var(--sp-2);}
+  .lab-as summary:focus-visible,.lab-as-retry:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  .lab-as dl>div{display:flex;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-1) 0;}
+  .lab-as dt{color:var(--text2);}
+  .lab-as dd{flex:none;}
+  .lab-as details p{color:var(--text2);margin-top:var(--sp-2);}
+  .lab-as a{color:var(--accent);text-underline-offset:3px;}
+  .lab-as-retry{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-2) var(--sp-3);min-height:44px;margin-top:var(--sp-3);cursor:pointer;font:inherit;}
+  @media(max-width:390px){.lab-as dl>div{flex-wrap:wrap;}.lab-as-next-label{width:90px;}}
+
   :root {
     color-scheme:dark;
     /* ── デザイントークン：文字サイズ（7段階）・余白（4px単位）・書体 ── */

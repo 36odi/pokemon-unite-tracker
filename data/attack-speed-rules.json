@@ -1,0 +1,24 @@
+{
+  "version": "2026-10-27.1",
+  "checkedAt": "2026-10-27",
+  "gameVersion": null,
+  "fps": 60,
+  "source": "https://docs.google.com/document/d/e/2PACX-1vRM5xkImerqzZoaJhJfMY4dAY3TcsXwtynlvMZhGxXDPVUMMsNNwbhDKiCq1XigZ8zMlE16jierGbnE/pub",
+  "calculator": "https://docs.google.com/spreadsheets/d/1I7EYjpTIwd3WZH7CTBmhgsZ4NzW1ZZgVoQold3m-oBc/edit",
+  "scope": "強化攻撃を除く通常攻撃の連続間隔。状態欄で選んだ形態・固有の速度強化を反映する。未選択のわざ・特性、相手の低下効果、移動時間、強化攻撃の周期は含めない。現行ゲームでの実測は未実施。",
+  "boundaryPolicy": "一点の境界は公開計算表B23:B25に合わせて厳密な大なり。原資料の幅は両端を含めて未確定とする。最大の確認範囲を上限扱いしない。",
+  "stages": [
+    {"frames":60,"min":0,"max":0,"inclusive":true},
+    {"frames":56,"min":8.10,"max":8.11},
+    {"frames":52,"min":16.42,"max":16.42},
+    {"frames":48,"min":26.11,"max":26.11},
+    {"frames":44,"min":37.56,"max":37.56},
+    {"frames":40,"min":51.29,"max":51.29},
+    {"frames":36,"min":68.05,"max":68.08},
+    {"frames":32,"min":89.04,"max":89.04},
+    {"frames":28,"min":115.99,"max":115.99},
+    {"frames":24,"min":151.81,"max":151.91},
+    {"frames":20,"min":202.04,"max":202.50},
+    {"frames":16,"min":272.51,"max":285.00}
+  ]
+}

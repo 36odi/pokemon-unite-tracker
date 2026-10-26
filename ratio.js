@@ -69,9 +69,10 @@ function labDetailsHtml(poke,name,kind='moves',readable=false){
   const rows=labDescriptionDetails(poke,name,kind);if(!rows.length)return '';
   return `<div class="lab-effect-description">${rows.map(r=>`<p><strong>${escapeHtml(r.label)}</strong><br>${readable?ratioProseHtml(r.text):escapeHtml(r.text)}</p>`).join('')}</div>`;
 }
-function labCombatNotesHtml(poke){
+function labCombatNotesHtml(poke,fold=true){
   const c=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.combat;if(!c)return '';
-  return `<details class="lab-effect-description lab-combat-notes"><summary>急所・HP吸収などの仕様</summary><p>${escapeHtml(c.critical)}</p>${c.additional.map(text=>`<p>${escapeHtml(text)}</p>`).join('')}<p class="ratio-meta">急所の発生や、特性・わざによる能力変化は計算へ自動適用しません。各成分の式・注記と合わせて確認してください。</p></details>`;
+  const body=`<p>${escapeHtml(c.critical)}</p>${c.additional.map(text=>`<p>${escapeHtml(text)}</p>`).join('')}<p class="ratio-meta">急所の発生や、特性・わざによる能力変化は計算へ自動適用しません。各成分の式・注記と合わせて確認してください。</p>`;
+  return fold?`<details class="lab-effect-description lab-combat-notes"><summary>急所・HP吸収などの仕様</summary>${body}</details>`:`<div class="lab-effect-description"><strong>急所・HP吸収などの仕様</strong>${body}</div>`;
 }
 function ratioSameFormulas(poke,rows,baseRows){
   // 未収録・部分式は「同じ」と断定しない。条件、回数、説明も含めて比較する。

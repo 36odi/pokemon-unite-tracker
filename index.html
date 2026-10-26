@@ -24,16 +24,16 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=116">\x3c/script>');</script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=116" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=116" defer></script>
-<script id="labDataScript" src="lab_data.js?v=116" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=116"></script>
-<script src="js/utils.js?v=116"></script>
-<script src="js/lab-core.js?v=116"></script>
-<script src="js/medal-preset-store.js?v=116"></script>
-<script src="js/usage-analytics.js?v=116"></script>
-<link rel="stylesheet" href="styles.css?v=116" />
+<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=120">\x3c/script>');</script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=120" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=120" defer></script>
+<script id="labDataScript" src="lab_data.js?v=120" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=120"></script>
+<script src="js/utils.js?v=120"></script>
+<script src="js/lab-core.js?v=120"></script>
+<script src="js/medal-preset-store.js?v=120"></script>
+<script src="js/usage-analytics.js?v=120"></script>
+<link rel="stylesheet" href="styles.css?v=120" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -976,6 +976,8 @@ SOFTWARE.
         <button class="btn-save u-w-100pct u-mt-8px" onclick="calcLabStats(true)">計算する</button>
       </div>
 
+      <section class="card lab-as" id="labAttackSpeed" aria-label="通常攻撃の速さ" hidden></section>
+
       <!-- 結果カード -->
       <div class="card" id="labResultCard" style="display:none;">
         <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-4px">基本ステータス</div>
@@ -1000,7 +1002,7 @@ SOFTWARE.
 
       <!-- スキルダメージカード -->
       <div class="card" id="labSkillCard" style="display:none;">
-        <div class="card-title u-mb-10px">スキルダメージ比較</div>
+        <div class="card-title u-mb-10px">わざと効果の計算結果</div>
         <div class="lab-skill-grid">
           <!-- わざ1 -->
           <div class="lab-skill-col">
@@ -2249,6 +2251,20 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.84',date:'2026-10-27',items:[
+    '通常攻撃の速さを全103体で個別整理しました。98体の資料参考モデル、3体の固定動作、個別適用が未確認の2体を区別します。',
+    'フォルムやわざの速度強化を選べる状態欄を追加しました。専用の攻撃動作や資料の不一致は、推測で間隔へ換算しません。',
+  ]},
+  {version:'v5.83',date:'2026-10-26',items:[
+    '通常攻撃速度の参考表示にカイリューを追加しました。未対応ポケモンの案内も、待っても変わらないことが分かる表現へ修正しました。',
+  ]},
+  {version:'v5.82',date:'2026-10-26',items:[
+    'ファイルを直接開いたときに通常攻撃速度の資料を読み込めない問題を修正しました。',
+    '計算画面のわざ説明を、短い要点と開閉できる効果・条件に整理しました。',
+  ]},
+  {version:'v5.81',date:'2026-10-26',items:[
+    'ステータス計算に通常攻撃速度の横棒を追加。現在の補正と段階の境界を確認できます（初版は12体の資料参考値。その他は適用確認待ち）。',
+  ]},
   {version:'v5.80',date:'2026-10-26',items:[
     'メダルセット作成の合計欄で、わざの待ち時間短縮が逆向きに表示される問題を修正しました。',
     'ステータス計算のメダル選択欄の見出しと、クリック・読み上げ時の結び付きを修正しました。',
@@ -6436,6 +6452,7 @@ let labSnapshotA = null;
 
 function labOnPokeChange(){
   document.getElementById('labResultCard').style.display='none';
+  LabAttackSpeed.render(null);
   labCalcResult=null;
   labSnapshotA=null;
   const sc=document.getElementById('labSnapClear');
@@ -6655,7 +6672,7 @@ const LAB_STATS_DEPS={
 function calcLabStats(scroll=false){
   const poke=document.getElementById('labPokeSelect')?.value;
   const lv=parseInt(document.getElementById('labLvSlider')?.value||'9');
-  if(!poke){ if(scroll) alert('ポケモンを選択してください'); return; }
+  if(!poke){ LabAttackSpeed.render(null); if(scroll) alert('ポケモンを選択してください'); return; }
 
   labRefreshItemEffects('lab');
   const medalValue=document.getElementById('labMedalSetSel')?.value||'';
@@ -6666,6 +6683,7 @@ function calcLabStats(scroll=false){
     medalPresetIdx:medalValue===''?null:Number(medalValue),activeEffects:labReadEffects('lab')},LAB_STATS_DEPS);
   if(!computed)return;
   const {base:baseStats,itemBonus,medalBonus,totals}=computed;
+  LabAttackSpeed.render({poke,lv,computed,activeEffects:labReadEffects('lab')});
 
   // --- 表示 ---
   labRenderStatGrid(document.getElementById('labBaseStats'),baseStats,'var(--text)');
@@ -6686,7 +6704,7 @@ function calcLabStats(scroll=false){
   if(labSkillPoke !== poke){ labSkillPoke=poke; labUpdateSkillSection(poke); }
   else { calcLabDamageAll(); } // 同じポケモン→ダメージだけ再計算
 
-  if(scroll) setTimeout(()=>document.getElementById('labResultCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  if(scroll) setTimeout(()=>document.getElementById('labAttackSpeed').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}),50);
   usageResult('labCalcPanel',JSON.stringify([poke,lv,totals]));
 }
 
@@ -6836,8 +6854,8 @@ function _renderDmgRows(outId, rows){
   if(!rows.length){ out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">データなし</div>'; return; }
   const poke=document.getElementById('labPokeSelect')?.value;
   const selectedName=/^labDmgOut[12]$/.test(outId)?document.getElementById('labSkill'+outId.slice(-1)+'Sel')?.value:rows[0]?.name;
-  const intro=outId==='labDmgOutNormal'?`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+labDetailsHtml(poke,'通常攻撃','basics')+labCombatNotesHtml(poke):labMoveIntroHtml(poke,selectedName,rows);
-  out.innerHTML=outId==='labDmgOutUnite'?labUniteEffectsHtml(poke,rows,r=>_calcDmgHtml(r)):intro+rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join('');
+  const intro=outId==='labDmgOutNormal'?labBasicIntroHtml(poke):labMoveIntroHtml(poke,selectedName,rows);
+  labSetCalculationHtml(out,outId==='labDmgOutUnite'?labUniteEffectsHtml(poke,rows,r=>_calcDmgHtml(r)):intro+rows.map(r=>{ const h=_calcDmgHtml(r); return h||''; }).filter(Boolean).join(''));
   if(!out.innerHTML) out.innerHTML='<div class="u-fs-fs-xs u-c-text3" style="padding:4px;">計算不可</div>';
   else usageResult('labCalcPanel',out.textContent,outId);
 }
@@ -6883,19 +6901,22 @@ function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   let formula=parts.join(' + ');
   if(appliedMult!==1)formula=`(${formula}) × ${appliedMult.toFixed(2)} (${isHealShield?hsItems.join(', '):'エナジーアンプ'})`;
   const label = labEffectLabelHtml(poke,r);
+  const formulaDetails=`<details class="lab-reading-formula" data-reading-key="${escapeHtml(JSON.stringify([poke,r.name,r.upg,r.dmgType,r.sourceKey||'']))}"><summary>計算式</summary><div class="lab-damage-sub">${label}（${formula}）</div></details>`;
   // ヒット数が複数の場合は合計も表示
   if(hits > 1){
     const total = perHit * hits;
     const hitsNote = hitsVar ? `最大${hits}回` : `× ${hits}ヒット`;
     return `<div class="lab-damage-box">
+      <div class="lab-damage-label">${label}</div>
       <div class="lab-damage-num">${perHit.toLocaleString()}${unit} <span class="u-fs-fs-sm u-c-text2">${hitsNote}</span></div>
       <div class="lab-damage-num u-mt-2px" style="font-size:var(--fs-xl);color:var(--orange);">合計 ${total.toLocaleString()}${unit}</div>
-      <div class="lab-damage-sub">${label}（${formula}）</div>
+      ${formulaDetails}
     </div>`;
   }
   return `<div class="lab-damage-box">
+    <div class="lab-damage-label">${label}</div>
     <div class="lab-damage-num">${perHit.toLocaleString()}${unit}</div>
-    <div class="lab-damage-sub">${label}（${formula}）</div>
+    ${formulaDetails}
   </div>`;
 }
 
@@ -7002,8 +7023,48 @@ function labRefreshCalcMedalSelect(){
 // ================================================================
 
 // ---- DC: 1スキル行HTML（生ダメ＋実ダメ） ----
+function labSetCalculationHtml(out,html){
+  const opened=new Set([...out.querySelectorAll('details[data-reading-key][open]')].map(d=>d.dataset.readingKey));
+  out.innerHTML=html;
+  // 同じわざの数値は一つの一覧にする。全行に同じ注意がある場合だけ共通表示へ移す。
+  for(const parent of [out,...out.querySelectorAll('.lab-reading-unite')]){
+    const boxes=[...parent.children].filter(e=>e.classList.contains('lab-damage-box'));
+    const notes=boxes.map(box=>box.querySelector('.lab-damage-label>.u-c-text3'));
+    if(boxes.length>1&&notes.every(Boolean)&&new Set(notes.map(n=>n.textContent)).size===1){
+      const warning=document.createElement('p');warning.className='lab-calculation-warning';warning.textContent=notes[0].textContent;
+      notes.forEach(n=>n.remove());boxes[0].before(warning);
+    }
+    for(const first of boxes){
+      if(first.parentElement!==parent)continue;
+      const run=[];let next=first;while(next?.classList.contains('lab-damage-box')){run.push(next);next=next.nextElementSibling;}
+      if(run.length<2)continue;
+      const group=document.createElement('div');group.className='lab-calculation-values';first.before(group);
+      const formula=document.createElement('details');formula.className='lab-reading-formula';
+      const summary=document.createElement('summary');summary.textContent='計算式';formula.append(summary);
+      for(const box of run){
+        const detail=box.querySelector('.lab-reading-formula');
+        if(detail){
+          if(!formula.dataset.readingKey)formula.dataset.readingKey='group/'+detail.dataset.readingKey;
+          formula.append(...detail.querySelectorAll('.lab-damage-sub'));detail.remove();
+        }
+        group.append(box);
+      }
+      group.append(formula);
+    }
+  }
+  for(const detail of out.querySelectorAll('details[data-reading-key]'))detail.open=opened.has(detail.dataset.readingKey);
+}
+function labProseDetailsHtml(text,extra='',title='効果・条件',name=''){
+  if(!text&&!extra)return '';
+  const preview=String(text||'').split(/(?<=。)/)[0]||'';
+  return `<details class="lab-reading-details" data-reading-key="${escapeHtml(name+'/'+title)}"><summary aria-label="${escapeHtml((name?name+'の':'')+title)}"><span class="lab-reading-label">${escapeHtml(title)}</span>${preview?`<span class="lab-reading-preview" aria-hidden="true">${escapeHtml(preview)}</span>`:''}</summary><div class="lab-reading-body">${text?`<p class="lab-effect-description">${ratioProseHtml(text)}</p>`:''}${extra}</div></details>`;
+}
+function labBasicIntroHtml(poke){
+  return labProseDetailsHtml(labBasicDescription(poke),labDetailsHtml(poke,'通常攻撃','basics',true)+labCombatNotesHtml(poke,false),'効果・条件',poke+'の通常攻撃');
+}
 function labPassiveDescriptionHtml(r,poke){
   const title=r.descriptionEntry?r.name:r.formulaText?r.dmgType:'';
+  if(!r.formulaText)return `<section class="lab-reading-passive">${title?`<h4>${escapeHtml(title)}</h4>`:''}${labProseDetailsHtml(r.description,r.slot==='特性'?labDetailsHtml(poke,r.name,'passives',true):'','効果・条件',poke+'/'+r.name)}${r.calculationNotice?`<p class="ratio-meta">${escapeHtml(r.calculationNotice)}</p>`:''}</section>`;
   return `<div class="lab-dmg-row lab-effect-description">${title?`<strong>${escapeHtml(title)}</strong>`:''}<div>${escapeHtml(r.description)}</div>${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}${r.slot==='特性'&&!r.formulaText?labDetailsHtml(poke,r.name,'passives'):''}</div>`;
 }
 function labUnknownEffectHtml(r){return `<div class="lab-dmg-row lab-effect-description"><span>${escapeHtml(r.name||r.slot)}：この成分の計算式は未確認です。直接ダメージがないことを示すものではありません。</span></div>`;}
@@ -7012,16 +7073,16 @@ function labMoveIntroHtml(poke,name,rows){
   const text=labMoveDescription(poke,name),unknown=rows.some(r=>r.cdStatus==='unconfirmed'),cds=[...new Set(rows.map(r=>r.cd).filter(v=>v!=null))];
   const normal=rows.find(r=>r.normalCD!=null)?.normalCD;
   const timing=unknown?'＋版の待ち時間：未確認'+(normal!=null?'（通常版は'+normal+'秒）':''):cds.length===1?'待ち時間：'+cds[0]+'秒':'';
-  return (text?`<p class="lab-effect-description">${/[+＋]$/.test(name||'')?'＋版の変更点：':''}${escapeHtml(text)}</p>`:'')+labDetailsHtml(poke,name)+(timing?`<p class="ratio-meta">${escapeHtml(timing)}</p>`:'');
+  return labProseDetailsHtml(text,labDetailsHtml(poke,name,'moves',true),/[+＋]$/.test(name||'')?'強化後の効果・条件':'効果・条件',poke+'/'+name)+(timing?`<p class="ratio-meta">${escapeHtml(timing)}</p>`:'');
 }
 function labUniteEffectsHtml(poke,rows,renderRow){
-  return labUniteInfoHtml(poke)+[...new Set(rows.map(r=>r.name))].map(name=>{
+  return [...new Set(rows.map(r=>r.name))].map(name=>{
     const group=rows.filter(r=>r.name===name);
-    return `<div class="lab-effect-description"><strong>${escapeHtml(name)}</strong></div>`+labMoveIntroHtml(poke,name,group)+group.map(renderRow).filter(Boolean).join('');
-  }).join('');
+    return `<section class="lab-reading-unite"><h4>${escapeHtml(name)}</h4>`+labMoveIntroHtml(poke,name,group)+group.map(renderRow).filter(Boolean).join('')+'</section>';
+  }).join('')+labProseDetailsHtml('',labUniteInfoHtml(poke),'ユナイトわざ使用後の強化',poke);
 }
 function labPendingEffectHtml(r,poke){
-  return `<div class="lab-dmg-row lab-effect-description"><strong>${escapeHtml(ratioLabel(poke,r))}</strong><div class="ratio-formula">${escapeHtml(ratioFormula(r))}</div><div class="u-c-text2">${escapeHtml(r.calculationNotice||'発動条件が必要なため、自動計算しません。')}</div></div>`;
+  return `<div class="lab-dmg-row lab-effect-description"><strong>${escapeHtml(ratioLabel(poke,r))}</strong>${labProseDetailsHtml('',`<div class="ratio-formula">${escapeHtml(ratioFormula(r))}</div>`,'条件と式',poke+'/'+r.name+'/'+r.dmgType)}<div class="u-c-text2">${escapeHtml(r.calculationNotice||'発動条件が必要なため、自動計算しません。')}</div></div>`;
 }
 function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElementById('dcAtkPoke')?.value){
   if(r?.calculationStatus==='conditional')return labPendingEffectHtml(r,poke);
@@ -7217,21 +7278,21 @@ function dcUpdateDmgOutput(){
     let rows=labUpgradeRows(poke, name, upgVal).filter(r=>r.slot==='わざ'+slot);
     if(!rows.length) rows=skills.filter(r=>r.slot==='わざ'+slot&&r.name===name);
     const html=rows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
-    out.innerHTML=labMoveIntroHtml(poke,name,rows)+(html||'<div class="empty u-fs-fs-xs">計算式は未確認です。</div>');
+    labSetCalculationHtml(out,labMoveIntroHtml(poke,name,rows)+(html||'<div class="empty u-fs-fs-xs">計算式は未確認です。</div>'));
   }
   // 通常攻撃
   const passiveRows=labPassiveRows(poke);
   const ps=document.getElementById('dcPassiveSection'), po=document.getElementById('dcDmgOutPassive');
   if(ps&&po){
     ps.style.display=passiveRows.length?'block':'none';
-    po.innerHTML=passiveRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+    labSetCalculationHtml(po,passiveRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join(''));
   }
   const normalRows=skills.filter(r=>r.slot==='通常攻撃');
   const ns=document.getElementById('dcNormalSection');
   const no=document.getElementById('dcDmgOutNormal');
   if(ns&&no){
     ns.style.display=normalRows.length?'block':'none';
-    no.innerHTML=`<p class="lab-effect-description">${escapeHtml(labBasicDescription(poke))}</p>`+labDetailsHtml(poke,'通常攻撃','basics')+labCombatNotesHtml(poke)+normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join('');
+    labSetCalculationHtml(no,labBasicIntroHtml(poke)+normalRows.map(r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)).filter(Boolean).join(''));
   }
   // ユナイトわざ
   const uniteRows=skills.filter(r=>r.slot==='ユナイトわざ');
@@ -7239,7 +7300,7 @@ function dcUpdateDmgOutput(){
   const uo=document.getElementById('dcDmgOutUnite');
   if(us&&uo){
     us.style.display=uniteRows.length?'block':'none';
-    uo.innerHTML=labUniteEffectsHtml(poke,uniteRows,r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen));
+    labSetCalculationHtml(uo,labUniteEffectsHtml(poke,uniteRows,r=>_dcDmgHtml(r,dcAtkStats,dcDefStats,atkLv,spdefPen)));
   }
   dcRenderProcResults();
   if(typeof LabReview!=='undefined')LabReview.renderComparison();
@@ -7791,13 +7852,16 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=116"></script>
-<script src="ratio.js?v=116"></script>
-<script src="js/lab-review.js?v=116"></script>
-<script src="js/calc-conditions-core.js?v=116"></script>
-<script src="js/calc-conditions.js?v=116"></script>
-<script src="js/patch-analysis-core.js?v=116"></script>
-<script src="js/patch-analysis.js?v=116"></script>
-<script src="js/lab-public.js?v=116"></script>
+<script src="ratio-labels.js?v=120"></script>
+<script src="ratio.js?v=120"></script>
+<script src="js/lab-review.js?v=120"></script>
+<script src="js/calc-conditions-core.js?v=120"></script>
+<script src="js/calc-conditions.js?v=120"></script>
+<script src="js/patch-analysis-core.js?v=120"></script>
+<script src="js/patch-analysis.js?v=120"></script>
+<script src="js/attack-speed-data.js?v=120"></script>
+<script src="js/attack-speed-core.js?v=120"></script>
+<script src="js/attack-speed.js?v=120"></script>
+<script src="js/lab-public.js?v=120"></script>
 </body>
 </html>

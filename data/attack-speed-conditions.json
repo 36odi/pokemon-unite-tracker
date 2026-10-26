@@ -1,0 +1,1339 @@
+{
+  "version": "2026-10-27.1",
+  "profiles": {
+    "ギルガルド": {
+      "note": "ブーストを消費する強化攻撃は対象外です。Lv7以降は現在のフォルムを選択してください。",
+      "states": [
+        {
+          "id": "before",
+          "label": "進化前・非強化攻撃",
+          "maxLevel": 6,
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "sword",
+          "label": "ブレードフォルム",
+          "minLevel": 7,
+          "kind": "common",
+          "bonus": 15,
+          "source": "pokemon:skills.0.rsb2.true_desc; calculator:C14"
+        },
+        {
+          "id": "shield",
+          "label": "シールドフォルム",
+          "minLevel": 7,
+          "kind": "common",
+          "bonus": -20,
+          "source": "pokemon:skills.0.rsb2.true_desc; calculator:C15"
+        }
+      ],
+      "effects": [
+        {
+          "id": "change",
+          "label": "フォルム切替直後（3.5秒間）",
+          "minLevel": 7,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+15%）",
+              "bonus": 15,
+              "source": "pokemon:skills.0.rsb2.notes; calculator:C16"
+            }
+          ]
+        }
+      ]
+    },
+    "バシャーモ": {
+      "states": [
+        {
+          "id": "torchic",
+          "label": "アチャモ（パンチ扱い）",
+          "maxLevel": 4,
+          "kind": "common",
+          "bonus": 40,
+          "source": "pokemon:skills.1.rsb.true_desc,notes; calculator:C22"
+        },
+        {
+          "id": "combusken",
+          "label": "ワカシャモ／Lv7（キック扱い）",
+          "minLevel": 5,
+          "maxLevel": 7,
+          "kind": "common",
+          "bonus": 0,
+          "source": "pokemon:skills.1.rsb.notes; calculator:B6"
+        },
+        {
+          "id": "kick",
+          "label": "キックスタイル",
+          "minLevel": 8,
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "punch",
+          "label": "パンチスタイル",
+          "minLevel": 8,
+          "kind": "common",
+          "bonus": 40,
+          "source": "pokemon:skills.1.rsb.true_desc; calculator:C22"
+        }
+      ]
+    },
+    "ギャラドス": {
+      "note": "進化は努力ゲージで早まります。実際の形態を選んでください。Lv7だけで進化済みと確定はしません。",
+      "states": [
+        {
+          "id": "magikarp",
+          "label": "コイキング（進化前・固定動作）",
+          "kind": "fixed",
+          "bonus": 0,
+          "defaultMaxLevel": 6,
+          "source": "pokemon:notes,skills.1.rsb.notes"
+        },
+        {
+          "id": "gyarados",
+          "label": "ギャラドス（進化後）",
+          "kind": "common",
+          "bonus": 40,
+          "defaultMinLevel": 7,
+          "source": "pokemon:skills.0.rsb2.notes; calculator:C72"
+        }
+      ],
+      "effects": [
+        {
+          "id": "breath",
+          "label": "りゅうのいぶき命中後（5秒間）",
+          "onlyStates": [
+            "gyarados"
+          ],
+          "minLevel": 1,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "one",
+              "label": "1体命中（+30%）",
+              "bonus": 30
+            },
+            {
+              "id": "two",
+              "label": "2体命中（+40%）",
+              "bonus": 40
+            },
+            {
+              "id": "three",
+              "label": "3体以上命中（+50%）",
+              "bonus": 50
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; official:20260304-1; calculator:C73:D73"
+        }
+      ]
+    },
+    "メガギャラドス": {
+      "note": "実際の進化状態を選んでください。メガ進化時の飛びつきの移動時間は含みません。",
+      "states": [
+        {
+          "id": "magikarp",
+          "label": "コイキング（進化前・固定動作）",
+          "kind": "fixed",
+          "bonus": 0,
+          "defaultMaxLevel": 6,
+          "source": "pokemon:notes"
+        },
+        {
+          "id": "gyarados",
+          "label": "ギャラドス（進化後）",
+          "kind": "common",
+          "bonus": 40,
+          "defaultMinLevel": 7,
+          "source": "pokemon:skills.0.rsb2.notes; calculator:C74"
+        },
+        {
+          "id": "mega",
+          "label": "メガ進化中（非強化攻撃）",
+          "kind": "common",
+          "bonus": 40,
+          "source": "pokemon:skills.0.rsb2.notes; calculator:Base Atk Speed!A43:P43"
+        }
+      ],
+      "effects": [
+        {
+          "id": "breath",
+          "label": "りゅうのいぶき命中後（5秒間）",
+          "onlyStates": [
+            "gyarados",
+            "mega"
+          ],
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "one",
+              "label": "1体命中（+30%）",
+              "bonus": 30
+            },
+            {
+              "id": "two",
+              "label": "2体命中（+40%）",
+              "bonus": 40
+            },
+            {
+              "id": "three",
+              "label": "3体以上命中（+50%）",
+              "bonus": 50
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; official:20260304-1; calculator:C75:D75"
+        }
+      ]
+    },
+    "ミュウツーY": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "通常形態",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "mega",
+          "label": "メガ進化中（追加+35%）",
+          "kind": "common",
+          "bonus": 35,
+          "minLevel": 5,
+          "source": "pokemon:skills.0.rsb.true_desc; calculator:C98"
+        }
+      ],
+      "effects": [
+        {
+          "id": "pressure",
+          "label": "プレッシャーの速度強化（0〜10段階）",
+          "count": 10,
+          "perStack": 3,
+          "source": "pokemon:skills.0.rsb.true_desc; calculator:C97:D97"
+        }
+      ],
+      "note": "現在の形態と速度強化の段階を選択します。ゲージの増減・自動進化・継続時間はシミュレートしません。"
+    },
+    "ストリンダー": {
+      "states": [
+        {
+          "id": "poison",
+          "label": "どくの音色（非強化攻撃）",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "electric",
+          "label": "でんきの音色（非強化攻撃）",
+          "kind": "common",
+          "bonus": 0
+        }
+      ],
+      "effects": [
+        {
+          "id": "punk",
+          "label": "パンクロック（0〜5段階）",
+          "count": 5,
+          "perStack": 8,
+          "source": "pokemon:skills.0.rsb.true_desc; calculator:C127:D127"
+        },
+        {
+          "id": "gear",
+          "label": "ギアチェンジの速度強化中",
+          "onlyStates": [
+            "poison"
+          ],
+          "minLevel": 7,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+25%）",
+              "bonus": 25
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; calculator:C128"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ],
+      "note": "毒のダメージ発生回数や強化攻撃の周期は含みません。"
+    },
+    "ジュナイパー": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "boosted",
+          "label": "強化攻撃中",
+          "kind": "excluded",
+          "reason": "強化攻撃中の動作は、この通常攻撃モデルの対象外です。"
+        },
+        {
+          "id": "razor",
+          "label": "はっぱカッター中",
+          "kind": "excluded",
+          "reason": "通常攻撃が専用の複数対象攻撃へ置換されるため、元の通常攻撃モデルでは間隔を断定しません。",
+          "minLevel": 7
+        }
+      ],
+      "effects": [
+        {
+          "id": "quills",
+          "label": "通常攻撃命中の速度強化（0〜4段階）",
+          "count": 4,
+          "perStack": 3,
+          "source": "pokemon:skills.1.rsb.true_desc; calculator:C41:D41"
+        },
+        {
+          "id": "leafage",
+          "label": "このは使用後（3秒間）",
+          "minLevel": 1,
+          "maxLevel": 6,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+25%）",
+              "bonus": 25
+            }
+          ],
+          "source": "pokemon:skills.2.rsb.true_desc; calculator:C42"
+        }
+      ],
+      "note": "実際に強化攻撃中なら状態を変更してください。はっぱカッター中の追加対象・動作は含みません。"
+    },
+    "パーモット": {
+      "effects": [
+        {
+          "id": "fighter",
+          "label": "ファイターモード命中後の強化（0〜2段階）",
+          "minLevel": 7,
+          "count": 2,
+          "perStack": 30,
+          "source": "pokemon:skills.0.rsb.notes; calculator:C106:D106"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ],
+      "note": "飛びつく強化攻撃そのものの動作は除きます。"
+    },
+    "マッシブーン": {
+      "effects": [
+        {
+          "id": "beast",
+          "label": "ビーストブースト（3秒間）",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "assist",
+              "label": "アシスト後（+25%）",
+              "bonus": 25
+            },
+            {
+              "id": "ko",
+              "label": "KO後（+50%）",
+              "bonus": 50
+            }
+          ],
+          "source": "pokemon:skills.0.rsb.true_desc; calculator:C24:C25"
+        },
+        {
+          "id": "lunge",
+          "label": "とびかかる使用後（2秒間）",
+          "minLevel": 7,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+30%）",
+              "bonus": 30
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; calculator:C26"
+        }
+      ]
+    },
+    "エースバーン": {
+      "effects": [
+        {
+          "id": "blaze",
+          "label": "もうかの速度強化中（HP50%以下で発動）",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+20%）",
+              "bonus": 20
+            }
+          ],
+          "source": "pokemon:skills.0.rsb.true_desc; calculator:C33"
+        },
+        {
+          "id": "kick",
+          "label": "ブレイズキック+命中後（3秒間）",
+          "minLevel": 11,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+30%）",
+              "bonus": 30
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.1.rsb.enhanced_true_desc; calculator:C34"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "ウッウ": {
+      "effects": [
+        {
+          "id": "hurricane",
+          "label": "ぼうふう使用後（3秒間）",
+          "minLevel": 4,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+40%）",
+              "bonus": 40
+            }
+          ],
+          "source": "official:https://www.pokemonunite.jp/ja/topics/battle/20260304-1/"
+        }
+      ],
+      "note": "通常攻撃のみの参考値です。獲物による強化攻撃・反撃・連続ヒットは含みません。旧資料の固定速度という記述は現行の公式調整と区別しています。"
+    },
+    "カイリュー": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "outrage",
+          "label": "げきりん中",
+          "minLevel": 8,
+          "kind": "excluded",
+          "reason": "げきりん中はすべて強化攻撃となるため、この通常攻撃モデルでは間隔を計算しません。"
+        }
+      ],
+      "effects": [
+        {
+          "id": "dance",
+          "label": "りゅうのまいの速度強化中",
+          "minLevel": 5,
+          "onlyStates": [
+            "normal"
+          ],
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+80%）",
+              "bonus": 80
+            }
+          ],
+          "source": "calculator:C50; pokemon:skills.2.upgrades.0.description1"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ],
+      "note": "げきりん中は対象外です。強化攻撃の水・電気・炎の追加効果、飛びつきの移動時間は含みません。"
+    },
+    "アブソル": {
+      "effects": [
+        {
+          "id": "first",
+          "label": "わざ1の速度強化中",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "feint",
+              "label": "フェイント命中後（+60%）",
+              "maxLevel": 4,
+              "bonus": 60
+            },
+            {
+              "id": "slash",
+              "label": "つじぎり命中後（+60%）",
+              "minLevel": 5,
+              "bonus": 60
+            }
+          ],
+          "source": "pokemon:skills.2.rsb.true_desc,skills.2.upgrades.0.rsb.true_desc; calculator:C11:C12"
+        },
+        {
+          "id": "punch",
+          "label": "ふいうち+の速度強化中",
+          "minLevel": 13,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+40%）",
+              "bonus": 40
+            }
+          ],
+          "source": "pokemon:skills.3.upgrades.1.rsb.enhanced_true_desc; calculator:C13"
+        }
+      ]
+    },
+    "カイリキー": {
+      "effects": [
+        {
+          "id": "second",
+          "label": "わざ2の速度強化中",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "submission",
+              "label": "じごくぐるま命中後（+40%）",
+              "minLevel": 5,
+              "maxLevel": 10,
+              "bonus": 40
+            },
+            {
+              "id": "plus",
+              "label": "じごくぐるま+命中後（+50%）",
+              "minLevel": 11,
+              "bonus": 50
+            }
+          ],
+          "source": "pokemon:skills.3.rsb.true_desc,skills.3.upgrades.1.rsb.true_desc,enhanced_true_desc; calculator:C86:C87",
+          "minLevel": 5
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ],
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・ビルドアップOFF",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "bulk",
+          "label": "ビルドアップ中（資料不一致）",
+          "maxLevel": 4,
+          "kind": "excluded",
+          "reason": "速度上昇率が公開計算表では15%、別の原資料とポケモンの説明では40%と一致しないため、断定して計算しません。"
+        }
+      ]
+    },
+    "ゼラオラ": {
+      "effects": [
+        {
+          "id": "first",
+          "label": "わざ1の速度強化中",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "agility",
+              "label": "こうそくいどう（+45%）",
+              "maxLevel": 5,
+              "bonus": 45
+            },
+            {
+              "id": "volt",
+              "label": "ボルトチェンジ（+45%）",
+              "minLevel": 6,
+              "maxLevel": 11,
+              "bonus": 45
+            },
+            {
+              "id": "plus",
+              "label": "ボルトチェンジ+（+60%）",
+              "minLevel": 12,
+              "bonus": 60
+            }
+          ],
+          "source": "pokemon:skills.2.rsb.true_desc,skills.2.upgrades.0.rsb.true_desc,enhanced_true_desc; calculator:C142:C144"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+20%）",
+              "bonus": 20
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "マスカーニャ": {
+      "effects": [
+        {
+          "id": "second",
+          "label": "わざ2の速度強化中",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "hone",
+              "label": "つめとぎ（+80%）",
+              "maxLevel": 5,
+              "bonus": 80
+            },
+            {
+              "id": "trail",
+              "label": "くさわけ（+100%）",
+              "minLevel": 6,
+              "bonus": 100
+            }
+          ],
+          "source": "pokemon:skills.3.rsb.true_desc,skills.3.upgrades.1.rsb.true_desc; calculator:C91:C92"
+        }
+      ]
+    },
+    "グレイシア": {
+      "effects": [
+        {
+          "id": "bond",
+          "label": "味方4体もブイズのチーム条件",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+1%）",
+              "bonus": 1
+            }
+          ],
+          "source": "pokemon:notes; calculator:C65"
+        },
+        {
+          "id": "shard",
+          "label": "こおりのつぶての速度強化中",
+          "minLevel": 6,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "base",
+              "label": "通常版（+60%）",
+              "minLevel": 6,
+              "maxLevel": 11,
+              "bonus": 60
+            },
+            {
+              "id": "plus",
+              "label": "＋版（+100%）",
+              "minLevel": 12,
+              "bonus": 100
+            }
+          ],
+          "source": "pokemon:skills.3.upgrades.0.rsb.true_desc,enhanced_true_desc; calculator:C66:C67"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 8,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ],
+      "note": "氷柱のダメージ発生回数や強化攻撃の動作は、通常攻撃の連続間隔に含めません。"
+    },
+    "ダークライ": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "起きている対象への通常攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "sleep",
+          "label": "眠った対象への強化攻撃",
+          "kind": "excluded",
+          "reason": "眠った対象への攻撃は強化攻撃のため、通常攻撃の間隔モデルから除外します。"
+        }
+      ]
+    },
+    "ドードリオ": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "スプリントが満タンでない非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "sprint",
+          "label": "スプリント満タン時の突進",
+          "kind": "excluded",
+          "reason": "突進・連撃の動作を含むため、非強化攻撃の間隔モデルから除外します。"
+        }
+      ]
+    },
+    "ドラパルト": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "ゲージが満タンでない非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "boosted",
+          "label": "強化ゲージ満タン中",
+          "kind": "excluded",
+          "reason": "満タン中は強化攻撃になるため、このモデルでは連続間隔を計算しません。"
+        },
+        {
+          "id": "flying",
+          "label": "りゅうのまい飛行中",
+          "minLevel": 5,
+          "kind": "excluded",
+          "reason": "飛行中の自動攻撃は別の動作のため対象外です。"
+        }
+      ],
+      "effects": [
+        {
+          "id": "second",
+          "label": "わざ2の速度強化中",
+          "source": "pokemon:skills.3.rsb.true_desc,skills.3.upgrades.1.rsb.true_desc; calculator:C47,C49",
+          "onlyStates": [
+            "normal"
+          ],
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "quick",
+              "label": "でんこうせっか後（+40%）",
+              "bonus": 40,
+              "maxLevel": 4
+            },
+            {
+              "id": "phantom",
+              "label": "ゴーストダイブ解除後（+85%）",
+              "bonus": 85,
+              "minLevel": 5
+            }
+          ]
+        }
+      ]
+    },
+    "フーパ": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "いましめられし形態・非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "unbound",
+          "label": "ときはなたれし形態",
+          "minLevel": 9,
+          "kind": "excluded",
+          "reason": "ときはなたれし形態ではすべて強化攻撃となるため対象外です。"
+        }
+      ]
+    },
+    "ガブリアス": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "5スタック前の非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "boosted",
+          "label": "5スタック・強化攻撃中",
+          "kind": "excluded",
+          "reason": "5スタックではすべて強化攻撃になります。速度上昇の係数だけを通常攻撃モデルに入れて実際の間隔とは表示しません。"
+        }
+      ],
+      "effects": [
+        {
+          "id": "sand",
+          "label": "すなかけ命中後（3秒間）",
+          "minLevel": 1,
+          "maxLevel": 4,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+30%）",
+              "bonus": 30
+            }
+          ],
+          "source": "pokemon:skills.2.rsb.true_desc; calculator:C62"
+        }
+      ]
+    },
+    "スイクン": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "結晶ゲージが空の非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "crystal",
+          "label": "結晶ゲージ満タンの強化攻撃",
+          "kind": "excluded",
+          "reason": "0.25秒ごとのダメージ発生は攻撃間隔ではありません。強化攻撃の連続動作は対象外です。"
+        }
+      ]
+    },
+    "ハピナス": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・てだすけOFF",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "helping",
+          "label": "てだすけ中",
+          "minLevel": 6,
+          "kind": "excluded",
+          "reason": "てだすけ中はすべて強化攻撃になるため対象外です。"
+        }
+      ]
+    },
+    "アローラキュウコン": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・ベール外",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "veil",
+          "label": "オーロラベール内",
+          "minLevel": 6,
+          "kind": "excluded",
+          "reason": "ベール内はすべて強化攻撃となるため、速度+15%だけから実際の連続間隔を断定しません。"
+        }
+      ]
+    },
+    "ザシアン": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "ふとうのけんOFF・非強化攻撃",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "sword",
+          "label": "ふとうのけん発動中",
+          "kind": "excluded",
+          "reason": "発動中はすべて強化攻撃になるため、別の動作モデルが必要です。"
+        }
+      ],
+      "effects": [
+        {
+          "id": "claw",
+          "label": "メタルクロー命中後の速度強化中",
+          "minLevel": 5,
+          "onlyStates": [
+            "normal"
+          ],
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+80%）",
+              "bonus": 80
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; calculator:C140"
+        }
+      ]
+    },
+    "ソウブレイズ": {
+      "effects": [
+        {
+          "id": "second",
+          "label": "わざ2の速度強化中",
+          "source": "pokemon:skills.3.rsb.true_desc,skills.3.upgrades.1.rsb.true_desc; calculator:C27:C28",
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "take-down",
+              "label": "とっしん後（+20%）",
+              "bonus": 20,
+              "maxLevel": 6
+            },
+            {
+              "id": "flame-charge",
+              "label": "ニトロチャージ後（+30%）",
+              "bonus": 30,
+              "minLevel": 7
+            }
+          ]
+        }
+      ]
+    },
+    "ジュラルドン": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・特殊なわざの動作なし",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "cannon",
+          "label": "ラスターカノン中",
+          "kind": "excluded",
+          "reason": "専用動作と経過時間による100%からの減衰があります。時間・動作を再現するモデルが未確認のため対象外です。",
+          "minLevel": 5
+        }
+      ],
+      "effects": [
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "エンペルト": {
+      "effects": [
+        {
+          "id": "jet",
+          "label": "アクアジェット後（5秒間）",
+          "minLevel": 5,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+40%）",
+              "bonus": 40
+            }
+          ],
+          "source": "pokemon:skills.3.upgrades.1.rsb.true_desc; calculator:C56"
+        }
+      ]
+    },
+    "タイレーツ": {
+      "effects": [
+        {
+          "id": "bulk",
+          "label": "ビルドアップ中（3秒間）",
+          "minLevel": 1,
+          "maxLevel": 5,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+25%）",
+              "bonus": 25
+            }
+          ],
+          "source": "pokemon:skills.3.rsb.true_desc; calculator:C58"
+        }
+      ]
+    },
+    "オーダイル": {
+      "effects": [
+        {
+          "id": "crunch",
+          "label": "かみくだくの強化攻撃命中後（5秒または3回）",
+          "minLevel": 5,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+140%）",
+              "bonus": 140
+            }
+          ],
+          "source": "pokemon:skills.2.upgrades.0.rsb.true_desc; calculator:C59"
+        },
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "アローラライチュウ": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・特殊なわざの動作なし",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "stored",
+          "label": "アシストパワーの強化攻撃中",
+          "kind": "excluded",
+          "reason": "6回分の専用強化攻撃は、この非強化攻撃のモデルから除きます。",
+          "minLevel": 5
+        }
+      ],
+      "effects": [
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "マリルリ": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・特殊なわざの動作なし",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "tail",
+          "label": "アクアテール中",
+          "kind": "excluded",
+          "reason": "通常攻撃が3段階の専用動作へ置き換わるため、速度+20%だけで実際の間隔を断定しません。",
+          "minLevel": 4
+        }
+      ]
+    },
+    "アマージョ": {
+      "effects": [
+        {
+          "id": "axel",
+          "label": "トリプルアクセルの速度強化（5秒間・命中数）",
+          "minLevel": 5,
+          "count": 3,
+          "perStack": 4,
+          "perLevel": 1.5,
+          "source": "pokemon:skills.2.upgrades.0.rsb.add3_base,add3_slider; calculator:C131:D131,G131"
+        }
+      ]
+    },
+    "カメックス": {
+      "states": [
+        {
+          "id": "normal",
+          "label": "非強化攻撃・特殊なわざの動作なし",
+          "kind": "common",
+          "bonus": 0
+        },
+        {
+          "id": "spin",
+          "label": "こうそくスピン中",
+          "kind": "excluded",
+          "reason": "回転中の攻撃は専用動作のため、通常攻撃の間隔モデルから除きます。",
+          "minLevel": 7
+        }
+      ]
+    },
+    "ゲッコウガ": {
+      "effects": [
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    },
+    "インテレオン": {
+      "effects": [
+        {
+          "id": "unite",
+          "label": "ユナイトわざ後の速度強化中",
+          "minLevel": 9,
+          "maxLevel": 15,
+          "options": [
+            {
+              "id": "off",
+              "label": "OFF",
+              "bonus": 0
+            },
+            {
+              "id": "on",
+              "label": "ON（+35%）",
+              "bonus": 35
+            }
+          ],
+          "source": "pokemon:skills.4.buffs"
+        }
+      ]
+    }
+  }
+}
