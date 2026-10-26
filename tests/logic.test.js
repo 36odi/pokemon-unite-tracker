@@ -359,7 +359,7 @@ eq(S['ソルガレオ']?.dmg, 'Physical', 'Solgaleo lab damage type is Physical'
 eq([S['ソルガレオ']?.hp[0], S['ソルガレオ']?.hp[14]], [3200, 8800], 'Solgaleo HP matches source at lv1/lv15');
 eq([S['ソルガレオ']?.atk[0], S['ソルガレオ']?.atk[14]], [160, 530], 'Solgaleo Atk matches source at lv1/lv15');
 const solgaleoLab = K['ソルガレオ'] || [];
-eq(solgaleoLab.length, 18, 'Solgaleo has 18 lab structure rows');
+eq(solgaleoLab.filter(r=>!r.narrativeKey).length, 18, 'Solgaleo keeps 18 original lab structure rows alongside supplemental healing');
 const sol = (slot, name, type) => solgaleoLab.find(r => r.slot === slot && r.name === name && r.dmgType === type);
 eq([sol('通常攻撃','通常攻撃','ダメージ - 通常（コスモッグ）')?.coeff, sol('通常攻撃','通常攻撃','ダメージ - 通常（コスモッグ）')?.fixed], [100, 0], 'Solgaleo basic ratio is present');
 eq([sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.coeff, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.fixed, sol('通常攻撃','通常攻撃','ダメージ - 強化（コスモウム・3ヒット）')?.hits], [34, 102, 3], 'Solgaleo Cosmoem boosted attack uses three hits');

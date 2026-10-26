@@ -1,0 +1,12 @@
+{
+  "rule": "positive-upgrade-reduction-otherwise-base",
+  "checkedAt": "2026-10-25",
+  "sourceUrl": "https://unite-db.com/_nuxt/0414581.js",
+  "sourceSha256": "015ca63831bdad0ffc847858b0a3f9001c92299583d86b9468174944e1f557c4",
+  "evidence": [
+    "Number(e.level)>=l.level2&&l.rsb.enhanced_cdr>0",
+    "l.cd1-Number(l.rsb.enhanced_cdr)",
+    "(l.cd1*e.cdr*10/10).toFixed(2)"
+  ],
+  "meaning": "出典サイトは＋習得後、明示された短縮が正なら基本CDから引き、それ以外は基本CDを表示する。短縮欄の空欄だけを理由に＋版のCDを未確認とはしない。条件付きの短縮・リセットは基本CDと区別する。"
+}

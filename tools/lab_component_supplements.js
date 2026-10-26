@@ -66,12 +66,14 @@ function apply(SK,source){
   const duplicates=source.filter(x=>pokemon(x.pokemon_ja)===p&&x.skill_slot===s.skill_slot&&x.move_en===s.move_en&&numeric(x)&&JSON.stringify(tuple(x))===JSON.stringify(tuple(s))&&/^enhanced/.test(x.ratio_component)===plus);
   const base=matches[Math.max(0,duplicates.findIndex(x=>key(x)===key(s)))];
   if(!base)throw Error('後続倍率の基準行なし: '+rule.sourceKey);
+  if(rule.factorLabels&&rule.factorLabels.length!==rule.factors.length)throw Error('後続倍率の見出し不足: '+rule.sourceKey);
   for(const name of baseNames){
    const isPlus=/[+＋]$/.test(name);if(rule.variant==='base'&&isPlus||rule.variant==='plus'&&!isPlus)continue;
    const candidate=rows.find(r=>r.name===name&&r.dmgType===base.dmgType&&!r.supplement)||base;
    for(const [i,factor] of rule.factors.entries()){
-    const label=rule.label+(rule.factors.length>1?'・初回の'+Math.round(factor*100)+'%':'');
-    const r={...candidate,name,dmgType:(/回復/.test(base.dmgType)?'回復':'ダメージ')+'（'+label.replace(/[（）]/g,'')+'）',
+    const label=rule.factorLabels?.[i]||rule.label+(rule.factors.length>1?'・初回の'+Math.round(factor*100)+'%':'');
+    const {componentNote:priorNote,...candidateFields}=candidate;
+    const r={...candidateFields,name,dmgType:(/回復/.test(base.dmgType)?'回復':'ダメージ')+'（'+label.replace(/[（）]/g,'')+'）',
       coeff:Math.round(candidate.coeff*factor*1e8)/1e8,lvScale:Math.round((candidate.lvScale||0)*factor*1e8)/1e8,fixed:Math.round((candidate.fixed||0)*factor*1e8)/1e8,
       hits:1,hitsVar:false,supplement:'derived',derivedKey:rule.sourceKey+'|'+name+'|'+i,derivedFrom:{sourceKey:rule.sourceKey,factor},componentNote:'この条件の1回分です。元データに明記された倍率から算出しています。'};
     delete r.sourceKey;

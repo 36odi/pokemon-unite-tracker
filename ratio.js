@@ -44,7 +44,8 @@ function ratioFormula(r,multiplier=1){
   if(r.coeff!==0&&!r.stat) return '参照ステータス未収録';
   const fmt=v=>String(Math.round(v*multiplier*10000)/10000);
   const parts=[];
-  if(r.coeff) parts.push(r.stat+' × '+fmt(r.coeff)+'％');
+  if(r.coeff||r.coeffPerLevel) parts.push(r.stat+' × '+(r.coeffPerLevel?'（'+fmt(r.coeff)+' ＋ '+fmt(r.coeffPerLevel)+' ×（Lv − 1））':fmt(r.coeff))+'％');
+  if(r.hpPercent) parts.push('自分の最大HP × '+fmt(r.hpPercent)+'％');
   if(r.lvScale) parts.push(fmt(r.lvScale)+' ×（Lv − 1）');
   if(r.fixed) parts.push(fmt(r.fixed));
   const formula=parts.join(' ＋ ')||'0';
@@ -71,7 +72,7 @@ function labCombatNotesHtml(poke){
 function ratioSameFormulas(poke,rows,baseRows){
   // 未収録・部分式は「同じ」と断定しない。条件、回数、説明も含めて比較する。
   if(!rows.length||rows.some(r=>r.coeff==null||ratioComponentNote(poke,r))||baseRows.some(r=>r.coeff==null||ratioComponentNote(poke,r))) return false;
-  const signature=rs=>rs.map(r=>JSON.stringify([ratioLabel(poke,r),r.stat,r.coeff,r.fixed,r.lvScale,r.hits,r.hitsVar,r.description||''])).sort();
+  const signature=rs=>rs.map(r=>JSON.stringify([ratioLabel(poke,r),r.stat,r.coeff,r.coeffPerLevel||0,r.hpPercent||0,r.fixed,r.lvScale,r.hits,r.hitsVar,r.description||''])).sort();
   return JSON.stringify(signature(rows))===JSON.stringify(signature(baseRows));
 }
 function labUniteInfoHtml(poke){

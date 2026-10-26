@@ -91,7 +91,8 @@ function labSupportMultiplier(items,isHeal,target='self'){
 function labRawValue(r,stats,lv){
   const st=r.stat||'攻撃';
   const key=/特攻|Sp\.?\s*Atk|sp_?atk/i.test(st)?'特攻':/HP/i.test(st)?'HP':'攻撃';
-  return Math.max(0,Math.floor((r.coeff||0)/100*(stats[key]||0)+(r.lvScale||0)*(lv-1)+(r.fixed||0)+1e-9));
+  const coefficient=(r.coeff||0)+(r.coeffPerLevel||0)*(lv-1);
+  return Math.max(0,Math.floor(coefficient/100*(stats[key]||0)+(r.hpPercent||0)/100*(stats.HP||0)+(r.lvScale||0)*(lv-1)+(r.fixed||0)+1e-9));
 }
 // 固定値・レベル補正だけの式も対象。能力変化にダメージ軽減や回復補正を適用しない。
 function labEffectKind(r){
@@ -145,7 +146,9 @@ function labEvaluateComponent(r,atkStats,defStats,lv,{items=[],activeEffects=[],
   let rawPerHit=labRawValue(r,atkStats,lv);
   if(support)rawPerHit=Math.floor(rawPerHit*labSupportMultiplier(items,kind==='heal',r.supportTarget||healTarget)+1e-9);
   const defense=r.defenseMode==='ignore'||r.damageClass==='true'?0:defStats[special?'特防':'防御']||0;
-  const actual=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defense,0,special&&!support?spdefPen/100:0)*labItemDamageMultiplier(items,activeEffects)+1e-9);
+  const intrinsicIgnore=Math.max(0,Math.min(100,Number(r.defenseIgnorePercent)||0));
+  const totalIgnore=Math.min(100,intrinsicIgnore+(special&&!support?Math.max(0,Number(spdefPen)||0):0))/100;
+  const actual=kind!=='damage'?rawPerHit:rawPerHit===0?0:Math.floor(dcCalcActual(rawPerHit,defense,0,totalIgnore)*labItemDamageMultiplier(items,activeEffects)+1e-9);
   const hits=r.hits||1;
   if(r.calculationStatus==='conditional')return {kind,unit,rawPerHit,actPerHit:null,hits,value:null,pending:r.calculationNotice};
   return {kind,unit,rawPerHit,actPerHit:actual,hits,value:actual*hits};

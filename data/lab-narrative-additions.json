@@ -1,0 +1,1382 @@
+[
+  {
+    "id": "N001",
+    "sourceKey": "Crustle|Unite Move|Rubble Rouser|rsb|base",
+    "sourceLabel": "Damage - Revenge",
+    "label": "シールド",
+    "formula": "自分の最大HP×40%＋600。",
+    "evidence": "The value of the shield gained from Rubble Rouser is equal to 40% max HP + 600.",
+    "numeric": {
+      "coeff": 40,
+      "lvScale": 0,
+      "fixed": 600,
+      "kind": "shield",
+      "target": "self",
+      "unit": ""
+    },
+    "versionScope": "both"
+  },
+  {
+    "id": "N002",
+    "sourceKey": "Eldegoss|Move 2|Cotton Guard|rsb|base",
+    "sourceLabel": "Shield",
+    "label": "シールド終了時の回復",
+    "formula": "3秒後に残っているシールドの量×15%。",
+    "evidence": "After 3s, any cotton leftover is used to restore the HP of teammates with cotton shields for 15% of the remaining shield value.",
+    "versionScope": "both"
+  },
+  {
+    "id": "N003",
+    "sourceKey": "Dragonite|Move 2|Hyper Beam|rsb|base",
+    "sourceLabel": "Damage - Stage 0",
+    "label": "追加ダメージ（りゅうのまいの段階）",
+    "formula": "相手の最大HP×0%／6%／12%／18%（りゅうのまい0／1／2／3段階）。野生相手への割合追加分の上限は、同じ順に600／1200／1800／2400です。",
+    "evidence": "Fires a beam of energy toward the targeted enemy after a delay, dealing damage to all enemies that it hits, as well as additional damage based on their Max HP. The move changes Stages based on the number of stacks of Dragon Dance that Dragonite has, from 0 to 3. The max HP damage is 0%/6%/12%/18%, determined by the current Stage. Dragonite cannot act while releasing the beam. Against Wild Pokémon: The additional damage from max HP is capped at 600/1200/1800/2400 depending on the stage.",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Dragonite|Move 2|Hyper Beam|rsb|base",
+      "Dragonite|Move 2|Hyper Beam|rsb|add1",
+      "Dragonite|Move 2|Hyper Beam|rsb|add2",
+      "Dragonite|Move 2|Hyper Beam|rsb|add3"
+    ],
+    "versionScope": "both"
+  },
+  {
+    "id": "N004",
+    "sourceKey": "Empoleon|Basic|Attack|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "label": "回復（通常・強化攻撃）",
+    "formula": "実際に与えた通常攻撃・強化攻撃のダメージ×15%。",
+    "evidence": "This Pokémon heals 15% of damage dealt with basic and boosted attacks.",
+    "versionScope": "both"
+  },
+  {
+    "id": "N005",
+    "sourceKey": "Dodrio|Move 1|Tri Attack|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "HP追加回復（＋版で増える分）",
+    "formula": "自分の最大HP×3%。通常版の7%に加わり、合計10%です。",
+    "evidence": "The next auto attack gains additional healing by 3% of max HP. When using full sprint gauge attack the charge time for this move is additionally reduced by 1s.",
+    "numeric": {
+      "coeff": 3,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    },
+    "versionScope": "plus"
+  },
+  {
+    "id": "N006",
+    "sourceKey": "Dragapult|Move 1|Shadow Ball|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "HP回復（4つ目のマーク消費）",
+    "formula": "自分の最大HP×20%。",
+    "evidence": "The fourth part of the mark deals increased additional damage and removes the mark when consumed, and the user restores 20% max HP.",
+    "numeric": {
+      "coeff": 20,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N007",
+    "sourceKey": "Greedent|Unite Move|Berry Belly Flop|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "使用時の回復",
+    "formula": "自分の最大HP×15%。",
+    "evidence": "Greedent eats a special berry to recover 15% max HP and then leaps to the designated area; dealing damage and throwing enemies within the area of effect for 1s.",
+    "numeric": {
+      "coeff": 15,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N008",
+    "sourceKey": "Greninja|Basic|Attack|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "versionScope": "both",
+    "label": "近距離攻撃の追加ダメージ",
+    "formula": "近距離の通常攻撃は相手の減少HP×5%、近距離の強化攻撃は相手の減少HP×10%。野生相手の追加分は500が上限です。",
+    "evidence": "Auto attacks differ depending on range, and become boosted attacks with every third attack, dealing increased damage. Auto attacks used at long range reduce the cooldown of Bubble, Water Shuriken, or Surf by 0.5s when they hit. Boosted attacks used at long range also decrease the movement speed of the opposing Pokémon hit by 25% for 0.5s. Auto attacks used in close range instead deal a bonus 5% missing HP damage to opposing Pokémon hit. Boosted attacks used in close range dash through the target, dealing a bonus 10% missing HP damage to opposing Pokémon hit instead. Against wild Pokémon: the missing HP damage of auto attacks used in close range is capped at 500."
+  },
+  {
+    "id": "N009",
+    "sourceKey": "Lapras|Move 1|Perish Song|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "追加の確定ダメージ",
+    "formula": "3回命中の追加ダメージで相手のHPが最大HPの10%未満になる場合、相手の最大HP×40%の確定ダメージを与えます。",
+    "evidence": "If the additional damage would bring an enemy Pokémon below 10% of their max HP, that enemy Pokémon will take 40% of their maximum HP as True Damage."
+  },
+  {
+    "id": "N010",
+    "sourceKey": "Solgaleo|Move 1|Iron Head|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "回復（追撃の連続攻撃）",
+    "formula": "追撃の連続攻撃で実際に与えたダメージ×40%。",
+    "evidence": "The user charges in the designated direction, dealing damage and shoving opposing Pokémon for 0.5s. If the move hits, a follow up becomes available for 3s. When recast; the user leaps forward, an opposing Pokémon hit by the attack is barraged with 4 attacks, each stunning for 0.2s for up to a 0.8s duration, and restoring the user's health by 40% of the damage dealt. Against targets that cannot be stunned, only one instance of increased damage is dealt. This barrage will end early if the user inputs movement."
+  },
+  {
+    "id": "N011",
+    "sourceKey": "Sylveon|Unite Move|Fairy Frolic|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "回復（着地時）",
+    "formula": "着地時に実際に与えたダメージ×60%。シールドへのダメージでは回復しません。",
+    "evidence": "Jump into the air, removing most statuses and becoming invincible. The moment Sylveon lands, lose invincibility and immediately gain Fairy Frolic buff, while dealing damage to enemies in the area of effect and healing for 60% of the damage dealt. Fairy Frolic buff: for 10s, 50% of the damage dealt by Sylveon is converted into HP. No HP is recovered if the damage is dealt to shields. Against Wild Pokémon: Damage is capped at 2000."
+  },
+  {
+    "id": "N012",
+    "sourceKey": "Tyranitar|Basic|Attack|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "versionScope": "both",
+    "label": "追加のHP吸収（進化後）",
+    "formula": "サナギラスへの進化後、通常攻撃・強化攻撃で実際に与えたダメージ×5%を追加で回復します。ユナイトわざ中の通常攻撃や、確定ダメージにも適用されます。",
+    "evidence": "Becomes a boosted attack with every third attack, dealing increased damage when it hits. After evolving to Pupitar basic and boosted attacks (and basic attacks during Tyrannical Rampage) have an additional 5% lifesteal that is also active when doing true damage."
+  },
+  {
+    "id": "N013",
+    "sourceKey": "Suicune|Passive|Pressure|rsb|base",
+    "sourceLabel": "Shield",
+    "versionScope": "both",
+    "label": "追加の確定ダメージ",
+    "formula": "自分が凍らせた相手チームのポケモンへダメージを与え、その相手のHPが最大HPの10%未満のとき、相手の最大HP×15%を追加します。ダメージ軽減によりKOされない場合があります。",
+    "evidence": "Damaging a Pokémon from the opposing team below 10% max HP and frozen by Suicune deals an additional 15% max HP as true damage to the target (sufficient damage reduction can prevent the target from being knocked out). Using a move grants a shield for 5s (up to 2 times); separately increases the crystal gauge by 1 for 5s (becoming full when increased 2 times). Flooded areas created by Whirlpool or Surf remain for 5s; opposing Pokémon in a flooded area are marked as drenched for 3s. Freezing a flooded area with a regular move (not Unite Move) also freezes opposing Pokémon in that flooded area for 1s. Freezing an opposing Pokémon marked as drenched removes the mark; targets frozen by a regular move or by a frozen area cannot be marked as drenched for 3s afterward. Deals bonus damage when freezing opposing Pokémon with a regular move or by being in a frozen area."
+  },
+  {
+    "id": "N014",
+    "sourceKey": "Tyranitar|Unite Move|Tyrannical Rampage|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "versionScope": "both",
+    "label": "追加の確定ダメージ",
+    "formula": "ユナイトわざ中の通常攻撃で、HPが最大HPの20%未満の相手チームのポケモンへダメージを与えると、相手の最大HP×40%を追加します。ダメージ軽減によりKOされない場合があります。",
+    "evidence": "Briefly becomes unstoppable and explodes with anger, then goes on a rampage for 10s, gaining 50% tenacity for the duration. While rampaging, changes the auto attack pattern, dealing increased damage. Damaging a Pokémon from the opposing team below 20% max HP with these auto attacks deals 40% max HP as true damage to the target (sufficient damage reduction effects can prevent the target from being knocked out)."
+  },
+  {
+    "id": "N015",
+    "sourceKey": "Wigglytuff|Move 2|Rollout|rsb|base",
+    "sourceLabel": "Damage - per Hit",
+    "versionScope": "both",
+    "label": "シールド",
+    "formula": "自分の最大HP×25%。シールドは2.5秒間で、障害物に当たるたび持続時間を更新します。",
+    "evidence": "Wigglytuff gains a 25% max HP shield for 2.5s and rolls forwards. Wigglytuff becomes unstoppable for the duration of the roll, damaging and throwing Pokémon hit in the air for 0.5s. Hitting an obstacle while rolling will change the direction Wigglytuff is moving up to 5 times and reset the cooldown of Pound, Double Slap, and Dazzling Gleam. Also, the shield refreshes duration each time an obstacle is hit.",
+    "numeric": {
+      "coeff": 25,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "shield",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N016",
+    "sourceKey": "Wigglytuff|Unite Move|Starlight Recital|rsb|base",
+    "sourceLabel": "Shield",
+    "versionScope": "both",
+    "label": "回復（シールド終了時）",
+    "formula": "シールドが時間切れになると、味方はその時点で残っていたシールド量×50%を回復します。",
+    "evidence": "Begin performing a recital and become unstoppable for 3s, granting Wigglytuff and nearby allies a shield for 3.5s as well as removing all status conditions from Wigglytuff and the affected allies and granting them immunity to hindrances for as long as the shield is active. When the shield expires, allies are healed for 50% of the remaining shield value."
+  },
+  {
+    "id": "N017",
+    "sourceKey": "Yveltal|Passive|Dark Aura|rsb|base",
+    "sourceLabel": "Dark Aura - Healing",
+    "versionScope": "both",
+    "label": "追加の確定ダメージ・超過回復のシールド",
+    "formula": "破壊のマークが5個あり、HPが最大HPの10%未満の相手チームのポケモンへ、わざか強化攻撃を当てると相手の最大HP×40%の確定ダメージを追加します。5個のマークによる増加を含めると44%です。この追加ダメージでKOして回復した場合、最大HPを超える回復量×50%が3秒間のシールドになります。",
+    "evidence": "When this Pokémon deals damage with boosted attacks or moves, a mark of destruction is applied onto opposing Pokémon. This mark lasts 3s and stacks up to 5 times, increasing Yveltal's damage towards the marked Pokémon by 2% per stack. When Yveltal hits a Pokémon on the opposing team with a move or boosted attack, if that Pokémon has 5 marks of destruction and is below 10% Max HP, Yveltal will additionally deal 40% of that Pokémon's Max HP as true damage (Effectively 44% Max HP due to the required 5 marks of destruction). Pokémon KO'd by this damage will heal Yveltal, any healing exceeding the user's Max HP will be converted into a shield for 3s, at a 50% conversion rate."
+  },
+  {
+    "id": "N018",
+    "sourceKey": "Yveltal|Move 1|Oblivion Wing|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "回復・超過回復のシールド",
+    "formula": "実際に与えたダメージ×21%を回復します。野生相手では×7%です。最大HPを超える回復量×50%が2秒間のシールドになり、付与のたび持続時間を更新します。最大10回まで重なり、容量の上限は直近の回復量に基づきます。シールドへの変換では、回復量を直接変える効果を無視します。",
+    "evidence": "The user launches a destructive beam in the designated direction, dealing damage and healing the user for 21% of the damage dealt. Against wild Pokémon the healing is reduced to 7%. Any leftover healing from the move that exceeds the user's max HP is converted into a shield at a 50% conversion (effects that alter healing directly are ignored). The shield lasts 2s, the duration is refreshed with each application, and can stack up to 10x. The maximum capacity of the shield is determined by the healing value of the most recent application."
+  },
+  {
+    "id": "N019",
+    "sourceKey": "Umbreon|Unite Move|Moonlight Prance|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "非戦闘時の回復（1秒ごと）",
+    "formula": "習得後、戦闘していない間は自分の最大HP×1%を1秒ごとに回復します。",
+    "evidence": "Umbreon briefly becomes unstoppable, leaping up and absorbing 50% of the shields from enemy Pokémon in an area around Umbreon, taking them for the user. Umbreon then lands, dealing damage to Pokémon in an area-of-effect, and stuns them for 1s. For 5s, enemy Pokémon in the area around Umbreon are slowed by 30%, and if an enemy Pokémon in that area is granted a shield, Umbreon absorbs 50% of the shield for themself. Additionally, after learning this move and while not in combat, Umbreon continually recovers 1% Max HP every second. Note: Umbreon cannot steal shields granted by Rayquaza or Assault Vest.",
+    "numeric": {
+      "coeff": 1,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N020",
+    "sourceKey": "Trevenant|Basic|Attack|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "versionScope": "both",
+    "label": "回復（強化攻撃命中時）",
+    "formula": "自分の最大HP×5%。",
+    "evidence": "Becomes a boosted attack with every third attack, dealing increased damage to enemies and heal for 5% max HP when this boosted attack hits.",
+    "numeric": {
+      "coeff": 5,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N021",
+    "sourceKey": "Zeraora|Basic|Attack|rsb|base",
+    "sourceLabel": "Damage - Basic",
+    "versionScope": "both",
+    "label": "回復（強化攻撃命中時）",
+    "formula": "命中した相手1体につき、自分の減少HP×10%を回復します。",
+    "evidence": "Becomes a boosted attack with every third attack, dealing increased damage and paralyzing opposing Pokémon hit, and restoring 10% missing HP per target hit. The movement speed of paralyzed targets is decreased by 15% for 2.5s and their auto attack speed is decreased by 25% for 1s."
+  },
+  {
+    "id": "N022",
+    "sourceKey": "Snorlax|Unite Move|Power Nap|rsb|base",
+    "sourceLabel": "Damage",
+    "versionScope": "both",
+    "label": "回復（ねむり中・1回分）",
+    "formula": "自分の最大HP×10%。最大9回、合計90%まで回復します。この値は1回分です。",
+    "evidence": "The user becomes unstoppable and slams onto their back fast asleep, damaging opposing Pokémon in the area of effect and throwing them for 1s; then continues to sleep for up to 4s afterward. The user starts snoring for the remainder of the Unite Move, restoring 10% max HP over time while fast asleep (up to 9 times; maximum 90%), damaging opposing Pokémon in the area of effect with a huge snore every 1.5s and decreasing their movement speed by 30% for 1s when hit. This Unite Move can be used again before the user snores a second time to flip over in the designated sideways direction and slam the ground, dealing an extra instance of snore damage in the area of effect and throwing opposing Pokémon hit for 1s. While the user is fast asleep, opposing Pokémon cannot pass through Snorlax. After the user flips over or snores a second time, the user can use this Unite Move again to stop sleeping early, becoming vulnerable to hindrances and returning to normal.",
+    "numeric": {
+      "coeff": 10,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N023",
+    "sourceKey": "Metagross|Move 1|Gyro Ball|rsb|enhanced",
+    "sourceLabel": "",
+    "versionScope": "plus",
+    "label": "回復（シールド終了時）",
+    "formula": "シールドが時間切れになったとき、残っていたシールド量×30%を回復します。",
+    "evidence": "On expiration of shield duration, converts 30% of the remaining shield to healing."
+  },
+  {
+    "id": "N024",
+    "sourceKey": "Goodra|Unite Move|Right as Rain|rsb|base",
+    "sourceLabel": "Healing (13 ticks)",
+    "versionScope": "base",
+    "label": "回復（雨）",
+    "formula": "6秒間に13回回復し、1回につき自分の最大HP×4.6%を回復します。",
+    "evidence": "4.6% Max HP",
+    "hits": 13,
+    "numeric": {
+      "coeff": 4.6,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N025",
+    "sourceKey": "Espeon|Move 1|Stored Power|rsb|base",
+    "sourceLabel": "Damage - First Hit",
+    "versionScope": "both",
+    "label": "回復（みらいよち強化・1発分）",
+    "formula": "「みらいよち」によって強化されたアシストパワーは8発となり、1発ごとの回復量は150です。通常の弾にはこの回復はありません。",
+    "evidence": "When Stored Power is enhanced via Future Sight reset, it unleashes an increased number of psychic blasts (8 total) and restores Espeon's HP by 150 per blast.",
+    "numeric": {
+      "coeff": 0,
+      "lvScale": 0,
+      "fixed": 150,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N026",
+    "sourceKey": "Metagross|Move 1|Meteor Mash|rsb|enhanced",
+    "sourceLabel": "Punch Healing (1-2 Charges)",
+    "label": "パンチの回復（1〜2段階）",
+    "formula": "自分の最大HP×9%。コメットパンチ＋のパンチを、ため1〜2段階で命中させたときの回復です。",
+    "evidence": "Restores HP when the punch hits enemies. 9% Max HP",
+    "versionScope": "plus",
+    "numeric": {
+      "coeff": 9,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N027",
+    "sourceKey": "Quaquaval|Move 2|Liquidation|rsb|enhanced",
+    "sourceLabel": "Healing",
+    "label": "HP回復（＋版）",
+    "formula": "自分の最大HP×12%。アクアブレイク＋の命中による回復です。",
+    "evidence": "Increases the amount of health this move restores, and increases Spinning Edge's shield when this move precedes it. 12% of Max HP",
+    "versionScope": "plus",
+    "numeric": {
+      "coeff": 12,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N028",
+    "sourceKey": "Zacian|Move 2|Agility|rsb|add1",
+    "sourceLabel": "Boosted Shield (3s)",
+    "label": "シールド（エナジー強化）",
+    "formula": "自分の最大HP×12%＋50。エオスエナジーで強化して使うと、3秒間のシールドを得ます。",
+    "evidence": "12% Max HP + 50",
+    "versionScope": "both",
+    "numeric": {
+      "coeff": 12,
+      "lvScale": 0,
+      "fixed": 50,
+      "kind": "shield",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N029",
+    "sourceKey": "Greedent|Move 2|Defense Curl|rsb|base",
+    "sourceLabel": "",
+    "label": "シールド",
+    "formula": "自分の最大HP×10%。3秒間のシールドです。",
+    "evidence": "Grants Greedent a shield (10% max HP) for 3s. In addition, an Oran berry will drop in front of Greedent.",
+    "versionScope": "base",
+    "numeric": {
+      "coeff": 10,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "shield",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N030",
+    "sourceKey": "Wigglytuff|Move 2|Defense Curl|rsb|base",
+    "sourceLabel": "",
+    "label": "シールド",
+    "formula": "自分の最大HP×25%。0.5秒間のシールドです。",
+    "evidence": "Wigglytuff gains a 25% max HP shield for 0.5s and rolls forward a short distance, throwing enemies hit in the air for 0.5s. Hitting an obstacle while rolling will change the direction Wigglytuff is moving and reset the cooldown of Pound, Double Slap, or Dazzling Gleam.",
+    "versionScope": "base",
+    "numeric": {
+      "coeff": 25,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "shield",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N031",
+    "sourceKey": "Snorlax|Move 2|Rest|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（ねむる）",
+    "formula": "1回につき自分の最大HP×8%。1秒ごとに3回回復し、合計24%です。",
+    "evidence": "The user becomes unstoppable and falls asleep on the spot for 3s, restoring 8% max HP every 1s over 3s (maximum 24% max HP). While using this move, opposing Pokémon cannot pass through Snorlax. This move cannot be used within an opposing Miraidon's Electric Terrain.",
+    "versionScope": "base",
+    "hits": 3,
+    "numeric": {
+      "coeff": 8,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N032",
+    "sourceKey": "Slowbro|Move 2|Slack Off|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（基本量・0.5秒ごと）",
+    "formula": "1回につき自分の最大HP×2%。3秒間の継続回復の基本量です。休息中の量はこの2倍で、別欄に表示します。",
+    "evidence": "Slowbro begins channeling a nap and gains a heal over time, healing 2% max HP every 0.5s for 3s. While Slowbro remains channeling its nap, all self-healing is doubled (including Slack Off healing). Slowbro can be manually or forcibly woken up from their nap.",
+    "versionScope": "base",
+    "numeric": {
+      "coeff": 2,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N033",
+    "sourceKey": "Slowbro|Move 2|Slack Off|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（休息中・0.5秒ごと）",
+    "formula": "1回につき自分の最大HP×4%。なまけるで休息している間は、基本量2%が2倍になります。休息が中断されたら基本量へ戻ります。",
+    "evidence": "Slowbro begins channeling a nap and gains a heal over time, healing 2% max HP every 0.5s for 3s. While Slowbro remains channeling its nap, all self-healing is doubled (including Slack Off healing). Slowbro can be manually or forcibly woken up from their nap.",
+    "versionScope": "base",
+    "numeric": {
+      "coeff": 4,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N034",
+    "sourceKey": "Trevenant|Passive|Natural Cure|rsb|add1",
+    "sourceLabel": "Heal - 8 Ticks",
+    "label": "回復（しぜんかいふく）",
+    "formula": "1回につき自分の最大HP×［2＋0.18×（Lv−1）］%。特性発動中は0.5秒ごとに最大8回回復します。",
+    "evidence": "[ 2+(0.18 * (Level -1)) ] % of max HP",
+    "hits": 8,
+    "numeric": {
+      "coeff": 2,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": "",
+      "coeffPerLevel": 0.18
+    }
+  },
+  {
+    "id": "N035",
+    "sourceKey": "Dragonite|Basic|Attack - Dratini|description|text",
+    "sourceLabel": "Healing / source description",
+    "label": "回復（水の強化攻撃）",
+    "formula": "自分の最大HP×5%。水の強化攻撃が命中したときの回復です。電気・炎の強化攻撃にはこの回復はありません。",
+    "evidence": "Becomes a boosted attack with every third attack, blasting water in front of Dratini, dealing increased damage, reducing the cooldown of Dratini's moves by 1s, and recover 5% max HP when this hits.",
+    "numeric": {
+      "coeff": 5,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N036",
+    "sourceKey": "Dragonite|Basic|Attack - Dragonite|basic3_description|text",
+    "sourceLabel": "Source description",
+    "label": "追加ダメージ（炎の強化攻撃）",
+    "formula": "カイリューに進化した後の炎の強化攻撃は、相手の残りHP×10%の追加ダメージを与えます。野生への追加分は1200が上限です。",
+    "evidence": "The boosted attack alternates between water, electric, and fire with every use of a boosted attack. If the water or electric attack hits, it triggers the same effects as Dragonair's boosted attack. If the fire attack hits, it deals additional damage equal to 10% of the enemy's remaining HP (capped at 1200 dmg against wilds) and reduces the cooldown of Dragonite's moves by 1s when this hits."
+  },
+  {
+    "id": "N037",
+    "sourceKey": "Ho-Oh|Passive|Regenerator|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（非戦闘時・2秒ごと）",
+    "formula": "自分の最大HP×3%。相手チームから3秒間ダメージを受けていない間、2秒ごとに回復します。シールドへのダメージでは中断しません。",
+    "evidence": "If this Pokémon doesn't take damage from enemy Pokémon (Wild Pokémon do not count) for 3s, it will recover 3% max HP every 2 seconds. Damage to shields will not deactivate Regenerator. Ho-oh additionally recovers 0.3% max HP every 2 seconds.",
+    "numeric": {
+      "coeff": 3,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N038",
+    "sourceKey": "Ho-Oh|Passive|Regenerator|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（常時・2秒ごと）",
+    "formula": "自分の最大HP×0.3%。非戦闘時の3%回復とは別に発生する回復です。",
+    "evidence": "If this Pokémon doesn't take damage from enemy Pokémon (Wild Pokémon do not count) for 3s, it will recover 3% max HP every 2 seconds. Damage to shields will not deactivate Regenerator. Ho-oh additionally recovers 0.3% max HP every 2 seconds.",
+    "numeric": {
+      "coeff": 0.3,
+      "lvScale": 0,
+      "fixed": 0,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N039",
+    "sourceKey": "Clefable|Passive|Magic Guard|rsb|base",
+    "sourceLabel": "",
+    "label": "シールド（味方への回復時）",
+    "formula": "味方のHPを回復した量×50%のシールドを自分に付けます。シールドは3秒間です。",
+    "evidence": "This Pokémon receives a shield for 3s when restoring an ally Pokémon's HP. The strength of this shield is proportional to 50% of the amount of HP restored."
+  },
+  {
+    "id": "N040",
+    "sourceKey": "Hoopa|Move 2|Trick|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（トリック＋）",
+    "formula": "フーパとつながった味方は、それぞれ自分が与えたダメージの10%を回復します。効果は3秒間です。",
+    "evidence": "Hoopa and the linked ally each heal for 10% of their own damage dealt. This effect lasts for 3s.",
+    "versionScope": "plus"
+  },
+  {
+    "id": "N041",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（じたばた＋・HP40%未満）",
+    "formula": "自分の残りHPが最大HPの40%未満のとき、効果中の通常攻撃で与えたダメージ×30%を回復します。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus"
+  },
+  {
+    "id": "N042",
+    "sourceKey": "Greedent|Passive|Cheek Pouch|rsb|base",
+    "sourceLabel": "",
+    "label": "きのみの追加回復（オボン・カムラ）",
+    "formula": "自分の最大HP×1%＋23。オボンのみかカムラのみを食べた後の追加回復です。オレンのみ・ユナイトわざのきのみと異なり、レベルの固定値は加算しません。",
+    "evidence": "When Greedent eats any berry, recover HP after receiving the effects of the berry. At the same time, Greedent stashes an Oran berry in its tail. Being hit by a single attack or combination of attacks will cause an Oran berry to drop from Greedent's tail (4.5s cd). Berries stay on the ground for 10s. Oran berry or unite move berry heals Greedent for 1% Max HP + 3x(Lv-1) + 23; Sitrus or Salac berry heals Greedent for 1% Max HP + 0x(Lv-1) + 23. All other players heal from picking up an Oran berry for 2% Max HP + 5x(Level-1) + 45 (level and Max HP scaling is based on the player that ate the Oran berry).",
+    "numeric": {
+      "coeff": 1,
+      "lvScale": 0,
+      "fixed": 23,
+      "kind": "heal",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N043",
+    "sourceKey": "Falinks|Move 1|Iron Head|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "相手の最大HP×2%。アイアンヘッド＋と戻ってくるヘイの命中に加わるダメージで、追加分は400が上限です。",
+    "evidence": "Iron Head and the Troopers returning deal an additional 2% max hp damage to enemies they hit, capped to 400.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Falinks|Move 1|Iron Head|rsb|add3",
+      "Falinks|Move 1|Iron Head|rsb|add5"
+    ]
+  },
+  {
+    "id": "N044",
+    "sourceKey": "Glaceon|Move 1|Icicle Spear|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "氷の結晶1発につき相手の残りHP×0.5%。野生への追加分は300が上限です。指定対象以外の野生を貫通するとき、その野生には追加しません。",
+    "evidence": "Each launched ice crystal also deals additional damage to enemies hit equal to 0.5% of their remaining HP.  When crystals pass through wild Pokémon who are not the designated target, this additional damage is not applied. Against Wild Pokémon: This additional damage is capped at 300.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Glaceon|Move 1|Icicle Spear|rsb|base"
+    ]
+  },
+  {
+    "id": "N045",
+    "sourceKey": "Glaceon|Move 1|Icy Wind|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "氷の結晶1発につき相手の残りHP×1.5%。野生への追加分は300が上限です。",
+    "evidence": "Each launched ice crystal also deals additional damage to enemies hit equal to 1.5% of their remaining HP. Against Wild Pokémon: This additional damage is capped at 300.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Glaceon|Move 1|Icy Wind|rsb|base"
+    ]
+  },
+  {
+    "id": "N046",
+    "sourceKey": "Latios|Move 2|Dragon Pulse|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "念力弾1発につき相手の減少HP×3%。野生を含む全ての相手に対し、1発の追加分は300が上限です。",
+    "evidence": "The telekinetic projectiles deal an additional 3% missing HP damage to the target. Against any opposing Pokémon: additional missing HP damage is capped at 300 per projectile.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Latios|Move 2|Dragon Pulse|rsb|add1"
+    ]
+  },
+  {
+    "id": "N047",
+    "sourceKey": "Latios|Move 2|Draco Meteor|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "隕石1発につき相手の減少HP×3%。野生を含む全ての相手に対し、1発の追加分は300が上限です。",
+    "evidence": "Comets deal an additional 3% missing HP damage to opposing Pokémon hit. Against any opposing Pokémon: additional missing HP damage is capped at 300 per comet.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Latios|Move 2|Draco Meteor|rsb|base"
+    ]
+  },
+  {
+    "id": "N048",
+    "sourceKey": "Meganium|Passive|Overgrow|rsb|base",
+    "sourceLabel": "",
+    "label": "追加回復（しんりょく）",
+    "formula": "回復を受ける対象のHPが30%以下のとき、その対象への回復量×10%を追加します。自分と味方の両方が対象です。",
+    "evidence": "The user heals an additional 10% of the healing value to allies or themself while that target is at or below 30% HP."
+  },
+  {
+    "id": "N049",
+    "sourceKey": "Meowscarada|Passive|Overgrow|rsb|base",
+    "sourceLabel": "",
+    "label": "回復（しんりょく）",
+    "formula": "しんりょくの効果中、実際に与えたダメージ×15%を回復します。回復効果は4秒間です。",
+    "evidence": "When the user is at 50% max HP or less, if they would take damage they instead disappear into leaves, becoming invisible for 1.5s or until attacking (60s CD). This effect also increases the user's movement speed by 15%, damage by 15% and heals by 15% of the damage dealt for 4s."
+  },
+  {
+    "id": "N050",
+    "sourceKey": "Gyarados|Move 1|Aqua Tail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "強化されたアクアテールの命中で、相手の減少HP×20%を追加します。野生への追加分は1000が上限です。",
+    "evidence": "The boosted aqua tail deals an additional 20% missing HP damage to opposing Pokémon. Against wild Pokémon: additional missing HP damage is capped at 1000.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Gyarados|Move 1|Aqua Tail|rsb|add1",
+      "Gyarados|Move 1|Aqua Tail|rsb|add2"
+    ]
+  },
+  {
+    "id": "N051",
+    "sourceKey": "Mimikyu|Move 1|Shadow Claw|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "追加ダメージ（＋版・HP条件）",
+    "formula": "最後の攻撃に加えて、相手の減少HP×12%のダメージを1回与えます。野生への追加分は500が上限です。",
+    "evidence": "At the end of the move, deal an additional hit of damage equal to 12% of missing HP. This damage is capped at 500 against wild Pokémon.",
+    "versionScope": "plus",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Mimikyu|Move 1|Shadow Claw|rsb|base"
+    ]
+  },
+  {
+    "id": "N052",
+    "sourceKey": "Rapidash|Move 2|Agility|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（こうそくいどう＋）",
+    "formula": "このわざによって移動速度が上がっている間、0.5秒ごとに自分の減少HP×2%を回復します。",
+    "evidence": "Also restores 2% of the user's missing HP every 0.5s while their movement speed is increased by this move.",
+    "versionScope": "plus"
+  },
+  {
+    "id": "N053",
+    "sourceKey": "Sableye|Move 1|Knock Off|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（エナジー取得）",
+    "formula": "自分の最大HP×9%。はたきおとす＋の使用後5秒以内にエオスエナジーを拾ったとき、1回の発動につき一度だけ回復します。",
+    "evidence": "Aeos energy picked up within 5s of using this move recovers 9% Max HP (one time per activation) and increases movement speed by 40% for 2s.",
+    "versionScope": "plus",
+    "numeric": {
+      "coeff": 9,
+      "kind": "heal",
+      "fixed": 0,
+      "lvScale": 0,
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N054",
+    "sourceKey": "Sableye|Move 1|Shadow Sneak|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（ステルス中・0.5秒ごと）",
+    "formula": "自分の最大HP×1%。かげうち＋が有効でステルス状態の間、0.5秒ごとに回復します。",
+    "evidence": "Increases the duration of this move’s effects to 7.5s. While this move is active and Sableye is in stealth, Sableye will also restore 1% max HP every 0.5s.",
+    "versionScope": "plus",
+    "numeric": {
+      "coeff": 1,
+      "kind": "heal",
+      "fixed": 0,
+      "lvScale": 0,
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N055",
+    "sourceKey": "Zeraora|Move 1|Spark|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "回復（スパーク＋）",
+    "formula": "突進が相手に届く前に通常攻撃で飛びついたとき、自分の減少HP×15%を回復します。",
+    "evidence": "Restores 15% missing HP if leaping to an opposing Pokémon with an auto attack before reaching them with the dash.",
+    "versionScope": "plus"
+  },
+  {
+    "id": "N056",
+    "sourceKey": "Tyranitar|Passive|Shed Skin|passive2_description|text",
+    "sourceLabel": "Passive / source description",
+    "label": "シールド（だっぴ）",
+    "formula": "自分の最大HP×10%。サナギラスで一度に最大HPの10%以上のダメージを受け、特性が発動したときに得ます。待ち時間は40秒です。",
+    "evidence": "When Pupitar receives damage equal to at least 10% max HP, all status conditions are nullified and Pupitar is granted a shield worth 10% Max HP. This Ability goes on cooldown after it’s triggered (40s cd).",
+    "numeric": {
+      "coeff": 10,
+      "kind": "shield",
+      "fixed": 0,
+      "lvScale": 0,
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N057",
+    "sourceKey": "Snorlax|Passive|Gluttony|rsb|base",
+    "sourceLabel": "",
+    "label": "追加回復（オレンのみ）",
+    "formula": "自分の最大HP×1%＋23。ヨクバリスのオレンのみを食べたとき、きのみ自体の回復とは別に回復します。",
+    "evidence": "When facing nearby Berries or food, increases movement speed by 25%. Doubles the HP restored from eating Sitrus Berries. Restores an additional 1% max HP + 0 x (Lv. - 1) + 23 HP from eating Oran Berries (from Greedent Cheek Pouch). Alcremie's Recover heals 10% more HP than usual.",
+    "numeric": {
+      "coeff": 1,
+      "kind": "heal",
+      "fixed": 23,
+      "lvScale": 0,
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N058",
+    "sourceKey": "Greedent|Move 2|Stuff Cheeks|rsb|base",
+    "sourceLabel": "",
+    "label": "シールド（きのみ1個）",
+    "formula": "自分の最大HP×1.8%。ほおばるで5秒以内に食べたオレンのみの回復が最大HPを超えると、きのみ1個ごとに得ます。最大5個、合計で最大HPの9%までです。",
+    "evidence": "Greedent drops 5 Oran berries, which can be eaten to recover HP. Any HP recovered from an Oran berry eaten within 5s that exceeds Greedent's max HP will be converted to a shield for 1.8% max HP per berry (capped at 9% max HP or 5 berries). If Greedent catches sight of a berry while using this move, movement speed is increased by 70% for 6s, but decreasing by 15% every 1s.",
+    "versionScope": "both",
+    "numeric": {
+      "coeff": 1.8,
+      "kind": "shield",
+      "fixed": 0,
+      "lvScale": 0,
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N059",
+    "sourceKey": "Garchomp|Passive|Rough Skin|rsb|base",
+    "sourceLabel": "",
+    "label": "反射ダメージ（さめはだ）",
+    "formula": "近くの近接ポケモンから受けたダメージ×12.5%を、物理ダメージとしてその相手へ返します。待ち時間は0.6秒です。",
+    "evidence": "When damaged by a nearby opposing Melee Pokémon, reflects 12.5% of the damage received back to that opposing Pokémon as Attack-based damage (0.6s CD)."
+  },
+  {
+    "id": "N060",
+    "sourceKey": "Tinkaton|Passive|Mold Breaker|rsb|base",
+    "sourceLabel": "",
+    "label": "追加ダメージ（シールドへの攻撃）",
+    "formula": "相手のシールドへ与えたダメージ×30%を、相手のHPへ追加で与えます。",
+    "evidence": "When damaging an opposing Pokémon with an active shield effect, 30% of the damage dealt to the shield is dealt as additional damage to the target's HP. This Pokémon's hammer strengthens every time they hit Pokémon from the opposing team with boosted attacks or moves, increasing this Pokémon's Attack by 0.5% per target hit (up to 100 times; maximum 50% Attack). After the hammer is strengthened 20, 40, and 60 times; Rock Smash, Gigaton Hammer, and Smack Down gain increased range."
+  },
+  {
+    "id": "N061",
+    "sourceKey": "Urshifu|Passive|Unseen Fist|passive2_description|text",
+    "sourceLabel": "Passive / source description",
+    "label": "追加ダメージ（シールドへの攻撃）",
+    "formula": "相手のシールドへ与えたダメージ×30%を、相手のHPへ追加で与えます。",
+    "evidence": "When Urshifu deals damage to an opposing Pokémon with an active shield effect, 30% of the damage dealt to the shield is dealt as additional damage to the target's HP."
+  },
+  {
+    "id": "N062",
+    "sourceKey": "Mimikyu|Passive|Disguise|rsb|base",
+    "sourceLabel": "",
+    "label": "HP消費（ばけのかわ）",
+    "formula": "ばけのかわが攻撃を受けてはがれるとき、自分の残りHP×5%を確定ダメージとして受けます。",
+    "evidence": "Mimikyu starts the game in Disguised Form. While in Disguised Form, when Mimikyu would take damage from an enemy, Mimikyu instead takes 5% remaining HP as piercing damage, becomes Impervious for 0.5s (immune to damage but not hindrances) and changes to Busted Form. A revenge mark is applied on the enemy that broke the disguise. Mimikyu's movement speed increases by 10% when approaching revenge-marked enemies and deals 10% increased damage to them. After 50s in Busted Form, Mimikyu returns to Disguised Form. The time it takes to return to Disguised Form is reduced by 25s when Mimikyu knocks out an enemy player and is fully reset upon respawning."
+  },
+  {
+    "id": "N063",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階1）",
+    "formula": "攻撃×45%＋7×（Lv−1）＋90＋自分の最大HP×5%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 45,
+      "lvScale": 7,
+      "fixed": 90,
+      "hpPercent": 5,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N064",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階2）",
+    "formula": "攻撃×50%＋8×（Lv−1）＋150＋自分の最大HP×6%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 50,
+      "lvScale": 8,
+      "fixed": 150,
+      "hpPercent": 6,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N065",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階3）",
+    "formula": "攻撃×55%＋9×（Lv−1）＋210＋自分の最大HP×7%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 55,
+      "lvScale": 9,
+      "fixed": 210,
+      "hpPercent": 7,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N066",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階4）",
+    "formula": "攻撃×60%＋10×（Lv−1）＋270＋自分の最大HP×8%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 60,
+      "lvScale": 10,
+      "fixed": 270,
+      "hpPercent": 8,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N067",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階5）",
+    "formula": "攻撃×65%＋11×（Lv−1）＋330＋自分の最大HP×9%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 65,
+      "lvScale": 11,
+      "fixed": 330,
+      "hpPercent": 9,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N068",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階1）",
+    "formula": "攻撃×67.5%＋10×（Lv−1）＋135＋自分の最大HP×6%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 67.5,
+      "lvScale": 10,
+      "fixed": 135,
+      "hpPercent": 6,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N069",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階2）",
+    "formula": "攻撃×75%＋11×（Lv−1）＋225＋自分の最大HP×7%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 75,
+      "lvScale": 11,
+      "fixed": 225,
+      "hpPercent": 7,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N070",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階3）",
+    "formula": "攻撃×82.5%＋12×（Lv−1）＋315＋自分の最大HP×8%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 82.5,
+      "lvScale": 12,
+      "fixed": 315,
+      "hpPercent": 8,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N071",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階4）",
+    "formula": "攻撃×90%＋13×（Lv−1）＋405＋自分の最大HP×9%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 90,
+      "lvScale": 13,
+      "fixed": 405,
+      "hpPercent": 9,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N072",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|base",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階5）",
+    "formula": "攻撃×97.5%＋14×（Lv−1）＋495＋自分の最大HP×10%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "The user increases their movement speed by 80% for 3s (decaying by 10% every 0.5s over 2s; minimum 40% for 1s before this buff ends) and decreases the movement speed of nearby opposing Pokémon by 50% for 1.5s, and starts flailing about for 5s. While flailing about, auto attacks deal increased damage, with damage strengthening for every 20% max HP the user is missing. Basic attacks used while flailing about also decrease the movement speed of opposing Pokémon hit by 20% for 1s; boosted attacks decrease movement speed by 50% for 1s.",
+    "versionScope": "base",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 97.5,
+      "lvScale": 14,
+      "fixed": 495,
+      "hpPercent": 10,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N073",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階1）",
+    "formula": "攻撃×81%＋7×（Lv−1）＋100＋自分の最大HP×5%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 81,
+      "lvScale": 7,
+      "fixed": 100,
+      "hpPercent": 5,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N074",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階2）",
+    "formula": "攻撃×86%＋8×（Lv−1）＋160＋自分の最大HP×6%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 86,
+      "lvScale": 8,
+      "fixed": 160,
+      "hpPercent": 6,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N075",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階3）",
+    "formula": "攻撃×91%＋9×（Lv−1）＋220＋自分の最大HP×7%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 91,
+      "lvScale": 9,
+      "fixed": 220,
+      "hpPercent": 7,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N076",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階4）",
+    "formula": "攻撃×96%＋10×（Lv−1）＋280＋自分の最大HP×8%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 96,
+      "lvScale": 10,
+      "fixed": 280,
+      "hpPercent": 8,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N077",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "通常攻撃（じたばた・HP段階5）",
+    "formula": "攻撃×101%＋11×（Lv−1）＋340＋自分の最大HP×9%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 101,
+      "lvScale": 11,
+      "fixed": 340,
+      "hpPercent": 9,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N078",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階1）",
+    "formula": "攻撃×121.5%＋10×（Lv−1）＋150＋自分の最大HP×6%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 121.5,
+      "lvScale": 10,
+      "fixed": 150,
+      "hpPercent": 6,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N079",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階2）",
+    "formula": "攻撃×129%＋11×（Lv−1）＋240＋自分の最大HP×7%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 129,
+      "lvScale": 11,
+      "fixed": 240,
+      "hpPercent": 7,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N080",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階3）",
+    "formula": "攻撃×136.5%＋12×（Lv−1）＋330＋自分の最大HP×8%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 136.5,
+      "lvScale": 12,
+      "fixed": 330,
+      "hpPercent": 8,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N081",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階4）",
+    "formula": "攻撃×144%＋13×（Lv−1）＋420＋自分の最大HP×9%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 144,
+      "lvScale": 13,
+      "fixed": 420,
+      "hpPercent": 9,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N082",
+    "sourceKey": "Snorlax|Move 1|Flail|rsb|enhanced",
+    "sourceLabel": "",
+    "label": "強化攻撃（じたばた・HP段階5）",
+    "formula": "攻撃×151.5%＋14×（Lv−1）＋510＋自分の最大HP×10%。残りHPが減るにつれて段階1から5へ変わります。各段階の攻撃1回分を個別に計算し、通常攻撃欄へ自動適用しません。",
+    "evidence": "Increases the damage dealt by auto attacks used while flailing about. When the user is below 40% max HP, auto attacks also restore the user's HP for 30% of damage dealt.",
+    "versionScope": "plus",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 151.5,
+      "lvScale": 14,
+      "fixed": 510,
+      "hpPercent": 10,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N083",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（初撃・ためなし）",
+    "formula": "攻撃×32%＋（Lv−1）＋38。最初の波動1回分です。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 32,
+      "lvScale": 1,
+      "fixed": 38,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N084",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（初撃・ため中）",
+    "formula": "攻撃×40%＋（Lv−1）＋48。最初の波動1回分です。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 40,
+      "lvScale": 1,
+      "fixed": 48,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N085",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（初撃・最大ため）",
+    "formula": "攻撃×50%＋（Lv−1）＋56。最初の波動1回分です。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 50,
+      "lvScale": 1,
+      "fixed": 56,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N086",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（マーク追撃・固定部分・ためなし）",
+    "formula": "攻撃×45%＋（Lv−1）＋54。マーク1個による追撃1回の固定部分です。相手の減少HP×0.8%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 45,
+      "lvScale": 1,
+      "fixed": 54,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N087",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（マーク追撃・固定部分・ため中）",
+    "formula": "攻撃×57%＋（Lv−1）＋68。マーク1個による追撃1回の固定部分です。相手の減少HP×0.8%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 57,
+      "lvScale": 1,
+      "fixed": 68,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N088",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（マーク追撃・固定部分・最大ため）",
+    "formula": "攻撃×69%＋（Lv−1）＋82。マーク1個による追撃1回の固定部分です。相手の減少HP×0.8%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 69,
+      "lvScale": 1,
+      "fixed": 82,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N089",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（最後のリング・固定部分・ためなし）",
+    "formula": "攻撃×59%＋（Lv−1）＋70。最後のリング1回の固定部分です。相手の減少HP×1.6%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 59,
+      "lvScale": 1,
+      "fixed": 70,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N090",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（最後のリング・固定部分・ため中）",
+    "formula": "攻撃×75%＋（Lv−1）＋87。最後のリング1回の固定部分です。相手の減少HP×1.6%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 75,
+      "lvScale": 1,
+      "fixed": 87,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N091",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "ダメージ（最後のリング・固定部分・最大ため）",
+    "formula": "攻撃×90%＋（Lv−1）＋106。最後のリング1回の固定部分です。相手の減少HP×1.6%の追加分は、下の条件式を参照してください。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both",
+    "numeric": {
+      "stat": "攻撃",
+      "coeff": 90,
+      "lvScale": 1,
+      "fixed": 106,
+      "kind": "damage",
+      "target": "self",
+      "unit": ""
+    }
+  },
+  {
+    "id": "N092",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "追加ダメージ（マーク追撃・1回分）",
+    "formula": "相手の減少HP×0.8%。マーク追撃1回ごとに、ため段階別の固定部分へ加わります。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both"
+  },
+  {
+    "id": "N093",
+    "sourceKey": "Duraludon|Move 1|Dragon Pulse|rsb|base",
+    "sourceLabel": "Damage - Bonus (After KO)",
+    "label": "追加ダメージ（最後のリング）",
+    "formula": "相手の減少HP×1.6%。最後のリングの、ため段階別の固定部分へ加わります。",
+    "evidence": "Duraludon begins charging power, slowing itself by 30%. The longer the move is charged the greater the damage and area of effect. After learning this move a mark will be applied to any enemy Duraludon damages with auto attacks and moves. Each tick of damage from Duraludon (boosted attack counts as 1 instance) will apply 1 mark up to a maximum of 5 orbs and 1 ring. This mark lasts for 5s, is refreshed when Duraludon deals damage to the marked enemy and can be cleansed. When Dragon Pulse hits a marked enemy, the marks are consumed and additional damage is dealt for each mark. Opposing Duraludon's can consume the user's marks but will not gain the additional damage. Furthermore, if this move knocks out an enemy, the cooldown is reduced by 30% and Duraludon receives a buff for 8s or 3 auto attacks. While this buff is active, auto attacks deal additional damage and reduce this moves cooldown by 1.5s each.",
+    "versionScope": "both"
+  },
+  {
+    "id": "N094",
+    "sourceKey": "Zacian|Basic|Attack|boosted_rsb|base",
+    "sourceLabel": "Stage One - Boosted",
+    "label": "1段目の追加ダメージ（強化時）",
+    "formula": "相手の最大HP×1%。エオスエナジーで強化した通常攻撃の1段目に加わります。野生への追加分は400が上限です。",
+    "evidence": "Deals additional 1% Max HP. (Additional damage capped at 400 on Wild Pokémon)",
+    "additionalTerm": true,
+    "affectedSourceKeys": [
+      "Zacian|Basic|Attack|boosted_rsb|base"
+    ]
+  }
+]

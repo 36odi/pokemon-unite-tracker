@@ -18,7 +18,7 @@ for(const [poke,rows] of Object.entries(K)){
   }
 }
 const pick=(p,n,d)=>K[p].filter(r=>r.name===n&&(!d||r.dmgType===d));
-eq(pick('カメックス','しおふき').map(r=>label('カメックス',r)),['ダメージ（通常時）','ダメージ（こうそくスピン中）'],'same formula different modes');
+eq(pick('カメックス','しおふき').map(r=>label('カメックス',r)),['ダメージ（通常・6ヒット）','ダメージ（こうそくスピン中・最大17ヒット）'],'same formula different modes and hit counts');
 eq(pick('ヌメルゴン','りゅうのはどう','ダメージ').map(r=>label('ヌメルゴン',r)),['ダメージ（中心）','ダメージ（周囲）'],'center/side damage');
 eq(pick('ヌメルゴン','りゅうのはどう+','回復').map(r=>label('ヌメルゴン',r)),['回復（中心に命中・ぬめぬめなし）','回復（中心に命中・ぬめぬめあり）'],'upgrade healing conditions');
 eq(pick('マッシブーン','ウルトラバルクマスキュラー').filter(r=>!r.narrativeKey).map(r=>label('マッシブーン',r)),['ダメージ（最初の範囲攻撃）','ダメージ（HP割合が最も低い相手への追撃）'],'identical numeric rows kept');
@@ -29,7 +29,7 @@ eq(label('アブソル',pick('アブソル','つじぎり','ダメージ - 初�
 eq(pick('ギャラドス','じたばた').every(r=>label('ギャラドス',r).includes('自分のHP')),true,'Flail depends on own HP');
 eq(note('ヌメルゴン',pick('ヌメルゴン','りゅうのはどう','回復')[0]).includes('含まれません'),true,'incomplete formula clearly noted');
 eq(label('マホイップ',pick('マホイップ','ふわふわハッピーシャワー')[0]),'回復（クリーム1個あたり・最大48個）','cream unit and limit retained');
-eq(label('サーナイト',pick('サーナイト','フェアリーヴォイド').find(r=>r.dmgType.includes('ティック'))),'継続ダメージ（全4回）','tick wording retains count');
+eq(label('サーナイト',pick('サーナイト','フェアリーヴォイド').find(r=>r.sourceKey==='Gardevoir|Unite Move|Fairy Singularity|rsb|add1')),'ダメージ（継続・4ヒット）','tick wording retains count');
 eq(label('ミライドン',pick('ミライドン','チャージビーム').find(r=>r.dmgType==='ダメージ - 通常')),'ダメージ（通常時）','normal move damage is not called basic attack');
 eq(label('バシャーモ',pick('バシャーモ','オーバーヒート').find(r=>r.dmgType.includes('中 チャージ'))),'ダメージ（中程度までためたとき）','charge wording');
 eq(JSON.stringify(K),before,'display dictionary never changes source data');

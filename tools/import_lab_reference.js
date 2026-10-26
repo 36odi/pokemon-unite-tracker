@@ -6,7 +6,8 @@ if(!process.argv.includes('--source')||!fs.existsSync(sourcePath))throw Error('-
 const raw=fs.readFileSync(sourcePath),source=JSON.parse(raw),S=csv(fs.readFileSync('data/unitedb_ratios.csv','utf8'));
 if(!process.argv.includes('--checked-at'))throw Error('--checked-at に原文を取得・確認した日（YYYY-MM-DD）を指定してください');
 const date=process.argv[process.argv.indexOf('--checked-at')+1];if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('確認日の形式が不正');
-const out={meta:{checkedAt:date,source:'https://unite-db.com/pokemon.json',sha256:crypto.createHash('sha256').update(raw).digest('hex'),ratioSha256:crypto.createHash('sha256').update(fs.readFileSync('data/unitedb_ratios.csv')).digest('hex'),gameVersion:null},pokemon:{}};
+const cooldownSemantics=require('../data/lab-cooldown-semantics.json'),resolveCooldown=require('./lab_cooldown_semantics');
+const out={meta:{checkedAt:date,source:'https://unite-db.com/pokemon.json',sha256:crypto.createHash('sha256').update(raw).digest('hex'),ratioSha256:crypto.createHash('sha256').update(fs.readFileSync('data/unitedb_ratios.csv')).digest('hex'),gameVersion:null,cooldownSemantics:{rule:cooldownSemantics.rule,sourceUrl:cooldownSemantics.sourceUrl,sourceSha256:cooldownSemantics.sourceSha256,checkedAt:cooldownSemantics.checkedAt}},pokemon:{}};
 const str=v=>v==null?'':String(v),number=v=>str(v).trim()===''?null:Number(v);
 for(const p of source){
  const jp=pokemon(S.find(r=>r.pokemon_en===p.name)?.pokemon_ja||'');if(!jp)throw Error('日本語名なし: '+p.name);
@@ -17,8 +18,8 @@ for(const p of source){
   }
   function move(m,ptr,parent=''){
    const ss=S.find(r=>r.pokemon_en===p.name&&r.skill_slot===s.ability&&r.move_en===m.name);
-   const cd=number(m.cd1??m.cd),reduction=number(m.rsb?.enhanced_cdr);
-   entry.moves.push({slot:s.ability,sourceName:m.name,name:ss?.move_ja||m.name,parent,sourcePointer:'pokemon.json#/'+si+'/'+ptr,level:number(m.level??m.level1),plusLevel:number(m.level2),cd,plusReduction:reduction,plusCD:cd!==null&&reduction!==null?cd-reduction:null,stage:parent?'upgrade':'base',...(s.ability==='Unite Move'?{energy:number(m.energy),buffs:m.buffs||'',buffDuration:number(m.buff_duration)}:{})});
+   const cd=number(m.cd1??m.cd),reduction=number(m.rsb?.enhanced_cdr),plusLevel=number(m.level2);
+   entry.moves.push({slot:s.ability,sourceName:m.name,name:ss?.move_ja||m.name,parent,sourcePointer:'pokemon.json#/'+si+'/'+ptr,upgradeOriginal:str(m.description2),level:number(m.level??m.level1),plusLevel,cd,plusReduction:reduction,...resolveCooldown(cd,reduction,plusLevel),stage:parent?'upgrade':'base',...(s.ability==='Unite Move'?{energy:number(m.energy),buffs:m.buffs||'',buffDuration:number(m.buff_duration)}:{})});
   }
   move(s,'skills/'+si);
   for(const [i,m]of (s.upgrades||[]).entries())move(m,'skills/'+si+'/upgrades/'+i,s.name);

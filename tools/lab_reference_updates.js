@@ -1,5 +1,6 @@
-// 数値・条件・習得時点を出典キーで同期。未提供の＋CDを通常値で確定しない。
+// 数値・条件・習得時点を出典キーで同期。＋CDは確認した出典の表示規則に従う。
 const metadata=require('../data/lab-reference-metadata.json');
+const reviewedHits=new Map(require('../data/lab-reviewed-hit-counts.json').rules.map(r=>[r.sourceKey,r]));
 const {key,num,norm,pokemon}=require('./lab-data-utils');
 const slots={'Basic':'通常攻撃','Passive':'特性','Move 1':'わざ1','Move 2':'わざ2','Unite Move':'ユナイトわざ'};
 const plusMissing={'メガニウム':['くさむすび'],'ミュウ':['エレキボール','コーチング'],'パルキア':['はどうだん','ドラゴンクロー'],'ウェーニバル':['アクアブレイク'],'ラウドボーン':['バークアウト'],'イベルタル':['あくのはどう']};
@@ -25,6 +26,26 @@ function sync(SK,source,{additions=false}={}){
    }
   }
   if(s){
+   if(s.pokemon_en==='Armarouge'&&s.move_en==='Psyshock'&&r.coeff!=null){
+    const original=byKey.get('Armarouge|Move 2|Psyshock|rsb|base');
+    if(!original?.true_description.includes('ignoring 35% of their Sp. Def'))throw Error('サイコショックの特防貫通を再確認してください');
+    r.defenseIgnorePercent=35;r.componentNote='相手の特防を35%無視します。すりぬけスプーンの効果と加算されます。';
+   }
+   if(s.pokemon_en==='Inteleon'&&s.move_en==='Snipe Shot'&&r.coeff!=null){
+    const original=byKey.get('Inteleon|Move 2|Snipe Shot|rsb|base');
+    const stages={base:['Damage (Close)',15],add1:['Damage (Mid)',20],add2:['Damage (Far)',25]},stage=stages[s.ratio_component];
+    if(!original?.true_description.includes('15%/20%/25% depending on distance (close, mid, far respectively)')||!stage||s.effect_label!==stage[0])throw Error('ねらいうちの距離別の特防貫通を再確認してください');
+    r.defenseIgnorePercent=stage[1];r.componentNote=`この距離では相手の特防を${stage[1]}%無視します。すりぬけスプーンの効果と加算されます。`;
+   }
+   const hitRule=reviewedHits.get(r.sourceKey);
+   if(hitRule){
+    if(s.effect_label!==hitRule.sourceLabel)throw Error('連続攻撃の回数・条件を再確認してください: '+r.sourceKey);
+    r.hits=hitRule.hits;r.dmgType=hitRule.label;
+   }
+   // 古い成分名に残る回数を除く。実際の回数は本文から生成済みの hits を使う。
+   if(r.sourceKey==='Venusaur|Move 1|Sludge Bomb|rsb|add1')r.dmgType=r.dmgType.replace(/\s*\(6 ヒット\)/,'');
+   if(r.sourceKey==='Zeraora|Move 2|Discharge|rsb|base')r.dmgType=r.dmgType.replace(/\s*\(13 回 最大\)/,'');
+   if(r.sourceKey==='Delphox|Unite Move|Fanciful Fireworks|rsb|base')r.dmgType=r.dmgType.replace(/\s*\(13 回 最大\)/,'');
    if(/Overheal Shield/.test(s.effect_label)){r.effectKind='shield';r.calculationStatus='conditional';r.calculationNotice='回復が最大HPを超えた分から発生するシールドです。表示式だけで実際の付与量を確定できないため、自動計算しません。';}
    if(['Absol|Move 1|Feint|rsb|base','Ceruledge|Move 2|Phantom Force|rsb|base','Ceruledge|Move 2|Phantom Force|rsb|enhanced'].includes(r.sourceKey)){
     r.defenseMode='ignore';r.componentNote='相手の防御とシールドを無視する攻撃です。防御によるダメージ軽減を適用しません。';
@@ -32,6 +53,11 @@ function sync(SK,source,{additions=false}={}){
    if(p==='ゼラオラ'&&s.move_en==='Discharge'&&s.ratio_component==='add2'){r.dmgType='追加ダメージ（まひした相手の引き寄せ）';r.componentNote='ほうでん終了時、まひした相手を引き寄せたときの追加1回分です。';}
   }
   if(p==='ピカチュウ'&&r.name==='かみなり+'){r.hits=7;r.hitsVar=true;}
+  // description2 の「音波が1発増える」は enhanced_true_desc の減速と併存する。
+  if(p==='ニンフィア'&&r.name==='ハイパーボイス+'&&r.coeff!=null){
+   if(m?.upgradeOriginal!=='Increases the number of sound waves by one.')throw Error('ハイパーボイス＋の回数の出典を再確認してください');
+   r.hits=7;r.dmgType=r.dmgType.replace(/\s*\(6x\)/,'');
+  }
   if(p==='フリーザー'&&r.name==='ふぶき+'&&r.coeff!=null)r.hits=8;
  }
  if(additions){

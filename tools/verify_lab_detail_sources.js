@@ -6,7 +6,7 @@ function verify(detail,raw,foreign){
   const source=JSON.parse(raw),pointer=p=>p.split('/').slice(1).reduce((v,k)=>v?.[k.replace(/~1/g,'/').replace(/~0/g,'~')],source);
   let fields=0,references=0;
   const check=(p,hash,label)=>{const value=pointer(p);if(typeof value!=='string'||sha(value)!==hash)throw Error('原文の根拠不一致: '+label+' '+p);fields++;};
-  for(const r of detail.rules){
+  for(const r of [...detail.rules,...(detail.summaryReviews||[]),...(detail.formulaReviews||[])]){
     for(const p of r.proofs)if(p.kind==='unitedb-text')check(p.pointer,p.textSha256,r.id);
     if(foreign)for(const ref of r.foreignReferences){
       const page=foreign.find(p=>p.url===ref.url&&p.sha256===ref.pageSha256);

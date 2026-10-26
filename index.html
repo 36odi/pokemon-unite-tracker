@@ -23,15 +23,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=108"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=108" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=108" defer></script>
-<script id="labDataScript" src="lab_data.js?v=108" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=108"></script>
-<script src="js/utils.js?v=108"></script>
-<script src="js/lab-core.js?v=108"></script>
-<script src="js/usage-analytics.js?v=108"></script>
-<link rel="stylesheet" href="styles.css?v=108" />
+<script src="vendor/supabase.min.js?v=109"></script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=109" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=109" defer></script>
+<script id="labDataScript" src="lab_data.js?v=109" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=109"></script>
+<script src="js/utils.js?v=109"></script>
+<script src="js/lab-core.js?v=109"></script>
+<script src="js/usage-analytics.js?v=109"></script>
+<link rel="stylesheet" href="styles.css?v=109" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2228,6 +2228,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.78',date:'2026-10-26',items:[
+    'わざの説明に、減速の割合と時間、回復・シールド、妨害や再使用の条件を補いました。',
+    '連続攻撃の回数や2ヒット目以降の式、＋版の効果と待ち時間の表示を修正しました。',
+    'カビゴンのじたばた・ジュラルドンのりゅうのはどうの条件別ダメージを補い、インテレオンのねらいうちの特防貫通を計算に反映しました。'
+  ]},
   {version:'v5.77',date:'2026-10-25',items:[
     'ラボのわざ・特性に、ダメージと妨害の区別、対象外の効果、使用中や再使用時の制限、形態・モード別の条件を補いました。',
     '全ポケモンに急所の対象・HP吸収などの仕様を追加しました。メガギャラドスの通常攻撃と、ミュウのなみのりの説明も修正しました。ウーラオス・バシャーモは、形態ごとのユナイトわざを計算画面でも正しい名前で表示します。',
@@ -6839,7 +6844,8 @@ function _calcDmgHtml(r,poke=document.getElementById('labPokeSelect')?.value){
   const hits = r.hits || 1;
   const hitsVar = r.hitsVar || false;
   // 式の表示（wikiwiki寄せ: 「攻撃264 x 170% + 10 x (レベル - 1) + 200」）
-  const parts = coeff?[`${statLabel}${base} x ${coeff}%`]:[];
+  const parts = coeff||r.coeffPerLevel?[`${statLabel}${base} x ${r.coeffPerLevel?`(${coeff} + ${r.coeffPerLevel} x (レベル - 1))`:coeff}%`]:[];
+  if(r.hpPercent) parts.push(`最大HP${labCalcResult.HP||0} x ${r.hpPercent}%`);
   if(lvScale) parts.push(`${lvScale} x (レベル - 1)`);
   parts.push(`${fixed}`);
   let formula=parts.join(' + ');
@@ -7669,12 +7675,12 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=108"></script>
-<script src="ratio.js?v=108"></script>
-<script src="js/lab-review.js?v=108"></script>
-<script src="js/calc-conditions-core.js?v=108"></script>
-<script src="js/calc-conditions.js?v=108"></script>
-<script src="js/patch-analysis-core.js?v=108"></script>
-<script src="js/patch-analysis.js?v=108"></script>
+<script src="ratio-labels.js?v=109"></script>
+<script src="ratio.js?v=109"></script>
+<script src="js/lab-review.js?v=109"></script>
+<script src="js/calc-conditions-core.js?v=109"></script>
+<script src="js/calc-conditions.js?v=109"></script>
+<script src="js/patch-analysis-core.js?v=109"></script>
+<script src="js/patch-analysis.js?v=109"></script>
 </body>
 </html>

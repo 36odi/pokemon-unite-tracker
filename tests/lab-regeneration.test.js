@@ -15,7 +15,7 @@ eq(JSON.stringify(S)===JSON.stringify(csv(fs.readFileSync('data/unitedb_ratios.c
 const solgaleoMetadata=require('../data/lab-reference-metadata.json').pokemon['ソルガレオ'];
 for(const name of ['アイアンヘッド','サイコショック']){
  const move=solgaleoMetadata.moves.find(m=>m.name===name),oldLevel=move.plusLevel;
- try{move.plusLevel=oldLevel+1;const future=JSON.parse(before);require('../tools/lab_reference_updates')(future,S);eq(future['ソルガレオ'].filter(r=>r.name===name+'+').map(r=>r.upg),[String(move.plusLevel)],'Solgaleo upgrade follows future source metadata '+name);}
+ try{move.plusLevel=oldLevel+1;const future=JSON.parse(before);require('../tools/lab_reference_updates')(future,S);eq([...new Set(future['ソルガレオ'].filter(r=>r.name===name+'+').map(r=>r.upg))],[String(move.plusLevel)],'all Solgaleo upgrade components follow future source metadata '+name);}
  finally{move.plusLevel=oldLevel;}
 }
 console.log('ALL PASS — '+n+' source identity regeneration checks');

@@ -67,7 +67,13 @@
     ],
     "label": "2〜5回目の波（初回の105・110・115・200%）",
     "evidence": "second wave deals 5% more damage",
-    "variant": "both"
+    "variant": "both",
+    "factorLabels": [
+      "2回目の波",
+      "3回目の波",
+      "4回目の波",
+      "5回目の波"
+    ]
   },
   {
     "pokemon": "マフォクシー",
@@ -339,6 +345,92 @@
     ],
     "label": "2ヒット目以降",
     "evidence": "Deals half damage",
+    "variant": "both"
+  },
+  {
+    "pokemon": "マスカーニャ",
+    "move": "つじぎり",
+    "sourceKey": "Meowscarada|Move 1|Night Slash|rsb|add1",
+    "factors": [
+      0.5,
+      0.2
+    ],
+    "label": "通常攻撃の回復周期・2／3回目",
+    "evidence": "the first attack will heal 100% of the value, the second 50% and the third 20%",
+    "variant": "base",
+    "factorLabels": [
+      "通常攻撃の回復周期・2回目",
+      "通常攻撃の回復周期・3回目"
+    ]
+  },
+  {
+    "pokemon": "マスカーニャ",
+    "move": "つじぎり",
+    "sourceKey": "Meowscarada|Move 1|Night Slash|rsb|enhanced",
+    "factors": [
+      0.5,
+      0.2
+    ],
+    "label": "通常攻撃の回復周期・2／3回目",
+    "evidence": "the first attack will heal 100% of the value, the second 50% and the third 20%",
+    "variant": "plus",
+    "factorLabels": [
+      "通常攻撃の回復周期・2回目",
+      "通常攻撃の回復周期・3回目"
+    ]
+  },
+  {
+    "pokemon": "バクフーン",
+    "move": "ふんか",
+    "sourceKey": "Typhlosion|Move 1|Eruption|rsb|base",
+    "factors": [
+      0.8,
+      0.6
+    ],
+    "label": "同じ相手への後続の炎",
+    "factorLabels": [
+      "同じ相手への2ヒット目",
+      "同じ相手への3ヒット目以降"
+    ],
+    "evidence": "20% less damage for the second hit, and 40% less damage for the third hit and beyond",
+    "variant": "base"
+  },
+  {
+    "pokemon": "バクフーン",
+    "move": "ふんか",
+    "sourceKey": "Typhlosion|Move 1|Eruption|rsb|enhanced",
+    "factors": [
+      0.8,
+      0.6
+    ],
+    "label": "同じ相手への後続の炎",
+    "factorLabels": [
+      "同じ相手への2ヒット目",
+      "同じ相手への3ヒット目以降"
+    ],
+    "evidence": "20% less damage for the second hit, and 40% less damage for the third hit and beyond",
+    "variant": "plus"
+  },
+  {
+    "pokemon": "ラプラス",
+    "move": "ほろびのうた",
+    "sourceKey": "Lapras|Move 1|Perish Song|rsb|base",
+    "factors": [
+      1
+    ],
+    "label": "3回すべて命中したときの追加ダメージ",
+    "evidence": "Pokémon hit all three times take additional damage equal to one Perish Song hit.",
+    "variant": "both"
+  },
+  {
+    "pokemon": "ジュナイパー",
+    "move": "矢継早連撃",
+    "sourceKey": "Decidueye|Unite Move|Nock Nock|rsb|add1",
+    "factors": [
+      1.3
+    ],
+    "label": "最後の大きな矢・相手のHP50%未満",
+    "evidence": "30% more damage if the target is below 50% HP",
     "variant": "both"
   }
 ]

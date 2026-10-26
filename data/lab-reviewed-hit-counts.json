@@ -1,0 +1,107 @@
+{
+  "checkedAt": "2026-10-26",
+  "rules": [
+    {
+      "sourceKey": "Aegislash|Move 1|Shadow Sneak|rsb|base",
+      "sourceLabel": "Damage - 2 Hits",
+      "hits": 2,
+      "label": "ダメージ（影と移動先・2ヒット）"
+    },
+    {
+      "sourceKey": "Aegislash|Move 1|Shadow Claw|rsb|base",
+      "sourceLabel": "Damage - First 2 Hits",
+      "hits": 2,
+      "label": "ダメージ（最初の2ヒット）"
+    },
+    {
+      "sourceKey": "Dodrio|Move 1|Drill Peck|rsb|base",
+      "sourceLabel": "Damage - 3x (No Gauge)",
+      "hits": 3,
+      "label": "ダメージ（ゲージ不足・3ヒット）"
+    },
+    {
+      "sourceKey": "Dodrio|Move 1|Drill Peck|rsb|add1",
+      "sourceLabel": "Damage - 5x (Full Gauge)",
+      "hits": 5,
+      "label": "ダメージ（ゲージ満タン・5ヒット）"
+    },
+    {
+      "sourceKey": "Gardevoir|Unite Move|Fairy Singularity|rsb|add1",
+      "sourceLabel": "Damage - 4 Ticks",
+      "hits": 4,
+      "label": "ダメージ（継続・4ヒット）"
+    },
+    {
+      "sourceKey": "Goodra|Move 2|Acid Spray|rsb|add1",
+      "sourceLabel": "Damage (Dash 2x hits)",
+      "hits": 2,
+      "label": "ダメージ（突進・2ヒット）"
+    },
+    {
+      "sourceKey": "Mr.Mime|Unite Move|Showtime|rsb|base",
+      "sourceLabel": "Damage - First 3 Hits",
+      "hits": 3,
+      "label": "ダメージ（最初の3ヒット）"
+    },
+    {
+      "sourceKey": "Trevenant|Move 2|Horn Leech|rsb|base",
+      "sourceLabel": "Damage - 2 Hits",
+      "hits": 2,
+      "label": "ダメージ（突進と終点・2ヒット）"
+    },
+    {
+      "sourceKey": "Typhlosion|Unite Move|Explosive Heat Haze|rsb|base",
+      "sourceLabel": "Damage - up to 14x",
+      "hits": 14,
+      "label": "ダメージ（衝撃波4回＋炎10回）"
+    },
+    {
+      "sourceKey": "Urshifu|Basic|Attack - Kubfu|boosted_rsb|add3",
+      "sourceLabel": "Damage - Boosted (Rapid Strike, 2x)",
+      "hits": 2,
+      "label": "ダメージ（強化攻撃・れんげきのかた・2ヒット）"
+    },
+    {
+      "sourceKey": "Blastoise|Move 1|Water Spout|rsb|base",
+      "sourceLabel": "Damage - Area (6 Hits)",
+      "hits": 6,
+      "label": "ダメージ（通常・6ヒット）"
+    },
+    {
+      "sourceKey": "Blastoise|Move 1|Water Spout|rsb|add1",
+      "sourceLabel": "Damage - Area (17 Hits) During Rapid Spin",
+      "hits": 17,
+      "label": "ダメージ（こうそくスピン中・最大17ヒット）"
+    },
+    {
+      "sourceKey": "Blastoise|Move 1|Water Spout|rsb|enhanced",
+      "sourceLabel": "Damage - Area (6 Hits)",
+      "hits": 6,
+      "label": "ダメージ（通常・6ヒット）"
+    },
+    {
+      "sourceKey": "Blastoise|Move 1|Water Spout|rsb|enhanced_add1",
+      "sourceLabel": "Damage - Area (17 Hits) During Rapid Spin",
+      "hits": 17,
+      "label": "ダメージ（こうそくスピン中・最大17ヒット）"
+    },
+    {
+      "sourceKey": "Goodra|Move 2|Acid Spray|rsb|base",
+      "sourceLabel": "Damage (Initial)",
+      "hits": 1,
+      "label": "ダメージ（液体の命中）"
+    },
+    {
+      "sourceKey": "Mew|Move 1|Solar Beam|rsb|base",
+      "sourceLabel": "Damage - per Tick",
+      "hits": 3,
+      "label": "ダメージ（通常・3ヒット）"
+    },
+    {
+      "sourceKey": "Mew|Move 1|Solar Beam|rsb|add1",
+      "sourceLabel": "Damage - per Tick (Light Screen Boost)",
+      "hits": 3,
+      "label": "ダメージ（ひかりのかべで強化・3ヒット）"
+    }
+  ]
+}

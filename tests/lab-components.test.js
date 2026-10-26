@@ -16,8 +16,8 @@ for(const s of source.filter(numeric)){
 }
 const supplements=Object.values(K).flat().filter(r=>r.supplement),derived=supplements.filter(r=>r.derivedFrom);
 eq(supplements.filter(r=>r.supplement==='numeric').length,99,'98 basic components including same-formula conditions plus Yveltal upgrade');
-eq(derived.length,68,'42 conditional formulas expanded to base and plus');
-eq(supplements.filter(r=>r.supplement==='conditional').length,19,'19 existing conditional formula notes');
+eq(derived.length,79,'reviewed conditional formulas expanded to base and plus');
+eq(supplements.filter(r=>r.supplement==='conditional').length,21,'reviewed conditional formula notes');
 for(const [p,m] of [['イワパレス','ステルスロック'],['ネギガナイト','れんぞくぎり']])for(const r of K[p].filter(r=>r.name.startsWith(m)&&r.coeff!=null&&r.componentNote))eq(r.hits,1,'do not multiply first-hit value into a false total');
 for(const r of derived){const s=source.find(s=>key(s)===r.derivedFrom.sourceKey&&numeric(s)),factor=r.derivedFrom.factor;eq([r.coeff,r.lvScale,r.fixed],tuple(s).slice(1).map(v=>Math.round(v*factor*1e8)/1e8),'derived formula: '+r.derivedKey);eq(r.hits,1,'alternative hit formula is not automatically multiplied');}
 const syl=K['ニンフィア'].filter(r=>r.derivedFrom&&r.name.startsWith('マジカルフレイム'));

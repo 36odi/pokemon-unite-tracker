@@ -12,11 +12,13 @@ const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
  const before=await page.evaluate(()=>JSON.stringify({S:LAB_STATUS,K:LAB_SKILLS,I:LAB_ITEMS,M:LAB_MEDALS}));
  const results=await page.evaluate(detail=>{
   const rows=detail.rules.flatMap(r=>r.targets.map(t=>({...t,id:r.id,text:r.text,status:r.status})));
+  // 出典の技1/技2とアプリの既存の並びが異なる場合も、実際の表示先で検査する。
+  const appSlot=t=>(LAB_SKILLS[t.pokemon]||[]).find(r=>labDescriptionKey(r.name)===labDescriptionKey(t.name))?.slot||({Basic:'通常攻撃',Passive:'特性','Move 1':'わざ1','Move 2':'わざ2','Unite Move':'ユナイトわざ'}[t.slot]);
   const check=(el,t,view)=>{if(!el||el.textContent.includes(t.text)!==(t.status==='documented'))throw Error(view+' '+t.id+' '+t.pokemon+'/'+t.name+' confirmed-only visibility mismatch');};
   const results={ratio:0,calc:0,dmg:0,combat:0};
   switchLab('ratio');
   for(const p of Object.keys(LAB_STATUS)){
-   ratioPokemon=p;ratioRender();for(const t of rows.filter(t=>t.pokemon===p)){const slot={Basic:0,'Move 1':1,'Move 2':2,'Unite Move':3,Passive:4}[t.slot];check(document.getElementById('ratioSlot'+slot),t,'ratio');results.ratio++;}
+   ratioPokemon=p;ratioRender();for(const t of rows.filter(t=>t.pokemon===p)){const slot={'通常攻撃':0,'わざ1':1,'わざ2':2,'ユナイトわざ':3,'特性':4}[appSlot(t)];check(document.getElementById('ratioSlot'+slot),t,'ratio');results.ratio++;}
    if(!document.getElementById('ratioResult').textContent.includes(detail.combat[p].critical))throw Error(p+' combat notes missing');results.combat++;
   }
   for(const view of ['calc','dmg']){
@@ -28,15 +30,16 @@ const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
     if(dc)calcDmgCalcMain(false);else calcLabStats(false);
     if(!document.getElementById(prefix+'DmgOutNormal').textContent.includes(detail.combat[p].critical))throw Error(view+' '+p+' combat notes missing');results.combat++;
     for(const t of rows.filter(t=>t.pokemon===p)){
-     let suffix={Basic:'Normal',Passive:'Passive','Unite Move':'Unite'}[t.slot];
-     if(!suffix){const slot=t.slot==='Move 1'?1:2,select=document.getElementById(prefix+'Skill'+slot+'Sel'),name=t.name+(t.kind==='upgrades'?'+':'');if(![...select.options].some(o=>o.value===name))throw Error(view+' '+p+' option absent '+name);select.value=name;if(dc)dcSkillChanged(slot);else labSkillChanged(slot);suffix=slot;}
+     let suffix={'通常攻撃':'Normal','特性':'Passive','ユナイトわざ':'Unite'}[appSlot(t)];
+     if(!suffix){const slot=appSlot(t)==='わざ1'?1:2,select=document.getElementById(prefix+'Skill'+slot+'Sel'),name=t.name+(t.kind==='upgrades'?'+':'');const option=[...select.options].find(o=>o.value.normalize('NFKC')===name.normalize('NFKC'));if(!option)throw Error(view+' '+p+' option absent '+name);select.value=option.value;if(dc)dcSkillChanged(slot);else labSkillChanged(slot);suffix=slot;}
      check(document.getElementById(prefix+'DmgOut'+suffix),t,view);results[view]++;
     }
    }
   }
   return results;
  },detail);
- for(const view of ['ratio','calc','dmg'])eq(results[view],162,view+' all detail bindings');eq(results.combat,309,'all species in all three views have combat notes');
+ const bindings=detail.rules.reduce((n,r)=>n+r.targets.length,0);
+ for(const view of ['ratio','calc','dmg'])eq(results[view],bindings,view+' all detail bindings');eq(results.combat,309,'all species in all three views have combat notes');
  await page.evaluate(()=>{switchLab('ratio');ratioPokemon='ギルガルド';ratioRender();});
  eq((await page.locator('#ratioSlot2').innerText()).includes('未確定の仕様：'),false,'unconfirmed Iron Defense specification is hidden');
  eq((await page.locator('#ratioSlot2').innerText()).includes('他資料での確認が完了していません'),false,'no unconfirmed Iron Defense prose');
@@ -59,5 +62,5 @@ const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
  await page.evaluate(()=>{switchLab('calc');document.documentElement.classList.remove('light-mode');document.getElementById('labPokeSelect').value='ギルガルド';calcLabStats(false);document.getElementById('labSkill2Sel').value='アイアンヘッド+';labSkillChanged(2);});await page.locator('#labDmgOut2').screenshot({path:path.join(out,'iron-head-calculator-mobile.png')});
  await page.evaluate(()=>{switchLab('ratio');const d=LAB_DESCRIPTIONS.pokemon['ギルガルド'].moves['アイアンヘッド'].details[0];d.text='<img src=x onerror="window.__detailsXss=1">';d.label='<script>';ratioPokemon='ギルガルド';ratioRender();});eq(await page.locator('#ratioSlot2 .lab-effect-description img,#ratioSlot2 .lab-effect-description script').count(),0,'detail text HTML escaped');eq(await page.evaluate(()=>window.__detailsXss===undefined),true,'no details script execution');
  eq(await page.evaluate(()=>JSON.stringify({S:LAB_STATUS,K:LAB_SKILLS,I:LAB_ITEMS,M:LAB_MEDALS})),before,'calculation data not mutated');eq(errors,[],'no browser errors');eq(writes,[],'no external writes');
- fs.writeFileSync(path.join(out,'../detail-browser-verification.json'),JSON.stringify({checks,results,metrics,errors,writes},null,2));console.log('ALL PASS — '+checks+' confirmed-only browser checks, 486 bindings audited (444 visible, 42 hidden) and 309 combat views; external writes: 0');
+ fs.writeFileSync(path.join(out,'../detail-browser-verification.json'),JSON.stringify({checks,results,metrics,errors,writes},null,2));console.log('ALL PASS — '+checks+' confirmed-only browser checks, '+(bindings*3)+' bindings audited and 309 combat views; external writes: 0');
 }finally{if(browser)await browser.close();}})().catch(e=>{console.error(e.stack);process.exitCode=1;});

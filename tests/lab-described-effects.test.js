@@ -21,7 +21,7 @@ for(const [p,n,parts]of [
  ['ヤドラン','ドわすれ',['250','4秒','17.5%']],
  ['ミュウツーY','テレポート',['2秒','15%','20%','50%']],
  ['エースバーン','フェイント',['0.73秒','2秒','40%']],
- ['ヌメルゴン','あめあめふれふれ',['4.6%','回復間隔の記載がない']]
+ ['ヌメルゴン','あめあめふれふれ',['4.6%','13回']]
 ])for(const text of parts)eq(F.description(p,n).includes(text),true,p+'/'+n+' independently checked effect '+text);
 eq(F.known('ニンフィア',{name:'めいそう',coeff:null}),false,'a new unknown row must not be silently classified');
 eq(F.known('ニンフィア',{name:'未登録',coeff:null,effectStatus:'described'}),false,'missing summary stays unknown');
@@ -29,5 +29,5 @@ eq(F.known('ニンフィア',{name:'めいそう',coeff:90,effectStatus:'describ
 const altered=source.map(s=>key(s)===reviewed.rules[0].sources[0].key?{...s,true_description:'changed source'}:s);
 assert.throws(()=>require('../tools/lab_described_effects')(JSON.parse(JSON.stringify(F.K)),altered),/原文を再確認/);checks++;
 eq(F.K['ニンフィア'].find(r=>r.name==='めいそう+').coeff,90,'Calm Mind+ shield formula retained');
-eq(F.K['ニンフィア'].find(r=>r.name==='めいそう+').cdStatus,'unconfirmed','independent plus cooldown remains unknown');
+eq(F.K['ニンフィア'].find(r=>r.name==='めいそう+').cd,8,'upgrade cooldown follows the verified source display rule');
 console.log('ALL PASS — '+checks+' described-effect checks');

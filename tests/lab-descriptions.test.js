@@ -26,7 +26,7 @@ eq(rows('不明'),[],'unknown species is not invented');eq(move('不明','不明
 eq(move('ニンフィア','マジカルフレイム'),'指定方向へ跳び、4つの炎を作って相手へ順に飛ばします。命中した相手の特攻を1秒間15%下げ、最大4段階まで重なります。','base flame count and debuff retained');
 eq(move('ニンフィア','マジカルフレイム+'),'炎が1つ増え、4つから5つになります。','upgraded flame count is five');
 eq(move('ゲッコウガ','みずしゅりけん+'),'水手裏剣を5つ投げるようになります。','upgraded projectile count');
-eq(move('マリルリ','みずのはどう+').includes('最大5体'),true,'upgrade description2 source included');
+eq(move('マリルリ','みずのはどう+').includes('最大5回'),true,'upgrade description2 counts hits without requiring five distinct targets');
 eq(move('ジュナイパー','はっぱカッター+').includes('残りHP'),true,'upgrade notes source included');
 eq(move('ニンフィア','めいそう+').includes('シールド'),true,'upgrade adds effect absent from base');
 eq(move('ニンフィア','スピードスター+'),'','missing upgrade never falls back to base');
