@@ -24,16 +24,16 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=115">\x3c/script>');</script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=115" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=115" defer></script>
-<script id="labDataScript" src="lab_data.js?v=115" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=115"></script>
-<script src="js/utils.js?v=115"></script>
-<script src="js/lab-core.js?v=115"></script>
-<script src="js/medal-preset-store.js?v=115"></script>
-<script src="js/usage-analytics.js?v=115"></script>
-<link rel="stylesheet" href="styles.css?v=115" />
+<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=116">\x3c/script>');</script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=116" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=116" defer></script>
+<script id="labDataScript" src="lab_data.js?v=116" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=116"></script>
+<script src="js/utils.js?v=116"></script>
+<script src="js/lab-core.js?v=116"></script>
+<script src="js/medal-preset-store.js?v=116"></script>
+<script src="js/usage-analytics.js?v=116"></script>
+<link rel="stylesheet" href="styles.css?v=116" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -968,7 +968,7 @@ SOFTWARE.
         </div>
 
         <!-- メダルセット選択（任意） -->
-        <label class="lab-medal-label" for="dcAtkMedal">攻撃側のメダルセット（任意）</label>
+        <label class="lab-medal-label" for="labMedalSetSel">メダルセット（任意）</label>
         <select class="lab-select u-mt-0" id="labMedalSetSel" onchange="calcLabStatsIfReady()">
           <option value="">— 使用しない —</option>
         </select>
@@ -2249,6 +2249,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.80',date:'2026-10-26',items:[
+    'メダルセット作成の合計欄で、わざの待ち時間短縮が逆向きに表示される問題を修正しました。',
+    'ステータス計算のメダル選択欄の見出しと、クリック・読み上げ時の結び付きを修正しました。',
+    'ダメージ結果の表示を整理し、防御側のゲージ補正を結果欄から除きました。防御側のメダル条件は保存・共有に保持します。'
+  ]},
   {version:'v5.79',date:'2026-10-26',items:[
     'ログインせずにラボを開ける入口と、ポケモンごとの閲覧ページを追加しました。わざの説明は開閉式にそろえ、文字・行間・余白を見直しました。',
     '防御側のメダルを計算・条件保存・共有に反映し、待ち時間短縮と一部メダルの数値・レアリティの扱いを修正しました。',
@@ -7258,8 +7263,9 @@ function dcRenderStatSummary(atkPoke,atkLv,defPoke,defLv){
       <div class="u-c-text2">特防: <b>${fmt(dcDefStats['特防'])}</b></div>
     </div>
   </div>`;
-  for(const [label,stats] of [['攻撃側',dcAtkStats],['防御側',dcDefStats]]){
-    const entries=Object.entries(stats).filter(([k])=>labStatMeta(k).conditional);
+  for(const [side,label,stats] of [['attack','攻撃側',dcAtkStats],['defense','防御側',dcDefStats]]){
+    // 防御側のゲージ補正はダメージ結果の表示からだけ除く。計算・保存用の値は保持する。
+    const entries=Object.entries(stats).filter(([k])=>labStatMeta(k).conditional&&!(side==='defense'&&k.startsWith('ユナイトわざゲージ')));
     if(entries.length)el.innerHTML+=`<div class="lab-effect-summary"><strong>${label}の条件付き効果</strong>${entries.map(([k,v])=>`<p>${labStatLabel(k)}：${Number(v.toFixed(2))}${labStatMeta(k).unit}<br>${labStatMeta(k).note}</p>`).join('')}</div>`;
   }
 }
@@ -7716,11 +7722,11 @@ function labUpdateMedalResult(){
     // ステータス集計（per-slotレアリティ）
     if(m.upStat&&m.upStat!=='なし'){
       const v=labMedalGetVal(m,slotRar,'up');
-      if(v!=null) totalStats[m.upStat]=(totalStats[m.upStat]||0)+v;
+      if(v!=null){const key=LAB_STAT_MAP[m.upStat]||m.upStat;totalStats[key]=(totalStats[key]||0)+labStatBonusValue(key,v);}
     }
     if(m.dnStat&&m.dnStat!=='なし'){
       const v=labMedalGetVal(m,slotRar,'dn');
-      if(v!=null) totalStats[m.dnStat]=(totalStats[m.dnStat]||0)+v;
+      if(v!=null){const key=LAB_STAT_MAP[m.dnStat]||m.dnStat;totalStats[key]=(totalStats[key]||0)+labStatBonusValue(key,v);}
     }
   });
 
@@ -7785,13 +7791,13 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=115"></script>
-<script src="ratio.js?v=115"></script>
-<script src="js/lab-review.js?v=115"></script>
-<script src="js/calc-conditions-core.js?v=115"></script>
-<script src="js/calc-conditions.js?v=115"></script>
-<script src="js/patch-analysis-core.js?v=115"></script>
-<script src="js/patch-analysis.js?v=115"></script>
-<script src="js/lab-public.js?v=115"></script>
+<script src="ratio-labels.js?v=116"></script>
+<script src="ratio.js?v=116"></script>
+<script src="js/lab-review.js?v=116"></script>
+<script src="js/calc-conditions-core.js?v=116"></script>
+<script src="js/calc-conditions.js?v=116"></script>
+<script src="js/patch-analysis-core.js?v=116"></script>
+<script src="js/patch-analysis.js?v=116"></script>
+<script src="js/lab-public.js?v=116"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "baseUrl": "https://36odi.github.io/pokemon-unite-tracker/",
-  "assetVersion": "115",
+  "assetVersion": "116",
   "pokemon": [
     "アブソル",
     "アマージョ",
@@ -114,6 +114,6 @@
     "js/lab-core.js": "6f78e8c7e64766c94176bf1eaba697be1a4108549667cca7c9d2d9cb916f6428",
     "ratio-labels.js": "fd9a79c3e029f0a595acbff6f55bb3d3a79ea326d3c9f2a6289c84f05f2f9c9b",
     "ratio.js": "5b452371a0f489eef657bf1e683234d9aa1f30f3d022e83a590f183f5ab41929",
-    "index.html": "8cedbe317cba7a90431e39d83d8edf100b129d6c23fd2f968335805aefcf9b5f"
+    "index.html": "d9f1919a11d388bfa126a99513e9d5f7810e98d7b5f266b50e586825e0edebe1"
   }
 }

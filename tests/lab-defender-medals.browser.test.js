@@ -67,7 +67,7 @@ let browser,checks=0,writes=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label)
         return {value:dcDefStats[key],meta:labStatMeta(key),a:a.value,b:labEvaluateComponent(r,dcAtkStats,clean,9).value,notice:document.getElementById('dcStatSummary').textContent};
       },{color,count,key});
       eq(result.value,expected,color+' retains documented amount');eq(result.meta.unit,unit,color+' correct unit');eq(result.meta.conditional,true,color+' distinct from base');eq(result.a,result.b,color+' conditional effect not silently used in damage');
-      eq(result.notice.includes(result.meta.note),true,color+' limitation shown in result');
+      eq(result.notice.includes(result.meta.note),color!=='ネイビー',color==='ネイビー'?'defender gauge omitted only from damage result':'defender limitation shown in result');
     }
     await page.locator('#dcStatSummary').screenshot({path:path.join(OUT,`conditional-${width}-${theme}.png`)});
     eq(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no horizontal overflow');
