@@ -184,7 +184,10 @@ function aggRankTier(b, playedMap){
 // ===== 対戦記録のメダルセット =====
 // 対戦には、記録した時点のメダルセットの中身をそのまま保存する（後でプリセットを上書き・削除しても過去の記録は変わらない）。
 // 形式: {label:'白6+茶6+青2', slots:[メダル名|null ×10], rarities:['gold'|'silver'|'bronze' ×10]}
-const MEDAL_RARITY_JA={gold:'金',silver:'銀',bronze:'銅'};
+const MEDAL_RARITY_JA={gold:'金',silver:'銀',bronze:'銅',platinum:'プラチナ'};
+// 原本の「プラチナのみ」を確認した対象。過去の銅/銀/金指定も数値を保って復元する。
+const MEDAL_PLATINUM_ONLY=new Set(['ニャオハ','ニャローテ','マスカーニャ','ミライドン','ラティアス','ラティオス']);
+function medalRarity(name,rarity){return MEDAL_PLATINUM_ONLY.has(name)?'platinum':Object.hasOwn(MEDAL_RARITY_JA,rarity)?rarity:'gold';}
 // DBの値（jsonb）／旧データ／文字列を正規化。中身のメダルが1枚もなければ null。
 function parseMedalSet(v){
   let o=v;
@@ -193,7 +196,7 @@ function parseMedalSet(v){
   const slots=o.slots.slice(0,10).map(s=>(typeof s==='string'&&s)?s:null);
   while(slots.length<10) slots.push(null);
   const rar=Array.isArray(o.rarities)?o.rarities:[];
-  const rarities=slots.map((_,i)=>MEDAL_RARITY_JA[rar[i]]?rar[i]:'gold');
+  const rarities=slots.map((name,i)=>medalRarity(name,rar[i]));
   if(!slots.some(Boolean)) return null;
   const label=(typeof o.label==='string'&&o.label.trim())?o.label.trim().slice(0,40):'メダルセット';
   return {label,slots,rarities};
@@ -238,3 +241,10 @@ function medalSetGroupLabels(battles){
   });
   return new Map([...latest.entries()].map(([k,v])=>[k,v.label]));
 }
+
+// 表示だけの共通50音順。保存キー・名前・配列の原本は変えない。
+const displayNameCollator=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
+function compareDisplayNames(a,b){return displayNameCollator.compare(String(a),String(b));}
+function normalizeNameSearch(value){return String(value||'').normalize('NFKC').replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)).toLocaleLowerCase('ja');}
+// ハッサムの進化前をラボで独立して扱う。対戦記録の候補には追加しない。
+function labPokemonType(name){return name==='ストライク'?'bal':Object.keys(POKEMON_DATA).find(k=>POKEMON_DATA[k].pokemon.includes(name))||null;}

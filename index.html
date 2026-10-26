@@ -7,6 +7,7 @@
 <meta name="description" content="ポケモンユナイトの対戦記録・勝率分析・ダメージ計算ができる無料のファンツール。登録不要で、スマホからすぐ使えます。">
 <meta name="theme-color" content="#0f1117">
 <meta name="color-scheme" content="dark light">
+<script>window.LAB_PUBLIC_MODE=new URLSearchParams(location.search).has('lab');</script>
 <link rel="icon" href="images/brand-mark.svg" type="image/svg+xml">
 <link rel="icon" href="images/app-icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -23,15 +24,16 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script src="vendor/supabase.min.js?v=109"></script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=109" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=109" defer></script>
-<script id="labDataScript" src="lab_data.js?v=109" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=109"></script>
-<script src="js/utils.js?v=109"></script>
-<script src="js/lab-core.js?v=109"></script>
-<script src="js/usage-analytics.js?v=109"></script>
-<link rel="stylesheet" href="styles.css?v=109" />
+<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=115">\x3c/script>');</script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=115" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=115" defer></script>
+<script id="labDataScript" src="lab_data.js?v=115" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=115"></script>
+<script src="js/utils.js?v=115"></script>
+<script src="js/lab-core.js?v=115"></script>
+<script src="js/medal-preset-store.js?v=115"></script>
+<script src="js/usage-analytics.js?v=115"></script>
+<link rel="stylesheet" href="styles.css?v=115" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -212,6 +214,7 @@ SOFTWARE.
       <span class="u-fs-fs-xs u-c-text3 u-ws-nowrap">または</span>
       <div class="u-flex-1 u-h-1px u-bg-border"></div>
     </div>
+    <a class="btn-guest lab-public-entry" href="lab/index.html">ログインせずにラボを見る</a>
     <button class="btn-guest" onclick="loginAsGuest()">ゲストとして試す</button>
     <div class="u-fs-fs-xs u-c-text3 u-mt-6px u-ta-center">登録不要・すべての機能をお試しいただけます</div>
   </div>
@@ -965,7 +968,7 @@ SOFTWARE.
         </div>
 
         <!-- メダルセット選択（任意） -->
-        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px" style="margin-top:14px;">メダルセット（任意）</div>
+        <label class="lab-medal-label" for="dcAtkMedal">攻撃側のメダルセット（任意）</label>
         <select class="lab-select u-mt-0" id="labMedalSetSel" onchange="calcLabStatsIfReady()">
           <option value="">— 使用しない —</option>
         </select>
@@ -1118,7 +1121,7 @@ SOFTWARE.
           </div>
         </div>
         <!-- メダルセット -->
-        <div class="u-fs-fs-xs u-fw-600 u-c-text2 u-mb-6px" style="margin-top:14px;">メダルセット（任意）</div>
+        <label class="lab-medal-label" for="dcAtkMedal">攻撃側のメダルセット（任意）</label>
         <select class="lab-select u-mt-0" id="dcAtkMedal" onchange="dcCalcIfReady()">
           <option value="">— 使用しない —</option>
         </select>
@@ -1161,6 +1164,10 @@ SOFTWARE.
             <input type="range" class="lab-grade-range" id="dcDefGrade3" min="1" max="40" value="30"
               oninput="document.getElementById('dcDefGLbl3').textContent='G'+this.value;dcCalcIfReady()"></div>
         </div>
+        <label class="lab-medal-label" for="dcDefMedal">防御側のメダルセット（任意）</label>
+        <select class="lab-select u-mt-0" id="dcDefMedal" onchange="dcCalcIfReady()">
+          <option value="">— 使用しない —</option>
+        </select>
       </div>
 
       <button class="btn-save u-w-100pct u-mt-8px" onclick="calcDmgCalcMain(true)">計算する</button>
@@ -1216,6 +1223,15 @@ SOFTWARE.
           <button class="medal-help-btn" onclick="showMedalHelp()"><svg class="ico ico-l" aria-hidden="true"><use href="#i-circle-help"></use></svg>使い方</button>
         </div>
         <div class="medal-preset-grid" id="medalPresetGrid"><!-- JS生成 --></div>
+        <div class="medal-sync" id="medalPresetSync">
+          <p id="medalPresetStatus" role="status" aria-live="polite" tabindex="-1"></p>
+          <p id="medalPresetLegacyHint" hidden>以前の端末データを保持しています。保存したアカウントを確認してから取り込んでください。</p>
+          <div class="medal-sync-actions">
+            <button type="button" id="medalPresetRetry" onclick="labRetryPresetSync()" hidden>再試行</button>
+            <button type="button" id="medalPresetLegacy" onclick="labImportLegacyPresets()" hidden>以前の端末データを取り込む</button>
+          </div>
+          <div id="medalPresetConflicts"></div>
+        </div>
       </div>
 
       <!-- スロット -->
@@ -1231,31 +1247,35 @@ SOFTWARE.
       <!-- フィルター + 一覧 -->
       <div class="card">
         <div class="medal-filter-grid">
+          <div class="medal-name-filter">
+            <label class="mf-label" for="mfName">メダル名</label>
+            <input class="lab-select" id="mfName" type="search" placeholder="名前で検索" oninput="labRenderMedalList()">
+          </div>
           <div>
-            <div class="mf-label">色1</div>
+            <label class="mf-label" for="mfColor1">色1</label>
             <select class="lab-select" id="mfColor1" onchange="labRenderMedalList()"><option value="">すべて</option></select>
           </div>
           <div>
-            <div class="mf-label">色2</div>
+            <label class="mf-label" for="mfColor2">色2</label>
             <select class="lab-select" id="mfColor2" onchange="labRenderMedalList()">
               <option value="">すべて</option>
               <option value="__none__">なし（単色）</option>
             </select>
           </div>
           <div>
-            <div class="mf-label">↑ステータス</div>
+            <label class="mf-label" for="mfUpStat">上がる能力</label>
             <select class="lab-select" id="mfUpStat" onchange="labRenderMedalList()"><option value="">すべて</option></select>
           </div>
           <div>
-            <div class="mf-label">↓ステータス</div>
+            <label class="mf-label" for="mfDnStat">下がる能力</label>
             <select class="lab-select" id="mfDnStat" onchange="labRenderMedalList()"><option value="">すべて</option></select>
           </div>
           <div>
-            <div class="mf-label">レアリティ</div>
+            <label class="mf-label" for="mfRarity">レアリティ</label>
             <select class="lab-select" id="mfRarity" onchange="labRenderMedalList()">
               <option value="">すべて</option>
-              <option value="bronze">銅以上</option>
-              <option value="silver">銀以上</option>
+              <option value="bronze">銅</option>
+              <option value="silver">銀</option>
               <option value="gold">金</option>
               <option value="platinum">プラチナのみ</option>
             </select>
@@ -1642,9 +1662,10 @@ function isFakeEmail(email){ return email && email.endsWith('@'+MAIL_DOMAIN); }
 
 
 
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-try{window.UniteUsage?.start(SUPABASE_URL,SUPABASE_KEY);}catch{}
+const createClient = window.LAB_PUBLIC_MODE ? null : supabase.createClient;
+// 閲覧用URLでは認証クライアント自体を作らず、保存済みセッションにも触れない。
+const db = window.LAB_PUBLIC_MODE ? null : createClient(SUPABASE_URL, SUPABASE_KEY);
+if(!window.LAB_PUBLIC_MODE)try{window.UniteUsage?.start(SUPABASE_URL,SUPABASE_KEY);}catch{}
 function usageIntent(scope){try{return window.UniteUsage?.intent(scope);}catch{return null;}}
 function usageUsed(ticket){try{window.UniteUsage?.used(ticket);}catch{}}
 function usageResult(scope,value,key){try{window.UniteUsage?.result(scope,value,key);}catch{}}
@@ -1715,7 +1736,7 @@ function refreshItemSelects(changedId){
     const current=vals[id];
     const others=ids.filter(x=>x!==id).map(x=>vals[x]).filter(Boolean);
     el.innerHTML='<option value="">— 選択 —</option>'+
-      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current)
+      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current).sort(compareDisplayNames)
         .map(i=>`<option value="${i}">${i}</option>`).join('');
     el.value=current;
   });
@@ -1725,7 +1746,7 @@ function initDetailSelects(){
   ['item1','item2','item3'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
-    sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    sel.innerHTML='<option value="">— 選択 —</option>'+[...GENERAL_ITEMS].sort(compareDisplayNames).map(i=>`<option value="${i}">${i}</option>`).join('');
     sel.onchange=()=>refreshItemSelects(id);
   });
   // battleItem(旧ID)は現UIに存在しないため削除済み
@@ -1823,7 +1844,7 @@ function getPickerItems(pickerIdx){
     const id='ip'+i;
     return pickerSelected[id];
   }).filter(Boolean);
-  return GENERAL_ITEMS.filter(i=>!others.includes(i));
+  return GENERAL_ITEMS.filter(i=>!others.includes(i)).sort(compareDisplayNames);
 }
 
 function renderItemPickerList(pid, pickerIdx, search=''){
@@ -1999,7 +2020,7 @@ const GUEST_HIDE_PROMPT_KEY='guestHideRegPrompt';
 const GUEST_BATTLES_PREFIX='guest_battles_';
 const GUEST_MIGRATE_KEY='guestMigratePending';
 const GUEST_PRESET_SNAP_KEY='guest_medal_presets_snap';
-function isGuest(){ return localStorage.getItem(GUEST_MODE_KEY)==='1'; }
+function isGuest(){ return !window.LAB_PUBLIC_MODE&&localStorage.getItem(GUEST_MODE_KEY)==='1'; }
 function guestGetSeries(){ try{ return JSON.parse(localStorage.getItem(GUEST_SERIES_KEY)||'[]'); }catch{ return []; } }
 function guestSaveSeries(list){ localStorage.setItem(GUEST_SERIES_KEY,JSON.stringify(list)); }
 function guestGetBattles(sid){ try{ return normBattles(JSON.parse(localStorage.getItem(GUEST_BATTLES_PREFIX+sid)||'[]')); }catch{ return []; } }
@@ -2015,6 +2036,7 @@ function enterGuestMode(){
     labSessionOwner='guest';
     if(typeof LabReview!=='undefined')LabReview.clearSession();
   }
+  labPresetSelectOwner('guest');
   document.getElementById('authSection').style.display='none';
   document.getElementById('appSection').style.display='block';
   document.getElementById('usernameDisplay').innerHTML='<span class="guest-badge">ゲスト</span>';
@@ -2036,7 +2058,7 @@ function closeGuestRegModal(save){
 function logoutAndRegister(){
   // ゲストデータ（対戦記録 or メダルプリセット）があれば、登録/ログイン後の移行を提案
   const hasSeries=guestGetSeries().length>0;
-  const presetStr=localStorage.getItem(PRESET_KEY);
+  const presetStr=JSON.stringify(labPresetStore.snapshot().values);
   let hasPresets=false;
   try{ const p=JSON.parse(presetStr||'[]'); hasPresets=Array.isArray(p)&&p.some(Boolean); }catch{}
   if(hasSeries||hasPresets){
@@ -2097,23 +2119,19 @@ async function migrateGuestData(){
       if(be) failed=true; else battleCount+=rows.length;
     }
   }
-  // メダルプリセット移行（アカウントの空きスロットを埋める／既存は保持）
+  // メダルプリセット移行（異なる内容は両方を保持し、ラボで選択）
   try{
     const snap=localStorage.getItem(GUEST_PRESET_SNAP_KEY);
     if(snap){
       const gp=JSON.parse(snap);
       if(Array.isArray(gp)&&gp.some(Boolean)){
-        await _loadPresetsFromSupabase(); // アカウント現在のプリセットを取得
-        const merged=(labMedalPresets||[]).slice(0,8);
-        while(merged.length<8) merged.push(null);
-        for(let i=0;i<8;i++){ if(!merged[i]&&gp[i]){ merged[i]=gp[i]; presetCount++; } }
-        if(presetCount>0){
-          labMedalPresets=merged;
-          await _savePresetsToSupabase();
-          localStorage.setItem(PRESET_KEY,JSON.stringify(merged));
-          if(typeof labRefreshCalcMedalSelect==='function') labRefreshCalcMedalSelect();
-          if(typeof dcRefreshMedalSelect==='function') dcRefreshMedalSelect();
-        }
+        if(labSessionOwner!==user.id)throw new Error('preset-account-changed');
+        await _loadPresetsFromSupabase();
+        if(labSessionOwner!==user.id)throw new Error('preset-account-changed');
+        if(!await labPresetStore.importValues(gp))throw new Error('preset-import-failed');
+        if(labSessionOwner!==user.id)throw new Error('preset-account-changed');
+        if(!await _savePresetsToSupabase())failed=true;
+        else presetCount=gp.filter(Boolean).length;
       }
     }
   }catch(e){ console.warn('preset migrate err',e); failed=true; }
@@ -2122,7 +2140,7 @@ async function migrateGuestData(){
     series.forEach(s=>localStorage.removeItem(GUEST_BATTLES_PREFIX+s.id));
     localStorage.removeItem(GUEST_SERIES_KEY);
   }
-  localStorage.removeItem(GUEST_PRESET_SNAP_KEY);
+  if(!failed)localStorage.removeItem(GUEST_PRESET_SNAP_KEY);
   return {seriesCount,battleCount,presetCount,failed};
 }
 function offerGuestMigration(){
@@ -2172,15 +2190,17 @@ async function logout(){
   await db.auth.signOut();
 }
 
-db.auth.onAuthStateChange(async(event,session)=>{
+if(!window.LAB_PUBLIC_MODE)db.auth.onAuthStateChange(async(event,session)=>{
   document.getElementById('loading').style.display='none';
   // トークン自動更新は正常動作のためスキップ
   if(event==='TOKEN_REFRESHED') return;
   const nextOwner=session?.user?.id||(isGuest()?'guest':null);
   if(labSessionOwner!==nextOwner){
     labSessionOwner=nextOwner;
+    recordMedalPresetsLoaded=false;
     if(typeof LabReview!=='undefined')LabReview.clearSession();
   }
+  labPresetSelectOwner(nextOwner);
   // セッション切れ（リフレッシュ失敗）
   if(event==='SIGNED_OUT'&&document.getElementById('appSection').style.display==='block'){
     if(!isGuest()) showToast('セッションが切れました。再ログインしてください。','warn');
@@ -2209,6 +2229,7 @@ db.auth.onAuthStateChange(async(event,session)=>{
 });
 
 function showPage(page){
+  if(window.LAB_PUBLIC_MODE&&page!=='lab')return;
   navId++; // ナビゲーションガード：進行中の非同期描画を無効化
   ['trackerPage','analysisPage','labPage','profilePage','changelogPage'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById(page+'Page').style.display='block';
@@ -2228,6 +2249,11 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.79',date:'2026-10-26',items:[
+    'ログインせずにラボを開ける入口と、ポケモンごとの閲覧ページを追加しました。わざの説明は開閉式にそろえ、文字・行間・余白を見直しました。',
+    '防御側のメダルを計算・条件保存・共有に反映し、待ち時間短縮と一部メダルの数値・レアリティの扱いを修正しました。',
+    'メダル保存の競合や通信失敗を知らせ、保存内容を保護する仕組みを追加しました。メダル名検索とポケモンの並び順も整えました。'
+  ]},
   {version:'v5.78',date:'2026-10-26',items:[
     'わざの説明に、減速の割合と時間、回復・シールド、妨害や再使用の条件を補いました。',
     '連続攻撃の回数や2ヒット目以降の式、＋版の効果と待ち時間の表示を修正しました。',
@@ -3255,10 +3281,7 @@ function medalSetRecordable(){ return isGuest()||medalSetColumnReady===true; }
 
 // 記録フォーム用にプリセットを読み込む（端末の保存分→ログイン中ならアカウントの保存分）
 async function initRecordMedalSets(){
-  try{
-    const saved=localStorage.getItem(PRESET_KEY);
-    if(saved){ const p=JSON.parse(saved); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
-  }catch(e){}
+  await labPresetSelectOwner(isGuest()?'guest':labSessionOwner);
   refreshRecordMedalSelects();
   if(isGuest()) return;
   const ok=await _loadPresetsFromSupabase();
@@ -3983,7 +4006,7 @@ function initPokeDetailSelect(usageTicket=usageIntent('analysisPage')){
   const all=allSeriesData.flatMap(s=>s.battles);
   const pokeSet=new Set([...all.filter(b=>b.pokemon).map(b=>b.pokemon),...Object.values(POKEMON_DATA).flatMap(r=>r.pokemon),...(typeof LAB_STATUS==='undefined'?[]:Object.keys(LAB_STATUS))]);
   const current=sel.value;
-  sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort().map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  sel.innerHTML='<option value="">— ポケモンを選択 —</option>'+[...pokeSet].sort(compareDisplayNames).map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(current)sel.value=current;
   if(sel.value) renderPokeDetail(usageTicket);
 }
@@ -4212,7 +4235,7 @@ function renderPokeList(search='',typeFilter='all'){
   const types=typeFilter==='all'?Object.keys(POKEMON_DATA):[typeFilter];
   types.forEach(type=>{
     const {label,cls,pokemon}=POKEMON_DATA[type];
-    const filtered=search?pokemon.filter(p=>p.includes(search)):pokemon;
+    const filtered=(search?pokemon.filter(p=>p.includes(search)):[...pokemon]).sort(compareDisplayNames);
     if(!filtered.length)return;
     hasAny=true;
     const chips=filtered.map(p=>`<span class="poke-chip${selectedPoke===p?' selected':''}" onclick="selectPoke('${p}')">${iconImg(p,'chip-icon',28)}${p}</span>`).join('');
@@ -4428,7 +4451,7 @@ function initEditItemSelects(){
     const sel=document.getElementById(id);
     if(!sel)return;
     // 前の編集で絞り込まれた候補を残さず、今回の記録を復元する前に全候補へ戻す。
-    sel.innerHTML='<option value="">— 選択 —</option>'+GENERAL_ITEMS.map(i=>`<option value="${i}">${i}</option>`).join('');
+    sel.innerHTML='<option value="">— 選択 —</option>'+[...GENERAL_ITEMS].sort(compareDisplayNames).map(i=>`<option value="${i}">${i}</option>`).join('');
     sel.onchange=()=>refreshEditItemSelects(id);
   });
   const bi=document.getElementById('editBattleItem');
@@ -4447,7 +4470,7 @@ function refreshEditItemSelects(changedId){
     const current=vals[id];
     const others=ids.filter(x=>x!==id).map(x=>vals[x]).filter(Boolean);
     el.innerHTML='<option value="">— 選択 —</option>'+
-      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current)
+      GENERAL_ITEMS.filter(i=>!others.includes(i)||i===current).sort(compareDisplayNames)
         .map(i=>`<option value="${i}">${i}</option>`).join('');
     el.value=current;
   });
@@ -4490,7 +4513,7 @@ function openEditModal(id){
   epSel.innerHTML='<option value="">— 未選択 —</option>';
   Object.entries(POKEMON_DATA).forEach(([,{label,pokemon:list}])=>{
     const grp=document.createElement('optgroup');grp.label=label;
-    list.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;grp.appendChild(o);});
+    [...list].sort(compareDisplayNames).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;grp.appendChild(o);});
     epSel.appendChild(grp);
   });
   epSel.value=pokemon||'';
@@ -5616,7 +5639,7 @@ function setHistoryPokeFilter(val){
 function refreshPokeFilterOptions(){
   const sel=document.getElementById('historyPokeFilter');
   if(!sel)return;
-  const pokes=[...new Set(battles.filter(b=>b.pokemon).map(b=>b.pokemon))].sort((a,b)=>a.localeCompare(b,'ja'));
+  const pokes=[...new Set(battles.filter(b=>b.pokemon).map(b=>b.pokemon))].sort(compareDisplayNames);
   const cur=sel.value;
   sel.innerHTML='<option value="all">全ポケモン</option>'+pokes.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
   if(pokes.includes(cur)){ sel.value=cur; } else { sel.value='all'; historyFilterPoke='all'; }
@@ -6449,7 +6472,7 @@ function labRenderTotals(totals){
       const ds=diff>0?'+'+diff:diff===0?'±0':String(diff);
       const fmt=v=>Number(v.toFixed(2)).toLocaleString();
       const suffix=labStatPercent(k)?'%':'';
-      return `<div class="lab-cmp-name">${labStatLabel(k)}</div>
+      return `<div class="lab-cmp-name">${labStatLabel(k)}${labStatMeta(k).note?`<small class="lab-effect-note">${labStatMeta(k).note}</small>`:''}</div>
         <div class="lab-cmp-val u-c-text3">${fmt(a)}${suffix}</div>
         <div class="lab-cmp-val u-c-accent">${fmt(b)}${suffix}</div>
         <div class="lab-cmp-diff ${dc}">${ds}${suffix?'ポイント':''}</div>`;
@@ -6561,14 +6584,14 @@ function labInitUI(){
   const pokeEl=document.getElementById('labPokeSelect');
   if(pokeEl){
     // ステータス未整備のポケモン（新規追加直後など）はlabに出さない
-    const all=Object.keys(LAB_STATUS||{}).sort();
+    const all=Object.keys(LAB_STATUS||{}).sort(compareDisplayNames);
     all.forEach(p=>{
       const o=document.createElement('option'); o.value=p; o.textContent=p;
       pokeEl.appendChild(o);
     });
   }
   // もちもの選択（3スロット）
-  const itemNames=Object.keys(LAB_ITEMS||{}).sort();
+  const itemNames=Object.keys(LAB_ITEMS||{}).sort(compareDisplayNames);
   for(let s=1;s<=3;s++){
     const sel=document.getElementById('labItem'+s);
     if(sel){
@@ -6598,6 +6621,7 @@ function switchLab(tab){
   if(tab==='ratio') ratioInit();
   if(tab==='dmg') dcInitUI();
   if(tab==='dmg'&&typeof CalcConditions!=='undefined'){CalcConditions.renderSaved();CalcConditions.updateSummary();}
+  window.LabPublic?.tabChanged(tab);
 }
 
 // ---- ステータス計算 ----
@@ -6669,19 +6693,22 @@ function labRenderStatGrid(el,stats,color){
   if(!entries.length){
     el.innerHTML='<div class="empty u-fs-fs-xs u-col-span-2">データなし</div>'; return;
   }
-  el.innerHTML=entries.map(([name,val])=>{
+  const regular=entries.filter(([k])=>!labStatMeta(k).conditional),conditional=entries.filter(([k])=>labStatMeta(k).conditional);
+  const cells=rows=>rows.map(([name,val])=>{
     const c=(typeof val==='number'&&val<0)?'var(--loss)':color;
     const disp=(typeof val==='number'?Number(val.toFixed(2)).toLocaleString():val)+(labStatPercent(name)?'%':'');
     const label=labStatLabel(name);
     return `<div class="lab-stat-box">
       <div class="lab-stat-name">${label}</div>
       <div class="lab-stat-val" style="color:${c};">${disp}</div>
+      ${labStatMeta(name).note?`<p class="lab-effect-note">${labStatMeta(name).note}</p>`:''}
     </div>`;
   }).join('');
+  el.innerHTML=cells(regular)+(conditional.length?'<p class="lab-effect-heading">条件付き効果（基本ステータスと別）</p>'+cells(conditional):'');
 }
 
-function labStatPercent(name){return ['急所率','急所ダメージ増加','待ち時間','HP吸収率','通常攻撃の速さ','ユナイトわざゲージ'].includes(name);}
-function labStatLabel(name){return ({'通常攻撃の速さ':'通常攻撃速度の補正（%）','移動速度':'移動速度（減衰前）','待ち時間':'わざの待ち時間短縮','貫通':'貫通（適用条件未確認）'})[name]||name;}
+function labStatPercent(name){return labStatMeta(name).unit==='%';}
+function labStatLabel(name){return labStatMeta(name).label||({'通常攻撃の速さ':'通常攻撃速度の補正（%）','移動速度':'移動速度（減衰前）','待ち時間':'わざの待ち時間短縮','貫通':'貫通（適用条件未確認）'})[name]||name;}
 
 // ---- スキルダメージ ----
 function labUpdateSkillSection(poke){
@@ -6880,13 +6907,19 @@ let labMedalRarities = Array(10).fill('gold'); // per-slot: 'bronze'|'silver'|'g
 let labActiveMedalSlot = 0;
 
 function labMedalGetVal(m, rarity, dir) {
-  // dir: 'up' | 'dn'
+  // 限定対象の旧保存指定は互換変換。その他の欠けた値は別レアリティで埋めない。
+  rarity=medalRarity(m.name,rarity);
   const b = dir==='up' ? m.bUp : m.bDn;
   const s = dir==='up' ? m.sUp : m.sDn;
   const g = dir==='up' ? m.gUp : m.gDn;
-  if (rarity==='bronze') return b ?? s ?? g ?? null;
-  if (rarity==='silver') return s ?? b ?? g ?? null;
-  return g ?? s ?? b ?? null;
+  if (rarity==='bronze') return b ?? null;
+  if (rarity==='silver') return s ?? null;
+  if (rarity==='platinum'&&!MEDAL_PLATINUM_ONLY.has(m.name))return null;
+  return g ?? null;
+}
+function labMedalRaritiesFor(m){
+  if(MEDAL_PLATINUM_ONLY.has(m.name))return ['platinum'];
+  return [['bronze','b'],['silver','s'],['gold','g']].filter(([,k])=>m[k+'Up']!=null||m[k+'Dn']!=null||m.name==='メタモン').map(([r])=>r);
 }
 
 // ---- ステータス計算用メダル補正 ----
@@ -6913,11 +6946,11 @@ function labCalcMedalBonus(presetIdx, baseStats, recordedSet=null){
     }
     if(m.upStat && m.upStat!=='なし'){
       const v = labMedalGetVal(m, rar, 'up');
-      if(v!=null){ const k=LAB_STAT_MAP[m.upStat]||m.upStat; flat[k]=(flat[k]||0)+v; }
+      if(v!=null){ const k=LAB_STAT_MAP[m.upStat]||m.upStat; flat[k]=(flat[k]||0)+labStatBonusValue(k,v); }
     }
     if(m.dnStat && m.dnStat!=='なし'){
       const v = labMedalGetVal(m, rar, 'dn');
-      if(v!=null){ const k=LAB_STAT_MAP[m.dnStat]||m.dnStat; flat[k]=(flat[k]||0)+v; }
+      if(v!=null){ const k=LAB_STAT_MAP[m.dnStat]||m.dnStat; flat[k]=(flat[k]||0)+labStatBonusValue(k,v); }
     }
   });
 
@@ -6928,7 +6961,7 @@ function labCalcMedalBonus(presetIdx, baseStats, recordedSet=null){
     if(!active.length) return;
     const top = active[active.length-1];
     const k = LAB_STAT_MAP[top.target] || top.target;
-    let add = top.val || 0;
+    let add = labStatBonusValue(k,top.val || 0);
     if(top.isPct){
       // % は基本ステータスに対して計算
       const base = baseStats?.[k] || 0;
@@ -6993,7 +7026,7 @@ function _dcDmgHtml(r,atkStats,defStats,atkLv,spdefPen=0,poke=document.getElemen
   if(r.coeff==null)return labUnknownEffectHtml(r);
   const {kind,unit,rawPerHit,actPerHit,hits}=labEvaluateComponent(r,atkStats,defStats,atkLv,{items:labReadItems('dcAtk'),activeEffects:labReadEffects('dcAtk'),healTarget:labHealTarget('dcAtk'),spdefPen});
   const label=labEffectLabelHtml(poke,r);
-  const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">[${r.upg}]</span>`:'';
+  const upgTag=r.upg?`<span class="u-fs-fs-xs u-c-accent" style="margin-left:3px;">習得Lv${r.upg}</span>`:'';
   if(kind!=='damage'){
     return `<div class="lab-dmg-row">
       <span class="lab-dmg-label">${label}${upgTag}</span>
@@ -7021,10 +7054,10 @@ let dcAtkStats=null, dcDefStats=null, dcCurAtkPoke=null, dcInited=false;
 function dcInitUI(){
   if(!labDataReady) return;
   if(!dcInited){
-    const pokes=Object.keys(LAB_STATUS||{}).sort((a,b)=>a.localeCompare(b,'ja'));
+    const pokes=Object.keys(LAB_STATUS||{}).sort(compareDisplayNames);
     const po='<option value="">— 選択してください —</option>'+pokes.map(p=>`<option value="${p}">${p}</option>`).join('');
     ['dcAtkPoke','dcDefPoke'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=po; });
-    const items=Object.keys(LAB_ITEMS||{}).sort((a,b)=>a.localeCompare(b,'ja'));
+    const items=Object.keys(LAB_ITEMS||{}).sort(compareDisplayNames);
     const io='<option value="">なし</option>'+items.map(i=>`<option value="${i}">${i}</option>`).join('');
     ['dcAtkItem1','dcAtkItem2','dcAtkItem3','dcDefItem1','dcDefItem2','dcDefItem3'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=io; });
     dcInited=true;
@@ -7033,8 +7066,9 @@ function dcInitUI(){
 }
 
 function dcRefreshMedalSelect(){
-  const sel=document.getElementById('dcAtkMedal');
-  if(!sel) return;
+  for(const [id,side] of [['dcAtkMedal','attack'],['dcDefMedal','defense']]){
+  const sel=document.getElementById(id);
+  if(!sel) continue;
   const cur=sel.value;
   sel.innerHTML='<option value="">— 使用しない —</option>';
   labMedalPresets.forEach((preset,i)=>{
@@ -7045,8 +7079,9 @@ function dcRefreshMedalSelect(){
     opt.value=i; opt.textContent=`${(obj&&obj.name)||('パターン'+(i+1))}（${count}枚）`;
     sel.appendChild(opt);
   });
-  if(typeof LabReview!=='undefined')LabReview.appendRecordedMedal(sel,cur);
+  if(typeof LabReview!=='undefined')LabReview.appendRecordedMedal(sel,cur,side);
   if(cur!==''&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+  }
 }
 
 // ---- DC: 特殊スライダー表示制御 ----
@@ -7107,7 +7142,8 @@ function calcDmgCalcMain(scroll=false){
     medalPresetIdx:medalVal==='record'?0:medalVal?parseInt(medalVal):null,
     activeEffects:labReadEffects('dcAtk'),
   },typeof LabReview!=='undefined'?LabReview.recordMedalDeps(medalVal):LAB_STATS_DEPS);
-  dcDefStats=computeStats({poke:defPoke, lv:defLv, items:defItems,activeEffects:labReadEffects('dcDef')},LAB_STATS_DEPS);
+  const defenseMedalVal=document.getElementById('dcDefMedal')?.value||'';
+  dcDefStats=computeStats({poke:defPoke,lv:defLv,items:defItems,activeEffects:labReadEffects('dcDef'),medalPresetIdx:defenseMedalVal==='record'?0:defenseMedalVal!==''?Number(defenseMedalVal):null},typeof LabReview!=='undefined'?LabReview.recordMedalDeps(defenseMedalVal,'defense'):LAB_STATS_DEPS);
   if(!dcAtkStats||!dcDefStats) return;
   // ポケモン変更時のみスキルセレクト再構築
   if(dcCurAtkPoke!==atkPoke){ dcCurAtkPoke=atkPoke; dcUpdateSkillSelects(atkPoke); }
@@ -7222,6 +7258,10 @@ function dcRenderStatSummary(atkPoke,atkLv,defPoke,defLv){
       <div class="u-c-text2">特防: <b>${fmt(dcDefStats['特防'])}</b></div>
     </div>
   </div>`;
+  for(const [label,stats] of [['攻撃側',dcAtkStats],['防御側',dcDefStats]]){
+    const entries=Object.entries(stats).filter(([k])=>labStatMeta(k).conditional);
+    if(entries.length)el.innerHTML+=`<div class="lab-effect-summary"><strong>${label}の条件付き効果</strong>${entries.map(([k,v])=>`<p>${labStatLabel(k)}：${Number(v.toFixed(2))}${labStatMeta(k).unit}<br>${labStatMeta(k).note}</p>`).join('')}</div>`;
+  }
 }
 
 function labInitMedalUI(){
@@ -7244,7 +7284,7 @@ function labInitMedalUI(){
         if(chip.classList.contains('in-slot')){
           // in-slot → そのスロットのレアリティを変更
           const idx = labMedalSlots.indexOf(name);
-          if(idx >= 0){ labMedalRarities[idx]=rar; labRenderMedalSlots(); labRenderMedalList(); labUpdateMedalResult(); }
+          if(idx >= 0 && labMedalRaritiesFor(LAB_MEDALS.find(m=>m.name===name)).includes(rar)){ labMedalRarities[idx]=rar; labRenderMedalSlots(); labRenderMedalList(); labUpdateMedalResult(); }
         } else {
           // 未追加 → 指定レアリティで追加
           labAddMedalToSlot(name, rar);
@@ -7300,7 +7340,7 @@ function labRenderMedalSlots(){
   document.getElementById('medalSlotCount').textContent = `${filled}/10`;
 
   bar.innerHTML = '';
-  const RAR_LABEL={bronze:'銅',silver:'銀',gold:'金'};
+  const RAR_LABEL=MEDAL_RARITY_JA;
   labMedalSlots.forEach((name, i) => {
     // 1スロット = カード（スロット番号・メダルの色・名前・レアリティ）。外すボタンはカードの外側に置く（ボタンの入れ子を避ける）
     const wrap = document.createElement('div');
@@ -7315,7 +7355,7 @@ function labRenderMedalSlots(){
       const m = LAB_MEDALS.find(x=>x.name===name);
       const c1 = m ? (MEDAL_COLOR_HEX[m.c1]||'#9399b2') : '#9399b2';
       const c2 = m&&m.c2 ? (MEDAL_COLOR_HEX[m.c2]||c1) : c1;
-      const rar = labMedalRarities[i]||'gold';
+      const rar = medalRarity(name,labMedalRarities[i]);
       const colors = m ? [m.c1,m.c2].filter(Boolean).join('・') : '';
       btn.setAttribute('aria-label',`スロット${i+1}：${name}（${RAR_LABEL[rar]}${colors?'・'+colors:''}）`);
       btn.title = `${name}（${RAR_LABEL[rar]}）${colors?' '+colors:''}`;
@@ -7347,9 +7387,9 @@ function labRenderMedalSlots(){
   if(hint){
     const cur = labMedalSlots[labActiveMedalSlot];
     if(cur){
-      const rar = labMedalRarities[labActiveMedalSlot]||'gold';
-      const rarLabel = rar==='bronze'?'銅':rar==='silver'?'銀':'金';
-      hint.innerHTML = `<span class="u-fs-fs-xs u-c-text2">スロット${labActiveMedalSlot+1}：${cur}（${rarLabel}）　一覧の 銅/銀/金 ボタンでレアリティを変更</span>`;
+      const rar = medalRarity(cur,labMedalRarities[labActiveMedalSlot]);
+      const rarLabel = MEDAL_RARITY_JA[rar];
+      hint.innerHTML = `<span class="u-fs-fs-xs u-c-text2">スロット${labActiveMedalSlot+1}：${cur}（${rarLabel}）　${rar==='platinum'?'プラチナ限定': '一覧の 銅/銀/金 ボタンでレアリティを変更'}</span>`;
     } else {
       hint.innerHTML = `<span class="u-fs-fs-xs u-c-accent">スロット${labActiveMedalSlot+1}を選択中 ← 一覧からメダルを選択、または 銅/銀/金 を直接クリック</span>`;
     }
@@ -7380,7 +7420,7 @@ function labClearAllMedals(){
 
 // ---- フィルター & 一覧描画 ----
 function labResetMedalFilters(){
-  ['mfColor1','mfColor2','mfUpStat','mfDnStat','mfRarity'].forEach(id=>{
+  ['mfName','mfColor1','mfColor2','mfUpStat','mfDnStat','mfRarity'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   labRenderMedalList();
@@ -7389,6 +7429,7 @@ function labResetMedalFilters(){
 function labRenderMedalList(){
   const container = document.getElementById('medalListContainer');
   if(!container||!LAB_MEDALS) return;
+  const query=normalizeNameSearch(document.getElementById('mfName')?.value.trim());
   const fc1    = document.getElementById('mfColor1')?.value||'';
   const fc2    = document.getElementById('mfColor2')?.value||'';
   const fUp    = document.getElementById('mfUpStat')?.value||'';
@@ -7396,16 +7437,13 @@ function labRenderMedalList(){
   const fRar   = document.getElementById('mfRarity')?.value||'';
 
   const filtered = LAB_MEDALS.filter(m=>{
+    if(query&&!normalizeNameSearch(m.name).includes(query))return false;
     if(fc1 && m.c1!==fc1 && m.c2!==fc1) return false;
     if(fc2==='__none__' && m.c2) return false;
     if(fc2 && fc2!=='__none__' && m.c2!==fc2 && m.c1!==fc2) return false;
     if(fUp && m.upStat!==fUp) return false;
     if(fDn && m.dnStat!==fDn) return false;
-    const isPla = m.note&&m.note.includes('プラチナ');
-    if(fRar==='bronze'  && m.bUp==null && m.bDn==null && !isPla) return false;
-    if(fRar==='silver'  && m.sUp==null && m.sDn==null && !isPla) return false;
-    if(fRar==='gold'    && m.gUp==null && m.gDn==null) return false;
-    if(fRar==='platinum'&& !isPla) return false;
+    if(fRar&&!labMedalRaritiesFor(m).includes(fRar))return false;
     return true;
   });
 
@@ -7422,26 +7460,27 @@ function labRenderMedalList(){
   container.innerHTML = filtered.map(m=>{
     const slotIdx = labMedalSlots.indexOf(m.name);
     const inSlot  = slotIdx >= 0;
-    const slotRar = inSlot ? (labMedalRarities[slotIdx]||'gold') : null;
+    const slotRar = inSlot ? medalRarity(m.name,labMedalRarities[slotIdx]) : null;
     const hex1 = MEDAL_COLOR_HEX[m.c1]||'#9399b2';
     const hex2 = m.c2 ? (MEDAL_COLOR_HEX[m.c2]||'#9399b2') : '';
-    const isPla = m.note&&m.note.includes('プラチナ');
+    const isPla = MEDAL_PLATINUM_ONLY.has(m.name);
     // 表示値はフィルターレアリティ基準（未選択なら金）
     const upV = labMedalGetVal(m, dispRar, 'up');
     const dnV = labMedalGetVal(m, dispRar, 'dn');
     const upTxt = (m.upStat&&m.upStat!=='なし'&&upV!=null) ? `<span class="u-c-win">+${upV} ${m.upStat}</span>` : '';
     const dnTxt = (m.dnStat&&m.dnStat!=='なし'&&dnV!=null) ? `<span class="u-c-loss">${dnV} ${m.dnStat}</span>` : '';
     // レアリティボタン（in-slotの場合は現在のレアリティをハイライト）
-    const rarBtns = [['bronze','銅'],['silver','銀'],['gold','金']].map(([rv,lb])=>{
+    const rarBtns = labMedalRaritiesFor(m).map(rv=>{
+      const lb=MEDAL_RARITY_JA[rv];
       const isActive = inSlot && slotRar===rv;
-      return `<button class="mcr-btn${isActive?' rar-'+rv:''}" data-rar="${rv}">${lb}</button>`;
+      return `<button class="mcr-btn${isActive?' rar-'+rv:''}" data-rar="${rv}" aria-label="${m.name}を${lb}で選択" aria-pressed="${isActive}">${lb}</button>`;
     }).join('');
     return `<div class="medal-chip${inSlot?' in-slot':''}" data-medal="${m.name.replace(/"/g,'&quot;')}">
       <div class="medal-chip-dot" style="background:${hex1};"></div>
       ${hex2?`<div class="medal-chip-dot2" style="background:${hex2};"></div>`:''}
       <div class="medal-chip-name">${m.name}</div>
       <div class="medal-chip-stat">${[upTxt,dnTxt].filter(Boolean).join(' / ')}</div>
-      ${isPla?'<div class="medal-chip-pla">Pla</div>':''}
+      ${isPla?'<div class="medal-chip-pla">プラチナ限定</div>':''}
       <div class="medal-chip-rar">${rarBtns}</div>
     </div>`;
   }).join('');
@@ -7449,6 +7488,10 @@ function labRenderMedalList(){
 
 function labAddMedalToSlot(name, rar='gold'){
   if(labMedalSlots.includes(name)) return; // すでにセット済み
+  const medal=LAB_MEDALS.find(m=>m.name===name);
+  if(!medal)return;
+  rar=medalRarity(name,rar);
+  if(!labMedalRaritiesFor(medal).includes(rar))return;
   labMedalSlots[labActiveMedalSlot]    = name;
   labMedalRarities[labActiveMedalSlot] = rar;
   // 次の空きスロットへ自動移動
@@ -7462,47 +7505,112 @@ function labAddMedalToSlot(name, rar='gold'){
 // ---- プリセット保存・読込 ----
 let labMedalPresets = Array(8).fill(null);
 const PRESET_KEY = 'unite_medal_presets';
+let labPresetUIOwner=null;
+
+// Keep the old key intact as a recoverable copy; new saves are scoped to their owner.
+const labPresetStore=MedalPresetStore.create({
+  storage:window.LAB_PUBLIC_MODE?(()=>{const values=new Map();return {getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)};})():localStorage,
+  lock:(key,fn)=>navigator.locks?navigator.locks.request(key,fn):fn(),
+  remote:{
+    async read(owner){
+      const {data:{user},error:authError}=await db.auth.getUser();
+      if(authError||user?.id!==owner||labSessionOwner!==owner)throw new Error('preset-account-changed');
+      const {data,error}=await db.from('medal_presets').select('data,updated_at').eq('user_id',owner).maybeSingle();
+      if(error)throw error;
+      return data;
+    },
+    async write(owner,values,expected){
+      const {data:{user},error:authError}=await db.auth.getUser();
+      if(authError||user?.id!==owner||labSessionOwner!==owner)throw new Error('preset-account-changed');
+      const updated_at=new Date(Math.max(Date.now(),(Date.parse(expected.stamp)||0)+1)).toISOString();
+      const row={user_id:owner,data:values,updated_at};
+      let query;
+      if(expected.exists){
+        query=db.from('medal_presets').update(row).eq('user_id',owner);
+        query=expected.stamp===null?query.is('updated_at',null):query.eq('updated_at',expected.stamp);
+      }else query=db.from('medal_presets').insert(row);
+      const {data,error}=await query.select('updated_at').maybeSingle();
+      if(error){if(error.code==='23505')return null;throw error;}
+      return data;
+    }
+  },
+  onChange(state){
+    if(labPresetUIOwner!==state.owner){
+      labPresetUIOwner=state.owner;
+      labMedalSlots=Array(10).fill(null);labMedalRarities=Array(10).fill('gold');labActiveMedalSlot=0;
+      for(const id of ['labMedalSetSel','dcAtkMedal','dcDefMedal','medalSetSelect']){const el=document.getElementById(id);if(el)el.value='';}
+      if(labDataReady){labRenderMedalSlots();labRenderMedalList();labUpdateMedalResult();}
+    }
+    labMedalPresets=state.values;
+    if(typeof LAB_MEDALS!=='undefined'&&labDataReady)labRenderMedalPresets();
+    refreshRecordMedalSelects();labRefreshCalcMedalSelect();dcRefreshMedalSelect();
+    labRenderPresetSync(state);
+  }
+});
+async function labPresetSelectOwner(owner){return labPresetStore.select(window.LAB_PUBLIC_MODE?'guest':owner);}
+function labRenderPresetSync(state=labPresetStore.snapshot()){
+  const status=document.getElementById('medalPresetStatus');if(!status)return;
+  if(window.LAB_PUBLIC_MODE){status.textContent='閲覧中の一時保存です。このページを閉じると消えます。端末やアカウントの保存内容とは別です。';return;}
+  const messages={idle:'',local:'この端末に保存しています。',synced:'端末とアカウントに保存済みです。',
+    pending:'端末に保存済みです。アカウントへの保存がまだ完了していません。',
+    syncing:'アカウントの保存内容を確認しています。',
+    offline:'アカウントと通信できませんでした。端末の保存内容は保持しています。',
+    conflict:'同じパターンに異なる保存内容があります。残す内容を選んでください。',
+    'storage-error':'端末に保存できません。画面を閉じると変更が失われる可能性があります。'};
+  status.textContent=messages[state.status]||'';
+  document.getElementById('medalPresetRetry').hidden=!['pending','offline','storage-error'].includes(state.status);
+  document.getElementById('medalPresetLegacy').hidden=!state.legacy;
+  document.getElementById('medalPresetLegacyHint').hidden=!state.legacy;
+  const summary=p=>p?`${p.name||'名前なし'}・${p.slots.filter(Boolean).length}枚：${p.slots.filter(Boolean).join('、')}`:'未保存（空のパターン）';
+  const conflicts=document.getElementById('medalPresetConflicts');
+  // Avoid replacing focused controls during an unrelated status update.
+  const html=[...new Set(state.conflicts.map(c=>c.index))].map(idx=>{
+    const options=state.conflicts.map((c,i)=>({...c,choice:i})).filter(c=>c.index===idx);
+    return `<fieldset class="medal-sync-conflict"><legend>パターン${idx+1}の保存内容</legend>
+      <p>端末：${escapeHtml(summary(state.values[idx]))}</p>
+      <button type="button" onclick="labResolvePresetConflict(${idx},-1)">端末の内容を残す</button>
+      ${options.map(c=>`<p>${c.source==='legacy'?'以前の端末':c.source==='guest'?'ゲスト':'別の保存内容'}：${escapeHtml(summary(c.value))}</p>
+        <button type="button" onclick="labResolvePresetConflict(${idx},${c.choice})">この内容を残す</button>`).join('')}
+      </fieldset>`;
+  }).join('');
+  if(conflicts.innerHTML!==html)conflicts.innerHTML=html;
+}
+async function labRetryPresetSync(){await labPresetStore.refresh();await labPresetStore.save();}
+async function labImportLegacyPresets(){if(await labPresetStore.importLegacy())await labPresetStore.save();}
+async function labResolvePresetConflict(idx,choice){
+  if(await labPresetStore.resolve(idx,choice)){
+    await labPresetStore.save();
+    if(!labPresetStore.snapshot().conflicts.length)document.getElementById('medalPresetStatus')?.focus();
+  }
+}
+window.addEventListener('storage',event=>{
+  const owner=labPresetStore.snapshot().owner;
+  if(owner&&event.key===labPresetStore.key(owner))labPresetStore.refresh();
+});
 
 // プリセットのslots/raritiesを正規化（旧形式配列にも対応）
 function _presetToObj(p){
   if(!p) return null;
-  if(Array.isArray(p)) return { slots:[...p], rarities:Array(10).fill('gold'), name:null }; // 旧形式
-  return p;
+  const obj=Array.isArray(p)?{slots:[...p],rarities:Array(10).fill('gold'),name:null}:p;
+  return {...obj,rarities:obj.slots.map((name,i)=>medalRarity(name,obj.rarities?.[i]))};
 }
 
 function labLoadMedalPresets(){
-  try{
-    const s = localStorage.getItem(PRESET_KEY);
-    if(s){ const p=JSON.parse(s); if(Array.isArray(p)&&p.length===8) labMedalPresets=p; }
-  }catch(e){}
+  labPresetSelectOwner(isGuest()?'guest':labSessionOwner);
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); // ローカル読込直後に即時反映
+  if(window.LAB_PUBLIC_MODE)return;
   if(isGuest()) return; // ゲストはSupabase同期をスキップ
   // Supabaseから非同期読込（完了したらUIを更新）
   _loadPresetsFromSupabase().then(ok=>{ if(ok){ labRenderMedalPresets(); labRefreshCalcMedalSelect(); dcRefreshMedalSelect(); } });
 }
 
 async function _loadPresetsFromSupabase(){
-  try{
-    const {data:{user}}=await db.auth.getUser();
-    if(!user) return false;
-    const {data,error}=await db.from('medal_presets').select('data').eq('user_id',user.id).maybeSingle();
-    if(error||!data) return false;
-    const p=data.data;
-    if(Array.isArray(p)&&p.length===8){
-      labMedalPresets=p;
-      localStorage.setItem(PRESET_KEY,JSON.stringify(p));
-      return true;
-    }
-  }catch(e){ console.warn('presets load err',e); }
-  return false;
+  await labPresetSelectOwner(isGuest()?'guest':labSessionOwner);
+  return labPresetStore.load();
 }
 
 async function _savePresetsToSupabase(){
-  try{
-    const {data:{user}}=await db.auth.getUser();
-    if(!user) return;
-    await db.from('medal_presets').upsert({user_id:user.id,data:labMedalPresets,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  }catch(e){ console.warn('presets save err',e); }
+  return labPresetStore.save();
 }
 
 function labRenderMedalPresets(){
@@ -7523,22 +7631,22 @@ function labRenderMedalPresets(){
     ).join('');
     const label = (obj && obj.name) ? escapeHtml(obj.name) : `パターン${i+1}`;
     return `<div class="medal-preset-card${preset?' has-data':''}">
-      <div class="medal-preset-num"${preset?` onclick="labRenamePreset(${i})" style="cursor:pointer;" title="クリックで名前を変更"`:''}>${label}${preset?' <span style="opacity:.45;"><svg class="ico" aria-hidden="true"><use href="#i-pencil"></use></svg></span>':''}</div>
+      <div class="medal-preset-num">${preset?`<button class="medal-preset-rename" onclick="labRenamePreset(${i})" aria-label="${label}の名前を変更">${label}<svg class="ico" aria-hidden="true"><use href="#i-pencil"></use></svg></button>`:label}</div>
       <div class="medal-preset-info">${preset ? count+'枚 '+dots : '未保存'}</div>
       <div class="medal-preset-btns">
-        <button class="medal-preset-btn" onclick="labSaveMedalPreset(${i})">保存</button>
-        ${preset ? `<button class="medal-preset-btn load" onclick="labLoadMedalPreset(${i})">読込</button>` : ''}
-        ${preset ? `<button class="medal-preset-btn del" onclick="labDeleteMedalPreset(${i})">✕</button>` : ''}
+        <button class="medal-preset-btn" onclick="labSaveMedalPreset(${i})" aria-label="${label}に${window.LAB_PUBLIC_MODE?'一時保存':'保存'}">${window.LAB_PUBLIC_MODE?'一時保存':'保存'}</button>
+        ${preset ? `<button class="medal-preset-btn load" onclick="labLoadMedalPreset(${i})" aria-label="${label}を読み込む">読込</button>` : ''}
+        ${preset ? `<button class="medal-preset-btn del" onclick="labDeleteMedalPreset(${i})" aria-label="${label}を削除">削除</button>` : ''}
       </div>
     </div>`;
   }).join('');
 }
 
-function labSaveMedalPreset(idx){
+async function labSaveMedalPreset(idx){
   if(!labMedalSlots.filter(Boolean).length){ alert('メダルを選択してください'); return; }
   const prev=_presetToObj(labMedalPresets[idx]);
-  labMedalPresets[idx] = { slots:[...labMedalSlots], rarities:[...labMedalRarities], name: (prev&&prev.name)||null };
-  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  const saved=await labPresetStore.edit(idx,{slots:[...labMedalSlots],rarities:[...labMedalRarities],name:(prev&&prev.name)||null});
+  if(!saved){showToast('端末に保存できませんでした。画面を閉じずに再試行してください。','warn');return;}
   if(JSON.stringify(prev)!==JSON.stringify(labMedalPresets[idx]))usageUsed(usageIntent('labMedalPanel'));
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
@@ -7547,14 +7655,14 @@ function labSaveMedalPreset(idx){
 }
 
 // プリセットに任意の名前を付ける/変更する
-function labRenamePreset(idx){
+async function labRenamePreset(idx){
   const obj=_presetToObj(labMedalPresets[idx]);
   if(!obj) return;
   const input=prompt('プリセット名（任意・空欄で「パターン番号」表示）', obj.name||'');
   if(input===null) return; // キャンセル
-  obj.name=input.trim()||null;
-  labMedalPresets[idx]=obj;
-  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  if(!await labPresetStore.edit(idx,{...obj,name:input.trim()||null})){
+    showToast('端末に保存できませんでした。画面を閉じずに再試行してください。','warn');return;
+  }
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   if(isGuest()) return;
@@ -7573,10 +7681,11 @@ function labLoadMedalPreset(idx){
   labUpdateMedalResult();
 }
 
-function labDeleteMedalPreset(idx){
+async function labDeleteMedalPreset(idx){
   if(!confirm(`パターン${idx+1}を削除しますか？`)) return;
-  labMedalPresets[idx] = null;
-  localStorage.setItem(PRESET_KEY, JSON.stringify(labMedalPresets));
+  if(!await labPresetStore.edit(idx,null)){
+    showToast('端末に保存できませんでした。削除は完了していません。','warn');return;
+  }
   labRenderMedalPresets();
   labRefreshCalcMedalSelect(); dcRefreshMedalSelect();
   _savePresetsToSupabase();
@@ -7584,8 +7693,9 @@ function labDeleteMedalPreset(idx){
 
 // ---- レアリティ切替（per-slot / 一括） ----
 function labSetAllRarity(r){
-  labMedalRarities = labMedalRarities.map((_,i)=> labMedalSlots[i] ? r : 'gold');
+  labMedalRarities = labMedalRarities.map((old,i)=> labMedalSlots[i] ? medalRarity(labMedalSlots[i],r) : 'gold');
   labRenderMedalSlots();
+  labRenderMedalList();
   labUpdateMedalResult();
 }
 
@@ -7627,7 +7737,7 @@ function labUpdateMedalResult(){
           return `<div class="medal-color-badge">
             <span class="medal-color-dot" style="background:${hex};"></span>
             <span>${c} ${n}枚</span>
-            ${topEffect?`<span class="u-c-win u-fs-fs-xs">▲${topEffect.target} ${topEffect.val}${topEffect.isPct?'%':''}</span>`:''}
+            ${topEffect?`<span class="u-c-win u-fs-fs-xs">${labMedalEffectText(topEffect)}</span>`:''}
           </div>`;
         }).join('')
       : '<span class="u-fs-fs-xs u-c-text3">メダル未選択</span>';
@@ -7644,7 +7754,7 @@ function labUpdateMedalResult(){
         return `<div class="medal-set-row ${on?'medal-set-on':'medal-set-off'}">
           <span class="medal-color-dot" style="background:${hex};"></span>
           <span class="medal-set-tag ${on?'medal-set-tag-on':'medal-set-tag-off'}">${t.count}枚</span>
-          <span class="u-flex-1">${c}：${t.target} ${t.val}${t.isPct?'%':''}</span>
+          <span class="u-flex-1">${c}：${labMedalEffectText(t)}</span>
           <span class="u-fs-fs-xs">${n}/${t.count}${on?' ✓':''}</span>
         </div>`;
       });
@@ -7675,12 +7785,13 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=109"></script>
-<script src="ratio.js?v=109"></script>
-<script src="js/lab-review.js?v=109"></script>
-<script src="js/calc-conditions-core.js?v=109"></script>
-<script src="js/calc-conditions.js?v=109"></script>
-<script src="js/patch-analysis-core.js?v=109"></script>
-<script src="js/patch-analysis.js?v=109"></script>
+<script src="ratio-labels.js?v=115"></script>
+<script src="ratio.js?v=115"></script>
+<script src="js/lab-review.js?v=115"></script>
+<script src="js/calc-conditions-core.js?v=115"></script>
+<script src="js/calc-conditions.js?v=115"></script>
+<script src="js/patch-analysis-core.js?v=115"></script>
+<script src="js/patch-analysis.js?v=115"></script>
+<script src="js/lab-public.js?v=115"></script>
 </body>
 </html>

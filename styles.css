@@ -676,21 +676,23 @@
   .medal-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
   .mf-label{font-size:var(--fs-xs);color:var(--text3);margin-bottom:3px;}
   .medal-list{display:flex;flex-direction:column;gap:3px;max-height:300px;overflow-y:auto;}
-  .medal-chip{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg3);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);transition:border-color .1s,background .1s;}
+  .medal-chip{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 8px;background:var(--bg3);border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);transition:border-color .1s,background .1s;}
   .medal-chip:hover:not(.in-slot){border-color:var(--accent-bg);background:var(--bg2);}
   .medal-chip.in-slot{border-color:var(--accent);background:var(--accent-bg);}
   .medal-chip-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
   .medal-chip-dot2{width:7px;height:7px;border-radius:50%;flex-shrink:0;opacity:.8;}
-  .medal-chip-name{font-size:var(--fs-xs);font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .medal-chip-stat{font-size:var(--fs-xs);color:var(--text3);white-space:nowrap;flex-shrink:0;}
-  .medal-chip-pla{font-size:9px;background:#6a1de0;color:#e0d7ff;padding:1px 4px;border-radius:999px;flex-shrink:0;}
+  .medal-chip-name{font-size:var(--fs-xs);font-weight:500;flex:1;min-width:6em;overflow-wrap:anywhere;}
+  .medal-chip-stat{font-size:var(--fs-xs);color:var(--text2);}
+  .medal-chip-pla{font-size:var(--fs-xs);color:var(--text2);flex-shrink:0;}
   /* チップ内レアリティボタン */
-  .medal-chip-rar{display:flex;gap:2px;flex-shrink:0;}
-  .mcr-btn{font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text3);cursor:pointer;line-height:1.2;transition:background .1s,border-color .1s,color .1s;}
+  .medal-chip-rar{display:flex;gap:8px;flex-shrink:0;}
+  .mcr-btn{min-width:44px;min-height:44px;font-size:var(--fs-xs);font-weight:700;padding:6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;line-height:1.2;transition:background .1s,border-color .1s,color .1s;}
+  .mcr-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   .mcr-btn:hover{opacity:.8;}
   .mcr-btn.rar-bronze{border-color:#a0522d;background:#2a1206;color:#cd9e6e;}
   .mcr-btn.rar-silver{border-color:#9e9e9e;background:#1a1a1a;color:#cfcfcf;}
   .mcr-btn.rar-gold  {border-color:#f9a825;background:#2a1c00;color:#f9c825;}
+  .mcr-btn.rar-platinum{border-color:var(--text2);background:var(--bg3);color:var(--text);}
   .medal-color-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;flex-shrink:0;}
   .medal-color-row{display:flex;flex-wrap:wrap;gap:6px;font-size:var(--fs-xs);}
   .medal-color-badge{display:flex;align-items:center;background:var(--bg3);border-radius:var(--radius-sm);padding:4px 8px;gap:4px;font-size:var(--fs-xs);}
@@ -726,6 +728,13 @@
   .help-tip{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:var(--fs-xs);color:var(--text2);line-height:1.7;margin-top:6px;}
   /* プリセット */
   .medal-preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .medal-sync{margin-top:12px;color:var(--text2);font-size:var(--fs-sm);line-height:1.6;overflow-wrap:anywhere;}
+  .medal-sync p{margin:8px 0;}
+  .medal-sync-actions{display:flex;flex-wrap:wrap;gap:8px;}
+  .medal-sync button{min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);font:inherit;cursor:pointer;}
+  .medal-sync button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .medal-sync-conflict{min-width:0;margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);}
+  .medal-sync-conflict legend{color:var(--text);font-weight:600;}
   .medal-preset-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;text-align:center;transition:border-color .15s;}
   .medal-preset-card.has-data{border-color:#3a4060;}
   .medal-preset-num{font-size:var(--fs-xs);color:var(--text3);margin-bottom:2px;}
@@ -772,6 +781,27 @@
 .ratio-description{margin:8px 0 12px;}
 .ratio-formula.ratio-effect-description{font-size:var(--fs-md);font-weight:400;color:var(--text);}
 .ratio-section{scroll-margin-top:70px}.ratio-section h3{font-size:var(--fs-lg)}.ratio-section h4{margin:12px 0 4px}
+.ratio-section { margin-top:28px; }
+.ratio-section > h3 { margin-bottom:14px; font-size:18px; }
+.ratio-section .card { padding:20px; }
+.ratio-section .ratio-variant + .ratio-variant { margin-top:28px; padding-top:12px; }
+.ratio-section h4 { margin:0 0 14px; font-size:18px; line-height:1.6; }
+.ratio-section h4 .ratio-meta { display:inline-block; margin-left:6px; font-size:13px; font-weight:400; }
+.ratio-section .lab-effect-description { font-size:15px; line-height:1.85; }
+.ratio-section .ratio-description { margin:0 0 18px; }
+.ratio-prose-sentence { display:block; }
+.ratio-description > .ratio-prose-sentence:first-child { display:inline; }
+.ratio-prose-sentence + .ratio-prose-sentence { margin-top:8px; }
+.ratio-details { margin:16px 0; background:var(--bg3); border-radius:var(--radius-sm); padding:0 14px; }
+.ratio-details > summary { min-height:44px; padding:10px 0; line-height:1.6; cursor:pointer; font-size:14px; font-weight:600; }
+.ratio-details > summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.ratio-section .ratio-details p { margin:0; padding:10px 0 18px; }
+.ratio-section .ratio-details p + p { padding-top:6px; }
+.ratio-section .ratio-details strong { display:inline-block; margin-bottom:6px; font-size:14px; }
+.ratio-section .ratio-row { padding:14px 0; }
+.ratio-section .ratio-row:last-child { border-bottom:0; }
+.ratio-section .ratio-label { font-size:14px; font-weight:600; margin-bottom:4px; }
+.ratio-section .ratio-meta { font-size:13px; line-height:1.8; }
 #labPage>.analysis-tabs{flex-wrap:wrap}#ratioSearch{margin-top:8px;width:100%;box-sizing:border-box}
 
 .record-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -939,6 +969,7 @@
   .ms-num{font-size:var(--fs-xs);color:var(--text3);font-weight:700;line-height:1;}
   .ms-rar{font-size:var(--fs-xs);font-weight:800;line-height:1;padding:3px 6px;border-radius:999px;}
   .ms-rar.gold{background:#f9c825;color:#2a1c00;}
+  .ms-rar.platinum{background:var(--bg3);color:var(--text);border:1px solid var(--text2);}
   .ms-rar.silver{background:#cfd6e4;color:#1d2230;}
   .ms-rar.bronze{background:#c07a4a;color:#1f0f05;}
   .ms-disk{width:34px;height:34px;border-radius:50%;flex-shrink:0;
@@ -975,3 +1006,64 @@
   .h-medal .ico{color:var(--sup);}
 
 .lc-library-list .lr-build>strong{overflow-wrap:anywhere;}
+
+/* ラボのメダルと条件付き効果。既存テーマを継承。 */
+.lab-medal-label{display:block;margin:14px 0 6px;font-size:var(--fs-xs);font-weight:600;color:var(--text2)}
+#dcAtkMedal,#dcDefMedal{min-height:44px}
+.lab-effect-heading{grid-column:1/-1;margin:12px 0 0;font-size:var(--fs-xs);color:var(--text2);font-weight:600}
+.lab-effect-note{display:block;margin:6px 0 0;font-size:var(--fs-xs);line-height:1.6;color:var(--text2);font-weight:400;overflow-wrap:anywhere}
+.lab-effect-summary{margin-top:12px;font-size:var(--fs-xs);line-height:1.6;color:var(--text2)}
+.lab-effect-summary p{margin:6px 0}
+
+.medal-name-filter{grid-column:1/-1}
+#mfName{min-height:44px}
+.medal-preset-grid{grid-template-columns:1fr}
+.medal-preset-card{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;text-align:left;align-items:center;padding:8px}
+.medal-preset-num{color:var(--text2);overflow-wrap:anywhere}
+.medal-preset-info{grid-column:1;margin:0}
+.medal-preset-btns{grid-column:2;grid-row:1/span 2;gap:4px}
+.medal-preset-btn{min-width:44px;min-height:44px;padding:4px}
+.medal-preset-rename{min-height:44px;padding:0;border:0;background:none;color:var(--text2);font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.medal-slot-del{width:44px;height:44px;top:2px;right:2px}
+.ms-top{padding-right:36px;min-height:40px;flex-wrap:wrap;gap:4px}
+.medal-preset-btn.load:hover{color:var(--text);background:var(--accent-bg)}
+@media(max-width:480px){
+  .medal-slot-btn{padding-right:46px;min-height:64px}
+  .medal-slot-del{width:44px;height:44px;top:50%;right:0}
+  .ms-name{white-space:normal;overflow-wrap:anywhere;overflow:visible}
+  .ms-top{min-height:0}
+}
+
+.ms-rar{white-space:nowrap}
+@media(min-width:481px){
+  .ms-top{padding-right:0;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px}
+  .ms-num{min-height:38px}
+}
+/* 閲覧ラボは対戦記録の操作を表示しない。配色と入力部は既存テーマを共用。 */
+.lab-public-entry { display:block; text-align:center; text-decoration:none; margin-bottom:12px; }
+.lab-public-mode .page-tabs,
+.lab-public-mode .nav-right .btn-logout,
+.lab-public-mode .nav-right .btn-menu { display:none; }
+.lab-public-nav { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.lab-public-nav a, .lab-data-link { display:inline-flex; align-items:center; min-height:44px; color:var(--text); text-underline-offset:4px; }
+.lab-public-nav p { flex-basis:100%; margin:0; color:var(--text2); }
+.lab-static { max-width:1000px; margin:auto; padding:24px 20px; font-size:16px; line-height:1.65; }
+.lab-static h1 { font-size:clamp(24px,4vw,32px); margin:12px 0; }
+.lab-static h2 { margin-top:28px; }
+.lab-static a { color:var(--text); text-underline-offset:4px; }
+.lab-static a:focus-visible, .lab-public-nav a:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.lab-static-nav { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.lab-static-nav a { min-height:44px; display:inline-flex; align-items:center; }
+.lab-static-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px 16px; list-style:none; padding:0; }
+.lab-static-list a { display:flex; gap:8px; align-items:center; min-height:44px; }
+.lab-static-list img { flex:none; }
+.lab-static-table { overflow:auto; max-width:100%; }
+.lab-static-table:focus-visible { outline:3px solid var(--accent); }
+.lab-static-table table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.lab-static-table th,.lab-static-table td { padding:8px; text-align:right; }
+.lab-static-table th { background:var(--bg3); }
+.lab-static-table caption { text-align:left; padding:8px 0; }
+.lab-static-table tr:nth-child(even) { background:var(--bg2); }
+.lab-static .ratio-jumps { display:flex; flex-wrap:wrap; gap:12px; }
+.lab-static .ratio-jumps a { min-height:44px; display:inline-flex; align-items:center; }
+.lab-static-search { width:100%; min-height:44px; margin:8px 0 16px; }

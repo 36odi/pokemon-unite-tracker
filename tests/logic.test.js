@@ -402,7 +402,7 @@ eq(F.SKILLS['ソルガレオ'], {s1:['アイアンヘッド'], s2:['サイコシ
 section('app shell assets');
 const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 const labCoreTag = (indexSrc.match(/<script src="js\/lab-core\.js(?:\?v=\d+)?"><\/script>/) || [])[0];
-ok(labCoreTag && indexSrc.indexOf(labCoreTag) < indexSrc.indexOf('<script>'),
+ok(labCoreTag && indexSrc.indexOf(labCoreTag) < indexSrc.indexOf('const createClient ='),
   'lab-core.js loads before the inline application script');
 ok(!/function\s+(?:computeStats|dcCalcActual)\s*\(/.test(indexSrc),
   'lab core functions are not duplicated in index.html');

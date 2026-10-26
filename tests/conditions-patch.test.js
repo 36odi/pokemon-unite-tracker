@@ -8,7 +8,14 @@ const clean=codec.sanitize(c);eq(codec.decode(codec.encode(c)),clean,'Japanese f
 const scizor={...c,attacker:'ハッサム',skills:[{name:'ダブルウイング+',upgrade:'11'},{name:'つるぎのまい',upgrade:'13'}]};
 eq(codec.decode(codec.encode(scizor)).skills[0],{name:'バレットパンチ+',upgrade:'11'},'old saved Scizor calculation uses corrected move name');
 eq(codec.sanitize({...scizor,attacker:'ストライク'}).skills[0].name,'ダブルウイング+','Scyther move is not renamed');
-eq(Object.keys(clean).sort(),['schema','dataVersion','attacker','defender','attackLevel','defendLevel','skills','medal','attack','defense','baseline'].sort(),'only calculation fields');
+eq(Object.keys(clean).sort(),['schema','dataVersion','attacker','defender','attackLevel','defendLevel','skills','medal','defenseMedal','attack','defense','baseline'].sort(),'only calculation fields');
+eq(clean.defenseMedal,null,'legacy condition defaults defender medals to none');
+const withDefense={...c,defenseMedal:{label:'秘密の相手セット',slots:['ニャオハ','ゼニガメ',...Array(8).fill(null)],rarities:['bronze','silver',...Array(8).fill('gold')]}};
+const restoredDefense=codec.decode(codec.encode(withDefense));
+eq(restoredDefense.defenseMedal.rarities.slice(0,2),['platinum','silver'],'defender rarity compatibility is side-independent');
+eq(restoredDefense.defenseMedal.label,undefined,'private defender preset label removed');
+eq(c.defenseMedal,undefined,'legacy source is unchanged');
+for(const defenseMedal of [{slots:[],rarities:[]},{...withDefense.defenseMedal,rarities:Array(10).fill('bad')},false])bad(()=>codec.sanitize({...c,defenseMedal}),'malformed defender medal rejected');
 eq(clean.medal.label,undefined,'medal personal label removed');eq(JSON.stringify(clean).includes('共有しない'),false,'private metadata removed');
 for(const [key,value] of [['schema',2],['attackLevel',0],['defendLevel',16],['attackLevel',1.5],['attacker',''],['skills',[]],['medal',{slots:[],rarities:[]}],['baseline',{}]])bad(()=>codec.sanitize({...c,[key]:value}),'reject '+key);
 for(const [key,value] of [['goalCount',7],['koStack',21],['dmgStack',5],['healTarget','invalid'],['proc',{TargetPct:101,SelfPct:null,HPDamage:null}],['items',[{name:'x',grade:0}]],['activeEffects',[null]]])bad(()=>codec.sanitize({...c,attack:{...equipment,[key]:value}}),'reject equipment '+key);

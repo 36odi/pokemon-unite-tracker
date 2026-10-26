@@ -13,13 +13,13 @@ const CalcConditionCodec=(()=>{
   function sanitize(c){
     if(!c||c.schema!==1||!text(c.dataVersion,80)||!text(c.attacker)||!c.attacker||!text(c.defender)||!c.defender||!number(c.attackLevel,1,15,true)||!number(c.defendLevel,1,15,true))throw Error('未対応・破損した計算条件です。');
     if(!Array.isArray(c.skills)||c.skills.length!==2||!c.skills.every(s=>s&&text(s.name)&&text(s.upgrade,10)))throw Error('わざの条件が不正です。');
-    let medal=null;
-    if(c.medal!==null){
-      const m=c.medal;
-      if(!m||!Array.isArray(m.slots)||m.slots.length!==10||!m.slots.every(n=>n===null||text(n))||!Array.isArray(m.rarities)||m.rarities.length!==10||!m.rarities.every(r=>['gold','silver','bronze'].includes(r)))throw Error('メダルの条件が不正です。');
-      medal={slots:[...m.slots],rarities:[...m.rarities]};
-    }
-    return {schema:1,dataVersion:c.dataVersion,attacker:c.attacker,defender:c.defender,attackLevel:c.attackLevel,defendLevel:c.defendLevel,skills:c.skills.map(s=>({name:c.attacker==='ハッサム'?s.name.replace('ダブルウイング','バレットパンチ'):s.name,upgrade:s.upgrade})),medal,attack:equipment(c.attack),defense:equipment(c.defense),baseline:c.baseline===null?null:equipment(c.baseline)};
+    const readMedal=m=>{
+      if(m===null)return null;
+      if(!m||!Array.isArray(m.slots)||m.slots.length!==10||!m.slots.every(n=>n===null||text(n))||!Array.isArray(m.rarities)||m.rarities.length!==10||!m.rarities.every(r=>['gold','silver','bronze','platinum'].includes(r)))throw Error('メダルの条件が不正です。');
+      return {slots:[...m.slots],rarities:m.slots.map((name,i)=>typeof medalRarity==='function'?medalRarity(name,m.rarities[i]):m.rarities[i])};
+    };
+    const medal=readMedal(c.medal),defenseMedal=readMedal(c.defenseMedal===undefined?null:c.defenseMedal);
+    return {schema:1,dataVersion:c.dataVersion,attacker:c.attacker,defender:c.defender,attackLevel:c.attackLevel,defendLevel:c.defendLevel,skills:c.skills.map(s=>({name:c.attacker==='ハッサム'?s.name.replace('ダブルウイング','バレットパンチ'):s.name,upgrade:s.upgrade})),medal,defenseMedal,attack:equipment(c.attack),defense:equipment(c.defense),baseline:c.baseline===null?null:equipment(c.baseline)};
   }
   function encode(c){const bytes=new TextEncoder().encode(JSON.stringify(sanitize(c)));if(bytes.length>12000)throw Error('共有する条件が大きすぎます。');return btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
   function decode(s){if(typeof s!=='string'||s.length>16000||!/^[-_A-Za-z0-9]+$/.test(s))throw Error('共有リンクの形式が不正です。');return sanitize(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(s.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0)))));}

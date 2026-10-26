@@ -184,6 +184,7 @@ for (const row of medalRows) {
   });
 }
 console.error(`メダル: ${LAB_MEDALS.length}枚`);
+require('./tools/normalize_lab_medals').applyMedalCorrections(LAB_MEDALS,LAB_MEDAL_SETS);
 
 // ========================
 // JS出力

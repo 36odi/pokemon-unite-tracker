@@ -2,9 +2,10 @@
 const CalcConditions=(()=>{
   const el=id=>document.getElementById(id),esc=escapeHtml,clone=CalcConditionCodec.clone;
   let pending=null,saveOwner=null,cachedVersion=null,previewSerial=0;
-  const owner=()=>isGuest()?'guest':labSessionOwner&&labSessionOwner!=='guest'?labSessionOwner:null;
+  const owner=()=>window.LAB_PUBLIC_MODE?'public':isGuest()?'guest':labSessionOwner&&labSessionOwner!=='guest'?labSessionOwner:null;
+  let publicSaved=[];
   const key=()=>owner()?'unite_calc_conditions_v1_'+encodeURIComponent(owner()):null;
-  function version(){return cachedVersion||(cachedVersion=CalcConditionCodec.fingerprint([LAB_STATUS,LAB_SKILLS,LAB_ITEMS,LAB_MEDALS,LAB_TEMP_ITEM_EFFECTS,LAB_PROC_ITEM_EFFECTS]));}
+  function version(){return cachedVersion||(cachedVersion=CalcConditionCodec.fingerprint([LAB_STATUS,LAB_SKILLS,LAB_ITEMS,LAB_MEDALS,LAB_MEDAL_SETS,LAB_TEMP_ITEM_EFFECTS,LAB_PROC_ITEM_EFFECTS,LAB_CALCULATION_VERSION]));}
   function side(prefix){
     if(prefix==='dcAtk')return LabReview.captureEquipment();
     return {items:labReadItems(prefix),activeEffects:labReadEffects(prefix),goalCount:0,koStack:0,dmgStack:0,healTarget:'self',proc:Object.fromEntries(['TargetPct','SelfPct','HPDamage'].map(k=>[k,labProcInput(prefix,k)]))};
@@ -14,7 +15,8 @@ const CalcConditions=(()=>{
     if(!el('dcAtkPoke').value||!el('dcDefPoke').value)throw Error('「条件を編集」で攻撃側と相手を選択してください。');
     const state=LabReview.exportState(),value=el('dcAtkMedal').value;
     const medal=value==='record'?state.medal:value!==''?_presetToObj(labMedalPresets[Number(value)]):null;
-    return CalcConditionCodec.sanitize({schema:1,dataVersion:version(),attacker:el('dcAtkPoke').value,defender:el('dcDefPoke').value,attackLevel:Number(el('dcAtkLv').value),defendLevel:Number(el('dcDefLv').value),skills:[1,2].map(i=>({name:el('dcSkill'+i+'Sel').value,upgrade:el('dcSkill'+i+'Upg').value})),medal:medal?{slots:medal.slots,rarities:medal.rarities}:null,attack:side('dcAtk'),defense:side('dcDef'),baseline:state.baseline});
+    const defenseValue=el('dcDefMedal').value,defenseMedal=defenseValue==='record'?state.defenseMedal:defenseValue!==''?_presetToObj(labMedalPresets[Number(defenseValue)]):null;
+    return CalcConditionCodec.sanitize({schema:1,dataVersion:version(),attacker:el('dcAtkPoke').value,defender:el('dcDefPoke').value,attackLevel:Number(el('dcAtkLv').value),defendLevel:Number(el('dcDefLv').value),skills:[1,2].map(i=>({name:el('dcSkill'+i+'Sel').value,upgrade:el('dcSkill'+i+'Upg').value})),medal:medal?{slots:medal.slots,rarities:medal.rarities}:null,defenseMedal:defenseMedal?{slots:defenseMedal.slots,rarities:defenseMedal.rarities}:null,attack:side('dcAtk'),defense:side('dcDef'),baseline:state.baseline});
   }
   function supported(c){
     const errors=[];
@@ -29,19 +31,22 @@ const CalcConditions=(()=>{
       if(s.name&&(!rows.length||(upgrades.length>1?!upgrades.includes(s.upgrade):s.upgrade!=='')))errors.push(s.name+'：わざ・強化段階未対応');
       if(!s.name&&s.upgrade)errors.push('未選択のわざに強化段階があります。');
     });
-    for(const n of c.medal?.slots||[])if(n&&!LAB_MEDALS.some(m=>m.name===n))errors.push(n+'：メダル未対応');
+    for(const n of [...(c.medal?.slots||[]),...(c.defenseMedal?.slots||[])])if(n&&!LAB_MEDALS.some(m=>m.name===n))errors.push(n+'：メダル未対応');
     return [...new Set(errors)];
   }
+  const rarityLabel=r=>({gold:'金',silver:'銀',bronze:'銅',platinum:'プラチナ'})[r]||r;
+  const medalSummary=m=>m?.slots.map((n,i)=>n?n+'（'+rarityLabel(m.rarities[i])+'）':'').filter(Boolean).join('・')||'なし';
   function summary(c){
     const items=e=>e.items.filter(i=>i.name).map(i=>i.name+' G'+i.grade).join('・')||'もちものなし';
     const changes=c.baseline?c.attack.items.map((item,i)=>{const a=c.baseline.items[i];return item.name!==a.name||item.grade!==a.grade?(a.name?a.name+' G'+a.grade:'なし')+' → '+(item.name?item.name+' G'+item.grade:'なし'):'';}).filter(Boolean).join(' ／ ')||'もちものは同じ（発動条件などを比較）':'比較Aなし';
-    return `<p class="lc-main">${esc(c.attacker)} Lv${c.attackLevel} → ${esc(c.defender)} Lv${c.defendLevel}</p><p class="lr-caption">${c.skills.map(s=>esc(s.name||'わざ：未選択')+(s.upgrade?'＋':'')).join(' ＋ ')}<br>${esc(changes)}</p><details class="lr-caption"><summary>条件の詳細</summary><p>攻撃側：${esc(items(c.attack))}<br>相手：${esc(items(c.defense))}${c.baseline?'<br>A：'+esc(items(c.baseline)):''}</p><p>メダル：${esc(c.medal?.slots.filter(Boolean).join('・')||'なし')}</p>${[c.baseline?['A',c.baseline]:null,['攻撃側／B',c.attack],['相手',c.defense]].filter(Boolean).map(([label,e])=>`<p>${label}の発動：${esc(e.activeEffects.join('・')||'OFF')}<br>ゴール${e.goalCount}回・KO${e.koStack}・被ダメージ${e.dmgStack}スタック ／ 回復対象：${e.healTarget==='ally'?'味方':'自分'}<br>相手HP ${e.proc.TargetPct??'未指定'}％・自分HP ${e.proc.SelfPct??'未指定'}％・通常攻撃のHPダメージ ${e.proc.HPDamage??'未指定'}</p>`).join('')}</details>`;
+    return `<p class="lc-main">${esc(c.attacker)} Lv${c.attackLevel} → ${esc(c.defender)} Lv${c.defendLevel}</p><p class="lr-caption">${c.skills.map(s=>esc(s.name||'わざ：未選択')+(s.upgrade?'＋':'')).join(' ＋ ')}<br>${esc(changes)}</p><details class="lr-caption"><summary>条件の詳細</summary><p>攻撃側：${esc(items(c.attack))}<br>相手：${esc(items(c.defense))}${c.baseline?'<br>A：'+esc(items(c.baseline)):''}</p><p>攻撃側メダル：${esc(medalSummary(c.medal))}<br>防御側メダル：${esc(medalSummary(c.defenseMedal))}</p>${[c.baseline?['A',c.baseline]:null,['攻撃側／B',c.attack],['相手',c.defense]].filter(Boolean).map(([label,e])=>`<p>${label}の発動：${esc(e.activeEffects.join('・')||'OFF')}<br>ゴール${e.goalCount}回・KO${e.koStack}・被ダメージ${e.dmgStack}スタック ／ 回復対象：${e.healTarget==='ally'?'味方':'自分'}<br>相手HP ${e.proc.TargetPct??'未指定'}％・自分HP ${e.proc.SelfPct??'未指定'}％・通常攻撃のHPダメージ ${e.proc.HPDamage??'未指定'}</p>`).join('')}</details>`;
   }
   function updateSummary(){
     if(!el('lcCurrent'))return;
     try{el('lcCurrent').innerHTML=summary(capture());}catch{el('lcCurrent').innerHTML='<p class="lr-caption">「条件を編集」から攻撃側と相手を選択してください。</p>';}
   }
   function read(){
+    if(window.LAB_PUBLIC_MODE)return clone(publicSaved);
     const k=key();if(!k)return [];
     let value;try{value=JSON.parse(localStorage.getItem(k)||'[]');}catch{throw Error('保存一覧を読み込めませんでした。保存内容は変更していません。');}
     if(!Array.isArray(value)||value.length>200||!value.every(r=>r&&typeof r.id==='string'&&typeof r.name==='string'&&r.name.length<=70&&typeof r.note==='string'&&r.note.length<=500&&typeof r.created==='string'))throw Error('保存一覧を読み込めませんでした。保存内容は書き換えていません。');
@@ -58,7 +63,7 @@ const CalcConditions=(()=>{
       }).join('')||'<p class="lr-caption">保存した条件はありません。</p>';
     }catch(e){list.textContent=e.message;}
   }
-  function write(list){const k=key();if(!k)throw Error('ログインまたはゲスト利用を開始してください。');localStorage.setItem(k,JSON.stringify(list));renderSaved();}
+  function write(list){if(window.LAB_PUBLIC_MODE){publicSaved=clone(list);renderSaved();return;}const k=key();if(!k)throw Error('ログインまたはゲスト利用を開始してください。');localStorage.setItem(k,JSON.stringify(list));renderSaved();}
   function error(e){showToast(e.message||'条件を処理できませんでした。','warn');}
   function openSave(){try{capture();saveOwner=owner();el('lcName').value=el('dcAtkPoke').value+'／'+el('dcDefPoke').value;el('lcNote').value='';el('lcSaveDialog').showModal();}catch(e){error(e);}}
   function save(event){
@@ -66,11 +71,11 @@ const CalcConditions=(()=>{
       if(owner()!==saveOwner)throw Error('利用者が変わりました。保存画面を開き直してください。');
       const name=el('lcName').value.trim();if(!name||name.length>70)throw Error('保存名を入力してください。');
       const saved=read();if(saved.length>=200)throw Error('保存できる条件は200件までです。不要な条件を削除してください。');
-      write([{id:crypto.randomUUID(),name,note:el('lcNote').value.trim().slice(0,500),created:new Date().toISOString(),condition:capture()},...saved]);el('lcSaveDialog').close();showToast('このブラウザーに計算条件を保存しました。','success');
+      write([{id:crypto.randomUUID(),name,note:el('lcNote').value.trim().slice(0,500),created:new Date().toISOString(),condition:capture()},...saved]);el('lcSaveDialog').close();showToast(window.LAB_PUBLIC_MODE?'このページに計算条件を一時保存しました。閉じると消えます。':'このブラウザーに計算条件を保存しました。','success');
     }catch(e){error(e);}
   }
   function share(c){
-    try{const clean=CalcConditionCodec.sanitize(c),url=new URL(location.pathname,location.origin);url.hash='conditions='+CalcConditionCodec.encode(clean);el('lcShareSummary').innerHTML=summary(clean);el('lcShareUrl').value=url.href;el('lcShareDialog').showModal();}catch(e){error(e);}
+    try{const clean=CalcConditionCodec.sanitize(c),url=new URL(location.pathname,location.origin);if(window.LAB_PUBLIC_MODE)url.searchParams.set('lab',clean.attacker);url.hash='conditions='+CalcConditionCodec.encode(clean);el('lcShareSummary').innerHTML=summary(clean);el('lcShareUrl').value=url.href;el('lcShareDialog').showModal();}catch(e){error(e);}
   }
   async function preview(c){
     const clean=CalcConditionCodec.sanitize(c),serial=++previewSerial,scope=owner();try{await whenLibReady('lab');}catch{throw Error('計算データを読み込めませんでした。再読み込みしてください。');}
@@ -90,16 +95,18 @@ const CalcConditions=(()=>{
   async function apply(c){
     c=CalcConditionCodec.sanitize(c);const unsupported=supported(c);if(unsupported.length)throw Error(unsupported.join('、'));
     if(!owner())loginAsGuest();
-    const session=owner();if(!await LabReview.readyLab('dmg')||owner()!==session)return;
-    LabReview.resetCalculator();LabReview.restoreState({medal:c.medal?{label:'保存した計算条件のメダル',...c.medal}:null,baseline:c.baseline?{pokemon:c.attacker,...c.baseline}:null});
+    const session=owner();await labPresetSelectOwner(session);
+    if(owner()!==session||!await LabReview.readyLab('dmg')||owner()!==session)return;
+    LabReview.resetCalculator();LabReview.restoreState({medal:c.medal?{label:'保存した計算条件のメダル',...c.medal}:null,defenseMedal:c.defenseMedal?{label:'保存した相手のメダル',...c.defenseMedal}:null,baseline:c.baseline?{pokemon:c.attacker,...c.baseline}:null});
     setValue('dcAtkPoke',c.attacker);setValue('dcDefPoke',c.defender);
     for(const [prefix,level] of [['dcAtk',c.attackLevel],['dcDef',c.defendLevel]]){setValue(prefix+'Lv',level);el(prefix+'LvLabel').textContent=level;}
     restoreSide('dcAtk',c.attack);restoreSide('dcDef',c.defense);dcUpdateSpecialRows();
     for(const [id,label,key,suffix] of [['dcGoalSlider','dcGoalLabel','goalCount','ゴール'],['dcStackSlider','dcStackLabel','koStack','スタック'],['dcDmgStackSlider','dcDmgStackLabel','dmgStack','スタック']]){setValue(id,c.attack[key]);el(label).textContent=c.attack[key]+suffix;}
-    dcRefreshMedalSelect();setValue('dcAtkMedal',c.medal?'record':'');
+    dcRefreshMedalSelect();setValue('dcAtkMedal',c.medal?'record':'');setValue('dcDefMedal',c.defenseMedal?'record':'');
     dcCurAtkPoke=c.attacker;dcUpdateSkillSelects(c.attacker);
     c.skills.forEach((s,i)=>{setValue('dcSkill'+(i+1)+'Sel',s.name);dcSkillChanged(i+1);setValue('dcSkill'+(i+1)+'Upg',s.upgrade);});
     calcDmgCalcMain(false);updateSummary();renderSaved();el('lcEditor').open=false;
+    if(window.LAB_PUBLIC_MODE)window.LabPublic?.selected(c.attacker,'dmg');
     el('lcVersionNote').textContent=c.dataVersion!==version()?'保存時から計算データが変わっています。現在のデータで再計算しています。':'';
   }
   async function importPending(){try{if(!pending)return;const c=pending;await apply(c);pending=null;el('lcImportDialog').close();history.replaceState(null,'',location.pathname+location.search);showToast('計算条件を読み込みました。','success');}catch(e){error(e);}}

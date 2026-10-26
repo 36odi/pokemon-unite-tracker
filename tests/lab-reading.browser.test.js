@@ -1,0 +1,34 @@
+// file://でのリンク遷移と説明の読みやすさ。式と説明は変更前の採取結果と比較する。
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{pathToFileURL}=require('node:url'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const ROOT=path.resolve(__dirname,'..'),OUT=path.join(ROOT,'work/lab-improvement-implementation-20261026/reading-fix'),before=process.argv.includes('--before');
+const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.json':'application/json'};
+const server=http.createServer((req,res)=>{let name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/pokemon-unite-tracker/,'');if(name.endsWith('/'))name+='index.html';const p=path.resolve(ROOT,'.'+name);if(path.relative(ROOT,p).startsWith('..')||!fs.existsSync(p)||!fs.statSync(p).isFile()){res.writeHead(404);return res.end();}res.setHeader('Content-Type',mime[path.extname(p)]||'application/octet-stream');fs.createReadStream(p).pipe(res);});
+let browser,checks=0;const eq=(a,b,l)=>{assert.deepEqual(a,b,l);checks++;};
+(async()=>{try{
+ fs.mkdirSync(OUT,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port,base=origin+'/pokemon-unite-tracker/';browser=await chromium.launch({channel:'msedge',headless:true});
+ const measurements=[];let baseline;
+ for(const width of [390,1100])for(const theme of ['dark','light']){
+  const context=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce'});let external=0;await context.route('**/*',r=>{if(new URL(r.request().url()).origin===origin)return r.continue();external++;return r.abort();});await context.addInitScript(t=>localStorage.setItem('theme',t),theme);
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'index.html?lab='+encodeURIComponent('アローラライチュウ'));await page.waitForFunction(()=>ratioPokemon==='アローラライチュウ');
+  const content=await page.evaluate(()=>({formulas:[...document.querySelectorAll('#ratioResult .ratio-formula')].map(e=>e.textContent),descriptions:[...document.querySelectorAll('#ratioResult .ratio-description')].map(e=>e.textContent),details:[...document.querySelectorAll('#ratioResult .lab-effect-description p')].map(e=>e.textContent).filter(Boolean),height:document.getElementById('ratioResult').getBoundingClientRect().height}));
+  if(before){baseline=content;await page.locator('#ratioSlot1').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(OUT,`before-${width}-${theme}.png`)});await context.close();continue;}
+  baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/lab-reading-before-20261026.json'),'utf8'));
+  eq(content.formulas,baseline.formulas,'all formulas unchanged');eq(content.descriptions,baseline.descriptions,'all summaries unchanged');
+  const detailContent=await page.evaluate(()=>document.getElementById('ratioResult').textContent);eq(baseline.details.every(t=>detailContent.includes(t)),true,'all detailed content retained');
+  const summaries=page.locator('#ratioSlot1 .ratio-details > summary');eq(await summaries.count()>0,true,'long details are available on demand');eq(await page.locator('#ratioSlot1 .ratio-details[open]').count(),0,'details initially collapsed');
+  await summaries.first().focus();await page.keyboard.press('Enter');eq(await summaries.first().evaluate(e=>e.parentElement.open),true,'keyboard opens details');await page.keyboard.press('Enter');eq(await summaries.first().evaluate(e=>e.parentElement.open),false,'keyboard closes details');
+  const metrics=await page.evaluate(()=>{const prose=document.querySelector('#ratioSlot1 .ratio-description'),s=getComputedStyle(prose),details=[...document.querySelectorAll('#ratioResult .ratio-details > summary')],h=document.querySelector('#ratioSlot1 h4');return {font:parseFloat(s.fontSize),line:parseFloat(s.lineHeight),title:parseFloat(getComputedStyle(h).fontSize),summaryMinHeight:Math.min(...details.map(e=>e.getBoundingClientRect().height)),overflow:document.documentElement.scrollWidth>innerWidth+1,height:document.getElementById('ratioResult').getBoundingClientRect().height};});
+  eq(metrics.font>=15,true,'readable main text');eq(metrics.line/metrics.font>=1.75,true,'comfortable line spacing');eq(metrics.title>metrics.font,true,'clear move headings');eq(metrics.summaryMinHeight>=44,true,'expand controls >=44px');eq(metrics.overflow,false,'no horizontal overflow');
+  await page.locator('#ratioSlot1').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(OUT,`after-${width}-${theme}.png`)});eq(errors,[],'no browser errors');eq(external,0,'no external requests');measurements.push({width,theme,metrics});await context.close();
+ }
+ if(before){fs.writeFileSync(path.join(OUT,'before.json'),JSON.stringify(baseline,null,2));console.log('Captured reading baseline');return;}
+ // ユーザーと同じ、ディスク上のindex.htmlから開始する。
+ const context=await browser.newContext({viewport:{width:1100,height:900},serviceWorkers:'block'});let external=0;await context.route(/^https?:/,r=>{external++;return r.abort();});const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(path.join(ROOT,'index.html')).href+'?lab='+encodeURIComponent('アローラライチュウ'));await page.waitForFunction(()=>ratioPokemon==='アローラライチュウ');await page.locator('.lab-data-link').click();
+ eq(page.url().endsWith('/index.html'),true,'file link opens HTML instead of directory listing');eq(await page.locator('h1').innerText(),'アローラライチュウのデータ','file link shows actual data page');eq(await page.locator('.ratio-formula').count()>0,true,'static file formulas');
+ await page.locator('.lab-static-nav a').filter({hasText:'ポケモン一覧'}).click();eq(await page.locator('h1').innerText(),'ユナイトラボ','file back to static index');await page.locator('#labStaticSearch').fill('ぴかちゅう');await page.locator('.lab-static-list li:visible a').click();eq(await page.locator('h1').innerText(),'ピカチュウのデータ','file index links open HTML');
+ await page.getByRole('link',{name:'ステータス計算',exact:true}).click();await page.waitForFunction(()=>document.getElementById('labPokeSelect')?.value==='ピカチュウ');eq(new URL(page.url()).pathname.endsWith('/index.html'),true,'file calculation link opens application HTML');
+ eq(errors,[],'file navigation no exceptions');eq(external,0,'file navigation no external requests');await context.close();
+ fs.writeFileSync(path.join(OUT,'browser-results.json'),JSON.stringify({checks,realDBWrites:0,measurements},null,2));console.log('ALL PASS — '+checks+' file links and reading browser checks; real DB writes: 0');
+}catch(e){console.error(e.stack);process.exitCode=1;}finally{if(browser)await browser.close();server.close();}})();

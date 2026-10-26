@@ -1,4 +1,24 @@
 // ラボ共通計算。仕様・出典・確認範囲は docs/lab-calculation-review.md。
+const LAB_CALCULATION_VERSION='2026-10-26.2';
+// 原本の「待ち時間の増減」を、共通計算の「短縮率の増減」へ変換する。
+// HP等のデメリット、妨害時間、固定軽減には適用しない。
+function labStatBonusValue(key,value){return key==='待ち時間'?-value:value;}
+// 表示単位と適用範囲。値は元の意味のまま保持し、未確認の合成は行わない。
+function labStatMeta(key){
+  if(key==='非戦闘時の移動速度')return {unit:'%',conditional:true,label:key,note:'非戦闘時のみ。通常の移動速度には未加算'};
+  if(key==='妨害を受けた時の持続時間')return {unit:'%',conditional:true,label:'妨害時間の増減',note:'対応する妨害を受けた時。持続秒数の計算には未反映'};
+  if(key.startsWith('ユナイトわざゲージ'))return {unit:'%',conditional:true,label:key.replace('ユナイトわざゲージ','ゲージ獲得量の補正'),note:'エネルギー獲得時。出所別に表示、合成と必要秒数は未計算'};
+  if(key==='1回の攻撃で受けるダメージ')return {unit:'',conditional:true,label:'被ダメージの増減（固定量）',note:'グレー。適用順序・対象・ヒット単位・最低値が未確認のためダメージ計算には未反映'};
+  return {unit:['急所率','急所ダメージ増加','待ち時間','HP吸収率','通常攻撃の速さ'].includes(key)?'%':'',conditional:false};
+}
+function labMedalEffectText(effect){
+  const value=effect.val,amount=Math.abs(value)+(effect.isPct?'%':'');
+  if(effect.target==='(ユナイトわざを除く)わざの待ち時間')return 'わざの待ち時間 '+amount+(value<0?'短縮':'増加');
+  if(effect.target==='妨害を受けた時の持続時間')return '妨害時間 '+amount+(value<0?'短縮':'増加');
+  if(effect.target==='1回の攻撃で受けるダメージ')return '被ダメージ '+amount+(value<0?'軽減':'増加')+'（固定量・計算には未反映）';
+  if(effect.target==='ユナイトわざゲージの溜まりやすさ')return 'ゲージ獲得量 '+amount+(value<0?'減少':'増加')+'（合成は未計算）';
+  return effect.target+' '+amount+(value<0?'減少':'増加');
+}
 const LAB_TEMP_ITEM_EFFECTS={
   'ふんばりベルト':{stats:['防御','特防'],tiers:[12,20,28],label:'妨害を受けた後の3秒間'},
   'かるいし':{stats:['移動速度'],tiers:[10,15,20],label:'戦闘から離れて5秒後'},
@@ -44,7 +64,7 @@ function computeStatsDetailed({poke,lv,items=[],dmgStack=0,koStack=0,goalCount=0
   const flat={},pct={},active=new Set(activeEffects);
   const add=(obj,k,v)=>obj[k]=(obj[k]||0)+v;
   for(const {name,grade} of items){
-    Object.entries(itemStats?.[name]?.[grade-1]||{}).forEach(([k,v])=>add(flat,statMap[k]||k,v));
+    Object.entries(itemStats?.[name]?.[grade-1]||{}).forEach(([k,v])=>{const key=statMap[k]||k;add(flat,key,labStatBonusValue(key,v));});
     const t=tierFor(grade), goal=goalItems[name];
     if(goal)add(flat,statMap[goal.stat]||goal.stat,goal.tiers[t]*Math.max(0,Math.min(6,Math.trunc(goalCount)||0)));
     for(const [rules,count,max] of [[pctItems,1,1],[dmgStackItems,dmgStack,4],[stackItems,koStack,20]]){
@@ -70,6 +90,14 @@ function computeStatsDetailed({poke,lv,items=[],dmgStack=0,koStack=0,goalCount=0
     // 小数ステータスは保持し、ダメージ式の所定の段階で切り捨てる。
     totals[k]=Math.round(value*1e8)/1e8;
     if(f||pct[k])itemBonus[k]=Math.round((totals[k]-b-m)*1e8)/1e8;
+  }
+  // ゲージ獲得量は短縮率ではない。異なる出所の合成規則は未確定なので、
+  // もちものとメダルを併用した場合に合成済みの値を表示しない。
+  const gauge='ユナイトわざゲージ';
+  if(flat[gauge]||mb[gauge]){
+    delete totals[gauge];
+    if(flat[gauge])totals[gauge+'（もちもの）']=flat[gauge];
+    if(mb[gauge])totals[gauge+'（メダル）']=mb[gauge];
   }
   return {base,itemBonus,medalBonus:mb,totals};
 }

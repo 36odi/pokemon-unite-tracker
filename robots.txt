@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://36odi.github.io/pokemon-unite-tracker/sitemap.xml

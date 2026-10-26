@@ -1,0 +1,80 @@
+{
+  "implementationCheckedAt": "2026-10-26T15:50:13+09:00",
+  "timeZone": "Asia/Tokyo",
+  "gameVersion": null,
+  "gameMeasured": false,
+  "sourceAcquisition": {
+    "medals": {
+      "record": "work/lab-improvement-implementation-20261026/stage2/sources.json",
+      "sources": [
+        {
+          "file": "medal-sheet.csv",
+          "url": "https://docs.google.com/spreadsheets/d/1eTSUC7WJDHOyBzjfnCr1na9CXR4HKCBO7PP5HZJNgcY/export?format=csv&gid=54615321",
+          "downloadCompletedAt": "2026-10-26T06:21:26.936Z",
+          "sha256": "09a3f369da8b2be65a169c6a37fdab77431a2c671ddf4e3dfc7ed1d6aeb8bc8c"
+        },
+        {
+          "file": "medal-sheet-gviz.txt",
+          "url": "https://docs.google.com/spreadsheets/d/1eTSUC7WJDHOyBzjfnCr1na9CXR4HKCBO7PP5HZJNgcY/gviz/tq?gid=54615321&range=A1:L280&tqx=out:json",
+          "downloadCompletedAt": "2026-10-26T06:21:27.671Z",
+          "sha256": "f18d6498d4fd92cdb38cf0e9580da8e756bc7ec9b70e41687e5f4cb90dae45bf"
+        },
+        {
+          "file": "medal-sheet-table.html",
+          "url": "https://docs.google.com/spreadsheets/d/1eTSUC7WJDHOyBzjfnCr1na9CXR4HKCBO7PP5HZJNgcY/htmlview/sheet?headers=true&gid=54615321",
+          "downloadCompletedAt": "2026-10-26T06:21:27.337Z",
+          "sha256": "be4d134aee3c3277e6d13d15655f23b8249597942aefb0764fd10f475df1882d"
+        },
+        {
+          "file": "unitedb-hidden-payload.js",
+          "url": "https://unite-db.com/_nuxt/static/1792627094/faq/hidden-mathematics/payload.js",
+          "downloadCompletedAt": "2026-10-26T06:21:40.344Z",
+          "sha256": "a50b541ae3cbd2f48a3c60ddccb6b79a55088e8bd70908cec43b8f4a95ea1775"
+        },
+        {
+          "file": "wiki-status.html",
+          "url": "https://wikiwiki.jp/poke-unite/ステータス",
+          "downloadCompletedAt": "2026-10-26T06:21:00.323Z",
+          "sha256": "249c5fc19796df288ad742f4460a6a5cee2780e76a1f130926680b7b34a5de81"
+        }
+      ],
+      "checkedAt": "2026-10-26T06:36:41.454Z"
+    },
+    "descriptions": {
+      "record": "data/lab-reference-metadata.json",
+      "checkedAt": "2026-10-25",
+      "gameVersion": null,
+      "sha256": "b8f05829c0f8e1f6933937a3e6e2e010e50773009032d6491d776e75d82d7393"
+    }
+  },
+  "numericVerification": {
+    "medals": {
+      "date": "2026-10-26",
+      "scope": "6 known corrections, 257 medal source-generation matches and 11 sets",
+      "evidence": "work/lab-improvement-implementation-20261026/stage2/data-changes.json"
+    },
+    "defender": {
+      "date": "2026-10-26",
+      "scope": "independent defender base + silver flats + blue/purple 8% at Lv9; unset baseline; physical/special mitigation; saved/shared roundtrip",
+      "evidence": "work/lab-improvement-implementation-20261026/stage3/browser-results.json"
+    },
+    "unverified": [
+      "full numeric audit not repeated in stage3/4",
+      "game version association",
+      "gray target/order/per-hit/minimum",
+      "navy and amplifier combination",
+      "general CDR cap and per-move exceptions"
+    ]
+  },
+  "localFiles": {
+    "lab_data.js": "eec8492fe32cb5bba5fc8062292ee632892916b38041264c808301f594d5faf8",
+    "lab_descriptions.js": "54f4be6d88b8a8a5bbd82fbda9c2a8c226e205e74746366f1e77b00b7798514d",
+    "js/utils.js": "629dfa568bcf914d9e149a4ccae2f4b12716bd46945a9db17943a81569a92557",
+    "js/lab-core.js": "a84e422cb2bbfa1c8d196f89457b3b7d6d2f70294094bc5521f3b4f34712b9b6",
+    "js/lab-review.js": "6e2d276336b6571f07a3ac022339bf4b656040f2e0030f8f8d6dd754b287e22b",
+    "js/calc-conditions-core.js": "00c650d11cd32277bf1ba774ea2690c15d828a0804da384f5ab8773d41de1e60",
+    "js/calc-conditions.js": "9513e0107b8d24053fc0ca55aa92ee32feb8524ef05eae84d69db397c8f30f6e",
+    "ratio.js": "7c420a5b13422f75725599c866e650e476c71bd2784bd130d2d61b8f3215fa17",
+    "sw.js": "a2ae086c06471e6031fda4474ebd8a0e86a0e637a6b1709826213990bb40004f"
+  }
+}

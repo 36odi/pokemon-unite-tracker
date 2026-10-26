@@ -4,7 +4,7 @@ const LabReview=(()=>{
   const el=id=>document.getElementById(id);
   const esc=v=>escapeHtml(String(v??''));
   const number=v=>Number(v).toLocaleString('ja-JP',{maximumFractionDigits:2});
-  let recordedMedal=null,returnTo=null,baseline=null,hubTab='overview',groups=[];
+  let recordedMedal=null,recordedDefenseMedal=null,returnTo=null,baseline=null,hubTab='overview',groups=[];
   let opening=0;
   const supported=p=>typeof LAB_STATUS!=='undefined'&&!!LAB_STATUS[p];
   const button=(text,handler,attrs='',primary=false)=>`<button class="lr-button ${primary?'lr-primary':''}" onclick="${handler}" ${attrs}>${text}</button>`;
@@ -97,14 +97,14 @@ const LabReview=(()=>{
   }
   function setValue(id,value){const node=el(id);if(node)node.value=value;}
   function resetCalculator(){
-    baseline=null;recordedMedal=null;
+    baseline=null;recordedMedal=null;recordedDefenseMedal=null;
     ['dcAtk','dcDef'].forEach(prefix=>{
       setValue(prefix+'Poke','');setValue(prefix+'Lv',9);if(el(prefix+'LvLabel'))el(prefix+'LvLabel').textContent='9';
       [1,2,3].forEach(i=>{setValue(prefix+'Item'+i,'');setValue(prefix+'Grade'+i,30);if(el(prefix+'GLbl'+i))el(prefix+'GLbl'+i).textContent='G30';});
       if(el(prefix+'Effects'))el(prefix+'Effects').remove();
     });
     ['dcGoalSlider','dcStackSlider','dcDmgStackSlider'].forEach(id=>setValue(id,0));
-    dcRefreshMedalSelect();setValue('dcAtkMedal','');dcCurAtkPoke=null;dcAtkStats=null;dcDefStats=null;
+    dcRefreshMedalSelect();setValue('dcAtkMedal','');setValue('dcDefMedal','');dcCurAtkPoke=null;dcAtkStats=null;dcDefStats=null;
     el('dcResultCard').style.display='none';dcUpdateSpecialRows();
     el('lrComparisonOutput').innerHTML='';el('lrCalcStatus').textContent='';el('lrComparisonLabel').textContent='Aは未設定';
     el('lrClearA').hidden=true;
@@ -162,17 +162,19 @@ const LabReview=(()=>{
     if(!supported(pokemon)){switchLab('dmg');resetCalculator();returnTo=origin;el('lrRecordNotice').hidden=false;el('lrRecordNotice').innerHTML=`<p>${esc(pokemon)}は計算用データが未収録です。</p>${button('ポケモン詳細に戻る','LabReview.back()')}`;return;}
     select.value=pokemon;labOnPokeChange();
   }
-  function appendRecordedMedal(select,cur){
-    if(recordedMedal)select.add(new Option('試合時点：'+(recordedMedal.label||'記録したメダル'),'record'));
-    if(cur==='record'&&recordedMedal)select.value='record';
+  function appendRecordedMedal(select,cur,side='attack'){
+    const medal=side==='defense'?recordedDefenseMedal:recordedMedal;
+    if(medal)select.add(new Option((side==='defense'?'復元した相手：':'記録・復元：')+(medal.label||'メダル'),'record'));
+    if(cur==='record'&&medal)select.value='record';
   }
-  function recordMedalDeps(value){
-    return value==='record'&&recordedMedal?{...LAB_STATS_DEPS,medalBonus:(_i,base)=>labCalcMedalBonus(null,base,recordedMedal)}:LAB_STATS_DEPS;
+  function recordMedalDeps(value,side='attack'){
+    const medal=side==='defense'?recordedDefenseMedal:recordedMedal;
+    return value==='record'&&medal?{...LAB_STATS_DEPS,medalBonus:(_i,base)=>labCalcMedalBonus(null,base,medal)}:LAB_STATS_DEPS;
   }
   function canCalculate(){
     if(!el('lrCalcStatus'))return true;
     const unknown=['dcAtk','dcDef'].flatMap(p=>labReadItems(p)).filter(x=>x.name&&!LAB_ITEMS[x.name]);
-    const invalidMedal=el('dcAtkMedal')?.value==='record'&&recordedMedal?.slots.filter(n=>n&&!LAB_MEDALS.some(m=>m.name===n));
+    const invalidMedal=[['dcAtkMedal',recordedMedal],['dcDefMedal',recordedDefenseMedal]].flatMap(([id,medal])=>el(id)?.value==='record'?(medal?.slots||[]).filter(n=>n&&!LAB_MEDALS.some(m=>m.name===n)):[]);
     if(unknown.length||(invalidMedal&&invalidMedal.length)){
       el('dcResultCard').style.display='none';
       el('lrComparisonOutput').textContent='未対応のデータがあるため、条件を変更すると比較できます。';
@@ -239,7 +241,7 @@ const LabReview=(()=>{
     const pa=procFor(baseline,result.a),pb=procFor(configB,result.b),pnames=[...new Set([...pa,...pb].map(x=>x.name))];
     const procValue=r=>!r?'対象なし／OFF':r.message?esc(r.message):r.kind==='damage'?`${number(r.actual)}（${esc(r.damageType)}）`:`${number(r.value)}${r.ally!==undefined?` ／ 味方 ${number(r.ally)}`:''}`;
     const statRows=['HP','攻撃','特攻','防御','特防','移動速度','急所率','待ち時間','HP吸収率','通常攻撃の速さ','貫通'].filter(k=>k in result.a||k in result.b).map(k=>{const unit=labStatPercent(k)?'%':'';return `<tr><th>${esc(labStatLabel(k))}</th><td>${number(result.a[k]||0)}${unit}</td><td>${number(result.b[k]||0)}${unit}</td><td>${difference(result.a[k]||0,result.b[k]||0,unit?'ポイント':'')}</td></tr>`;}).join('');
-    output.innerHTML=`<p class="lr-caption">B：${esc(equipmentSummary(configB))}</p><p class="lr-common"><b>共通条件</b> ${esc(baseline.pokemon)} Lv${el('dcAtkLv').value} → ${esc(el('dcDefPoke').value)} Lv${el('dcDefLv').value}<br>メダル・相手・選択わざは共通。変更するとA・Bの両方を再計算します。</p>
+    output.innerHTML=`<p class="lr-caption">B：${esc(equipmentSummary(configB))}</p><p class="lr-common"><b>共通条件</b> ${esc(baseline.pokemon)} Lv${el('dcAtkLv').value} → ${esc(el('dcDefPoke').value)} Lv${el('dcDefLv').value}<br>攻撃側と防御側のメダル・相手・選択わざは共通。変更するとA・Bの両方を再計算します。</p>
       <details class="lr-caption"><summary>A・Bの発動条件を確認</summary><p>A：${esc(baseline.activeEffects.join('、')||'効果OFF')} ／ ゴール${baseline.goalCount}回・KO${baseline.koStack}・被ダメージ${baseline.dmgStack}スタック<br>B：${esc(configB.activeEffects.join('、')||'効果OFF')} ／ ゴール${configB.goalCount}回・KO${configB.koStack}・被ダメージ${configB.dmgStack}スタック</p></details>
       <h3 class="lr-section-title">わざ・通常攻撃などの成分別比較</h3><div class="lr-table-scroll"><table class="lr-table"><thead><tr><th>計算する成分</th><th>A</th><th>B</th><th>B − A</th></tr></thead><tbody>${tableRows||'<tr><td colspan="4">わざを選択してください。</td></tr>'}</tbody></table></div>
       <details class="lr-caption lr-stat-details"><summary>ステータスの差も見る</summary><div class="lr-table-scroll"><table class="lr-table"><thead><tr><th>能力</th><th>A</th><th>B</th><th>B − A</th></tr></thead><tbody>${statRows}</tbody></table></div></details>
@@ -255,7 +257,7 @@ const LabReview=(()=>{
     el('dcResultCard').before(compare);renderComparison();
   }
   mount();
-  function exportState(){return {baseline:baseline?clone(baseline):null,medal:recordedMedal?clone(recordedMedal):null};}
-  function restoreState(state){recordedMedal=state.medal?clone(state.medal):null;baseline=state.baseline?clone(state.baseline):null;el('lrRecordNotice').hidden=true;returnTo=null;}
+  function exportState(){return {baseline:baseline?clone(baseline):null,medal:recordedMedal?clone(recordedMedal):null,defenseMedal:recordedDefenseMedal?clone(recordedDefenseMedal):null};}
+  function restoreState(state){recordedDefenseMedal=state.defenseMedal?clone(state.defenseMedal):null;recordedMedal=state.medal?clone(state.medal):null;baseline=state.baseline?clone(state.baseline):null;el('lrRecordNotice').hidden=true;returnTo=null;}
   return {clearHub,clearSession,setHubTab,renderHub,groupBuilds,openHub,openGroup,openRecord,openPokemonTool,back,appendRecordedMedal,recordMedalDeps,canCalculate,captureA,clearA,renderComparison,compareRows,captureEquipment,exportState,restoreState,resetCalculator,readyLab};
 })();

@@ -22,7 +22,7 @@ function ratioRenderTypes(){
   }
 }
 const ratioSlots=['通常攻撃','わざ1','わざ2','ユナイトわざ','特性'];
-function ratioNormalize(s){return s.normalize('NFKC').replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
+function ratioNormalize(s){return normalizeNameSearch(s);}
 function ratioInit(){
   ratioRenderTypes();
   ratioSearch();
@@ -31,11 +31,11 @@ function ratioInit(){
 function ratioSearch(){
   if(!libReady('lab'))return;
   const q=ratioNormalize(document.getElementById('ratioSearch').value.trim());
-  const names=Object.keys(LAB_SKILLS).sort((a,b)=>a.localeCompare(b,'ja')).filter(n=>ratioNormalize(n).includes(q)&&(ratioType==='all'||POKEMON_DATA[ratioType]?.pokemon.includes(n)));
+  const names=Object.keys(LAB_SKILLS).sort(compareDisplayNames).filter(n=>ratioNormalize(n).includes(q)&&(ratioType==='all'||labPokemonType(n)===ratioType));
   const el=document.getElementById('ratioChoices');el.replaceChildren();
   for(const n of names){
     const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(n===ratioPokemon));
-    b.innerHTML=iconImg(n,'',24)+escapeHtml(n);b.onclick=()=>{ratioPokemon=n;ratioSearch();ratioRender();};el.appendChild(b);
+    b.innerHTML=iconImg(n,'',24)+escapeHtml(n);b.onclick=()=>{ratioPokemon=n;ratioSearch();ratioRender();window.LabPublic?.selected(n,'ratio');};el.appendChild(b);
   }
   if(!names.length) el.textContent='該当するポケモンがいません。';
 }
@@ -59,11 +59,15 @@ function ratioRow(r,poke){
     ${hits>1?'<div class="ratio-meta">1回分の式</div>':''}
     <div class="ratio-formula${r.descriptionEntry||r.formulaText?' ratio-effect-description':''}">${escapeHtml(ratioFormula(r))}</div>
     ${hits>1&&r.coeff!=null?`<div class="ratio-meta">${r.hitsVar?'最大':''}${hits}回分${note?'（表示式の部分のみ）':''}：${escapeHtml(ratioFormula(r,hits))}</div>`:''}
-    ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}${r.slot==='特性'&&r.description&&!r.formulaText?labDetailsHtml(poke,r.name,'passives'):''}</div>`;
+    ${note?`<div class="ratio-meta">${escapeHtml(note)}</div>`:''}${r.calculationNotice?`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`:''}</div>`;
 }
-function labDetailsHtml(poke,name,kind='moves'){
+function ratioProseHtml(text){
+  // 文章・数値はそのまま、句点ごとに読み進められる段落間隔を付ける。
+  return String(text).split(/(?<=。)/).filter(Boolean).map(sentence=>`<span class="ratio-prose-sentence">${escapeHtml(sentence)}</span>`).join('');
+}
+function labDetailsHtml(poke,name,kind='moves',readable=false){
   const rows=labDescriptionDetails(poke,name,kind);if(!rows.length)return '';
-  return `<div class="lab-effect-description">${rows.map(r=>`<p><strong>${escapeHtml(r.label)}</strong><br>${escapeHtml(r.text)}</p>`).join('')}</div>`;
+  return `<div class="lab-effect-description">${rows.map(r=>`<p><strong>${escapeHtml(r.label)}</strong><br>${readable?ratioProseHtml(r.text):escapeHtml(r.text)}</p>`).join('')}</div>`;
 }
 function labCombatNotesHtml(poke){
   const c=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.combat;if(!c)return '';
@@ -83,20 +87,21 @@ function labUniteInfoHtml(poke){
 }
 function ratioRender(usageTicket=usageIntent('labRatioPanel')){
   const poke=ratioPokemon,all=LAB_SKILLS[poke]||[];
-  const role=Object.values(POKEMON_DATA).find(d=>d.pokemon.includes(poke))?.label||'';
+  const role=POKEMON_DATA[labPokemonType(poke)]?.label||'';
   const dmg=LAB_STATUS[poke]?.dmg;
   const range=LAB_STATUS[poke]?.range==='Melee'?'近接':LAB_STATUS[poke]?.range==='Ranged'?'遠隔':'';
   const reference=typeof LAB_DESCRIPTIONS==='undefined'?null:LAB_DESCRIPTIONS.pokemon[poke]?.reference;
-  const updatedAt=typeof LAB_DESCRIPTIONS==='undefined'?null:[reference?.checkedAt,LAB_DESCRIPTIONS.meta.checkedAt,LAB_DESCRIPTIONS.meta.detailsCheckedAt].filter(Boolean).sort().at(-1);
+  const updatedAt=typeof LAB_DESCRIPTIONS==='undefined'?null:reference?.checkedAt||[LAB_DESCRIPTIONS.meta.checkedAt,LAB_DESCRIPTIONS.meta.detailsCheckedAt].filter(Boolean).sort().at(-1);
   let html=`<div class="card"><h2>${iconImg(poke,'',36)} ${escapeHtml(poke)}</h2><div>${escapeHtml(role)} ${dmg==='Special'?'特攻':dmg==='Physical'?'攻撃':''}${range?' ／ '+range:''}</div>
-    ${updatedAt?`<p class="ratio-meta">最終更新日：${escapeHtml(updatedAt)}</p>`:''}
+    ${updatedAt?`<p class="ratio-meta">最終更新日：${escapeHtml(updatedAt)}<br>説明・注記を確認した日です。全数値の確認日やゲームの更新日とは異なります。</p>`:''}
+    <p><a class="lab-data-link" href="lab/pokemon/${encodeURIComponent(poke)}/index.html">${escapeHtml(poke)}の閲覧用ページ</a></p>
     ${labCombatNotesHtml(poke)}
     <nav class="ratio-jumps" aria-label="わざの種類">${ratioSlots.map((s,i)=>`<button type="button" onclick="document.getElementById('ratioSlot${i}').scrollIntoView()">${s}</button>`).join('')}</nav></div>`;
   ratioSlots.forEach((slot,i)=>{
     const rows=slot==='特性'?labPassiveRows(poke):all.filter(r=>r.slot===slot);
     const bases=[...new Set(rows.map(r=>ratioMoveName(poke,r).replace(/[+＋]$/,'')))];
     html+=`<section id="ratioSlot${i}" class="ratio-section"><h3>${slot}</h3>`;
-    if(slot==='ユナイトわざ')html+='<div class="card">'+labUniteInfoHtml(poke)+'</div>';
+    if(slot==='ユナイトわざ')html+='<div class="card"><details class="lab-effect-description ratio-details"><summary>ユナイトわざ使用後の共通強化</summary>'+labUniteInfoHtml(poke)+'</details></div>';
     if(!rows.length) html+='<div class="card ratio-note">レシオ未収録</div>';
     for(const base of bases){
       html+='<div class="card">';
@@ -109,11 +114,18 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
           let components=slot==='特性'?namedRows.filter(r=>r.upg===level):labUpgradeRows(poke,originalName,level).filter(r=>r.slot===slot&&ratioMoveName(poke,r).replace(/[+＋]$/,'')===base);
           if(!components.length) components=namedRows.filter(r=>r.upg===level);
           const title=name;
-          if(title!==slot||level) html+=`<h4>${escapeHtml(title)}${level?` <span class="ratio-meta">Lv${escapeHtml(String(level))}</span>`:''}</h4>`;
+          html+='<div class="ratio-variant">';
+          if(title!==slot||level) html+=`<h4>${escapeHtml(title)}${level?` <span class="ratio-meta">習得Lv${escapeHtml(String(level))}</span>`:''}</h4>`;
           const description=slot==='特性'?'':slot==='通常攻撃'?labBasicDescription(poke):labMoveDescription(poke,name);
-          if(description)html+=`<p class="lab-effect-description ratio-description">${/[+＋]$/.test(name)?'強化後の変更点：':''}${escapeHtml(description)}</p>`;
-          else if(slot!=='特性'&&/[+＋]$/.test(name))html+='<p class="lab-effect-description ratio-description">強化後の説明は未収録です。</p>';
-          if(slot!=='特性')html+=labDetailsHtml(poke,name,slot==='通常攻撃'?'basics':'moves');
+          // 追加注記の有無ではなく、全わざ・＋版・通常攻撃・特性で説明欄を一つにそろえる。
+          const proseRows=components.filter(r=>r.coeff==null&&r.description&&!r.formulaText);
+          let prose='';
+          if(description)prose+=`<p class="lab-effect-description ratio-description">${/[+＋]$/.test(name)?'強化後の変更点：':''}${ratioProseHtml(description)}</p>`;
+          else if(slot!=='特性'&&/[+＋]$/.test(name))prose+='<p class="lab-effect-description ratio-description">強化後の説明は未収録です。</p>';
+          if(slot!=='特性')prose+=labDetailsHtml(poke,name,slot==='通常攻撃'?'basics':'moves',true);
+          prose+=proseRows.map(r=>ratioRow(r,poke)).join('');
+          if(slot==='特性')prose+=[...new Set(components.filter(r=>r.description&&!r.formulaText).map(r=>r.name))].map(n=>labDetailsHtml(poke,n,'passives',true)).join('');
+          html+=`<details class="lab-effect-description ratio-details"><summary aria-label="${escapeHtml(title)}${level?' 習得Lv'+escapeHtml(String(level)):''}の説明・条件">効果・条件の説明</summary>${prose||'<p class="ratio-meta">説明は未収録です。</p>'}</details>`;
           const unknownCD=/[+＋]$/.test(name)&&components.some(r=>r.cdStatus==='unconfirmed');
           const cds=[...new Set(components.map(r=>r.cd).filter(v=>v!=null))];
           if(unknownCD){const normal=components.find(r=>r.normalCD!=null)?.normalCD;html+=`<div class="ratio-meta">＋版の待ち時間：未確認${normal!=null?`（通常版は${escapeHtml(String(normal))}秒）`:''}</div>`;}
@@ -121,7 +133,9 @@ function ratioRender(usageTicket=usageIntent('labRatioPanel')){
           const baseRows=rows.filter(r=>r.name===originalName.replace(/[+＋]$/,'')&&ratioMoveName(poke,r)===base);
           if(/[+＋]$/.test(name)&&cds.length<=1&&ratioSameFormulas(poke,components,baseRows))
             html+='<div class="ratio-row ratio-same">この欄の計算式は通常版と同じです。</div>';
-          else html+=components.map(r=>ratioRow(r,poke)+(cds.length>1&&r.cd!=null?`<div class="ratio-meta">待ち時間：${escapeHtml(String(r.cd))}秒</div>`:'')).join('');
+          else html+=components.filter(r=>!proseRows.includes(r)).map(r=>ratioRow(r,poke)+(cds.length>1&&r.cd!=null?`<div class="ratio-meta">待ち時間：${escapeHtml(String(r.cd))}秒</div>`:'')).join('');
+          html+=proseRows.filter(r=>r.calculationNotice).map(r=>`<div class="ratio-meta">${escapeHtml(r.calculationNotice)}</div>`).join('');
+          html+='</div>';
         }
       }
       html+='</div>';
