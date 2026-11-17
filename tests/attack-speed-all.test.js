@@ -20,8 +20,8 @@ eq(calc('ギャラドス',4,10).state,'fixed','actual Magikarp state fixed');
 value('ギャラドス',4,'gyarados',{breath:'three'},90);
 value('メガギャラドス',9,'mega',{breath:'one'},70);
 value('ミュウツーY',9,'mega',{pressure:'10'},65);
-value('ストリンダー',9,'poison',{punk:'5',gear:'on'},65);
-value('ストリンダー',9,'electric',{punk:'5',gear:'on'},40);
+value('ストリンダー',9,'poison',{punk:'5',gear:'on'},55); // 2026-11-12調整：パンクロック1段8→6%（5段30%＋ギアチェンジ25%）
+value('ストリンダー',9,'electric',{punk:'5',gear:'on'},30); // 2026-11-12調整：5段×6%
 value('アマージョ',5,null,{axel:'3'},30);value('アマージョ',15,null,{axel:'3'},75);
 value('マッシブーン',9,null,{beast:'ko',lunge:'on'},80);
 value('ウッウ',4,null,{hurricane:'on'},40);

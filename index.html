@@ -24,16 +24,16 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@36musyokuodi">
 <!-- ローカルのJS/CSSは ?v=版数 付きで読み込む（sw.js の CACHE 版数と同じ値）。HTMLと古いCSS/JSが混ざって表示崩れするのを防ぐ -->
-<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=120">\x3c/script>');</script>
-<script id="chartScript" src="vendor/chart.umd.min.js?v=120" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script id="labDescriptionsScript" src="lab_descriptions.js?v=120" defer></script>
-<script id="labDataScript" src="lab_data.js?v=120" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
-<script src="js/constants.js?v=120"></script>
-<script src="js/utils.js?v=120"></script>
-<script src="js/lab-core.js?v=120"></script>
-<script src="js/medal-preset-store.js?v=120"></script>
-<script src="js/usage-analytics.js?v=120"></script>
-<link rel="stylesheet" href="styles.css?v=120" />
+<script>if(!window.LAB_PUBLIC_MODE)document.write('\x3cscript src="vendor/supabase.min.js?v=121">\x3c/script>');</script>
+<script id="chartScript" src="vendor/chart.umd.min.js?v=121" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script id="labDescriptionsScript" src="lab_descriptions.js?v=121" defer></script>
+<script id="labDataScript" src="lab_data.js?v=121" defer onload="this.dataset.state='ok'" onerror="this.dataset.state='error'"></script>
+<script src="js/constants.js?v=121"></script>
+<script src="js/utils.js?v=121"></script>
+<script src="js/lab-core.js?v=121"></script>
+<script src="js/medal-preset-store.js?v=121"></script>
+<script src="js/usage-analytics.js?v=121"></script>
+<link rel="stylesheet" href="styles.css?v=121" />
 <link rel="manifest" href="manifest.json" />
 
 </head>
@@ -2251,6 +2251,10 @@ function showPage(page){
 // ---- 更新履歴 ----
 // ★ 新しい更新を追加するときはこのリストの先頭に追加してください
 const CHANGELOG = [
+  {version:'v5.85',date:'2026-11-17',items:[
+    '11月12日のバランス調整をラボに反映しました（ヌメルゴン・カイリュー・ファイヤー・シャンデラ・シャワーズ・ヤドラン・ミュウツーX・ウーラオス・ストリンダー・ダークライ）。',
+    '※公式発表で「ダメージ◯%増加」のように割合だけが示された項目は推定値のため、ゲーム内の正確な数値とは異なる場合があります。',
+  ]},
   {version:'v5.84',date:'2026-10-27',items:[
     '通常攻撃の速さを全103体で個別整理しました。98体の資料参考モデル、3体の固定動作、個別適用が未確認の2体を区別します。',
     'フォルムやわざの速度強化を選べる状態欄を追加しました。専用の攻撃動作や資料の不一致は、推測で間隔へ換算しません。',
@@ -7852,16 +7856,16 @@ function closeMedalHelp(){ _closeHelpOverlay('medalHelpOverlay'); }
 function showDmgHelp(){ _openHelpOverlay('dmgHelpOverlay'); }
 function closeDmgHelp(){ _closeHelpOverlay('dmgHelpOverlay'); }
 </script>
-<script src="ratio-labels.js?v=120"></script>
-<script src="ratio.js?v=120"></script>
-<script src="js/lab-review.js?v=120"></script>
-<script src="js/calc-conditions-core.js?v=120"></script>
-<script src="js/calc-conditions.js?v=120"></script>
-<script src="js/patch-analysis-core.js?v=120"></script>
-<script src="js/patch-analysis.js?v=120"></script>
-<script src="js/attack-speed-data.js?v=120"></script>
-<script src="js/attack-speed-core.js?v=120"></script>
-<script src="js/attack-speed.js?v=120"></script>
-<script src="js/lab-public.js?v=120"></script>
+<script src="ratio-labels.js?v=121"></script>
+<script src="ratio.js?v=121"></script>
+<script src="js/lab-review.js?v=121"></script>
+<script src="js/calc-conditions-core.js?v=121"></script>
+<script src="js/calc-conditions.js?v=121"></script>
+<script src="js/patch-analysis-core.js?v=121"></script>
+<script src="js/patch-analysis.js?v=121"></script>
+<script src="js/attack-speed-data.js?v=121"></script>
+<script src="js/attack-speed-core.js?v=121"></script>
+<script src="js/attack-speed.js?v=121"></script>
+<script src="js/lab-public.js?v=121"></script>
 </body>
 </html>

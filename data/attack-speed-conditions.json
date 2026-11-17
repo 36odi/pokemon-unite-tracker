@@ -248,8 +248,8 @@
           "id": "punk",
           "label": "パンクロック（0〜5段階）",
           "count": 5,
-          "perStack": 8,
-          "source": "pokemon:skills.0.rsb.true_desc; calculator:C127:D127"
+          "perStack": 6,
+          "source": "official:https://www.pokemonunite.jp/ja/topics/update/20261112-1/ (2026-11-12 8→6); before: pokemon:skills.0.rsb.true_desc; calculator:C127:D127"
         },
         {
           "id": "gear",

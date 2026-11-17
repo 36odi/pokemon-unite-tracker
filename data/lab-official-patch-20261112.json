@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "title": "11月12日（木）アップデートのお知らせ（バランス調整）",
+    "source": "https://www.pokemonunite.jp/ja/topics/update/20261112-1/",
+    "publishedAt": "2026-11-12T13:00:00+09:00",
+    "checkedAt": "2026-11-17",
+    "reason": "unite-db・正本シートの更新が止まり、11/12の数値が入手できないため、公式告知の記載から推定・反映した。サービス終了の発表（2027-03-23）で次回の更新が不明なため、ユーザーの許可により正本CSV等を直接編集する。",
+    "method": "公式が「ダメージ◯％増加/減少」とだけ記載した項目は、係数・固定値・レベル係数の3つに同じ倍率を掛けた推定値（全レベルで最終値がちょうど同じ割合だけ変わる）。小数第2位で四捨五入。公式が変更前後の具体値を記載した項目は、その値をそのまま採用。",
+    "caution": "推定値はゲーム内の実際の値と一致しない可能性がある。正本シートが正確な値で更新された場合は、シート側を優先して同期し直すこと（同期すると本ファイルの数値変更は上書きされる）。",
+    "originalRatioSha256": "6213e882b3a3821fbf6e59ac4b3844a2a7d0c95f85aeda3bb93528745eeeb8da"
+  },
+  "ratioRows": [
+    {"key": "Dragonite|Basic|Attack - Dratini|boosted_rsb|base", "quote": "【カイリュー】強化攻撃 ダメージ：5％増加", "multiplier": 1.05, "before": [135, 0, 0], "after": [141.75, 0, 0]},
+    {"key": "Moltres|Move 2|Heat Wave|rsb|base", "quote": "【ファイヤー】ねっぷう ダメージ：8％増加", "multiplier": 1.08, "before": [132, 391, 7], "after": [142.56, 422.28, 7.56]},
+    {"key": "Vaporeon|Move 1|Hydro Pump|rsb|base", "quote": "【シャワーズ】ハイドロポンプ ダメージ：8％増加", "multiplier": 1.08, "before": [63, 156, 6], "after": [68.04, 168.48, 6.48]},
+    {"key": "Vaporeon|Move 1|Hydro Pump|rsb|add1", "quote": "【シャワーズ】ハイドロポンプ ダメージ：8％増加", "multiplier": 1.08, "before": [21, 52, 2], "after": [22.68, 56.16, 2.16]},
+    {"key": "Vaporeon|Move 1|Hydro Pump|rsb|add2", "quote": "【シャワーズ】ハイドロポンプ ダメージ：8％増加", "multiplier": 1.08, "before": [63, 156, 6], "after": [68.04, 168.48, 6.48]},
+    {"key": "Vaporeon|Move 2|Flip Turn|rsb|add2", "quote": "【シャワーズ】クイックターン シールド量：8％増加", "multiplier": 1.08, "before": [272, 544, 0], "after": [293.76, 587.52, 0]},
+    {"key": "MewtwoX|Move 1|Psystrike|rsb|base", "quote": "【ミュウツーX】サイコブレイク ダメージ：8％減少", "multiplier": 0.92, "before": [45.1, 110, 3], "after": [41.49, 101.2, 2.76]},
+    {"key": "MewtwoX|Move 1|Psystrike|rsb|add1", "quote": "【ミュウツーX】サイコブレイク ダメージ：8％減少", "multiplier": 0.92, "before": [160.6, 351, 8], "after": [147.75, 322.92, 7.36]},
+    {"key": "Darkrai|Move 2|Dark Pulse|rsb|base", "quote": "【ダークライ】あくのはどう ダメージ：8％減少", "multiplier": 0.92, "before": [180, 412, 3], "after": [165.6, 379.04, 2.76]}
+  ],
+  "cooldowns": [
+    {"pokemon_en": "Slowbro", "skill_slot": "Move 1", "move_en": "Scald", "metaPokemon": "ヤドラン", "quote": "【ヤドラン】ねっとう 待ち時間：5s → 6s", "before": 5, "after": 6},
+    {"pokemon_en": "Slowbro", "skill_slot": "Move 2", "move_en": "Amnesia", "metaPokemon": "ヤドラン", "quote": "【ヤドラン】ドわすれ 待ち時間：9.5s → 10s", "before": 9.5, "after": 10}
+  ],
+  "textEdits": [
+    {"file": "data/lab-basic-descriptions.txt", "quote": "【カイリュー】水の強化攻撃による回復量：自身の最大HPの5％ → 自身の最大HPの6％", "find": "ミニリュウの水攻撃は命中時に最大HPの5%を回復し", "replace": "ミニリュウの水攻撃は命中時に最大HPの6%を回復し"},
+    {"file": "data/lab-passive-descriptions.txt", "quote": "【ストリンダー】通常攻撃 攻撃速度上昇量：1スタックごとに8％上昇 → 1スタックごとに6％上昇", "find": "ストリンダー|パンクロック|通常攻撃するたび、5秒間通常攻撃速度が8%上昇し", "replace": "ストリンダー|パンクロック|通常攻撃するたび、5秒間通常攻撃速度が6%上昇し"},
+    {"file": "data/lab-passive-descriptions.txt", "quote": "【ヌメルゴン】とくせい：ぬめぬめ 発動確率：20％ → 33％", "find": "ヌメルゴン|ぬめぬめ|攻撃を受けると、一定確率で周囲に", "replace": "ヌメルゴン|ぬめぬめ|攻撃を受けると、33%の確率で周囲に"},
+    {"file": "data/lab-move-upgrades.txt", "quote": "【ダークライ】あくのはどう+ シールド持続時間：2.5s → 2s", "find": "ダークライ|あくのはどう|ダメージを与えると、最大HPの12%のシールドを2.5秒間獲得します。", "replace": "ダークライ|あくのはどう|ダメージを与えると、最大HPの12%のシールドを2秒間獲得します。"},
+    {"file": "data/lab-move-upgrades.txt", "quote": "【ウーラオス（れんげきのかた）】すいりゅうれんだ+ 受けるダメージの軽減効果：30％ → 20％", "find": "ウーラオス|すいりゅうれんだ|使用中、受けるダメージが30%減ります。", "replace": "ウーラオス|すいりゅうれんだ|使用中、受けるダメージが20%減ります。"},
+    {"file": "data/lab-move-descriptions.txt", "quote": "【シャンデラ】ユナイトわざ：闇夜の業火 仕様変更：2段目の攻撃発動中に妨害耐性を追加", "find": "シャンデラ|闇夜の業火|近くの相手の視界を狭めます。再使用すると、指定方向へ炎のビームを放ちます。", "replace": "シャンデラ|闇夜の業火|近くの相手の視界を狭めます。再使用すると、指定方向へ炎のビームを放ちます。2段目の攻撃中は妨害耐性があります。"},
+    {"file": "data/lab-narrative-formulas.txt", "quote": "【ヌメルゴン】強化攻撃 追加ダメージ：最大HPの3％ → 最大HPの4％", "find": "T043|強化攻撃のHP追加分（近接）|相手の最大HP×3%。", "replace": "T043|強化攻撃のHP追加分（近接）|相手の最大HP×4%。"},
+    {"file": "data/lab-narrative-formulas.txt", "quote": "【ファイヤー】ねっぷう 回復量：自身の最大HPの4％を4回 → 自身の最大HPの4.5％を4回", "find": "T075|HP追加回復|自分の最大HP×4%。|4,0,0,heal,self", "replace": "T075|HP追加回復|自分の最大HP×4.5%。|4.5,0,0,heal,self"},
+    {"file": "data/lab-narrative-formulas.txt", "quote": "【ストリンダー】どくの音色の通常攻撃によるどく状態の継続ダメージ：1スタックにつき0.5s毎に最大HPの0.6％ → 0.4％", "find": "T086|どくのHP追加ダメージ|相手の最大HP×0.6%×", "replace": "T086|どくのHP追加ダメージ|相手の最大HP×0.4%×"}
+  ],
+  "jsonEdits": [
+    {"file": "data/lab-reviewed-narratives.json", "match": {"id": "T043"}, "replaceIn": {"formula": ["相手の最大HP×3%。", "相手の最大HP×4%。"]}},
+    {"file": "data/lab-reviewed-narratives.json", "match": {"id": "T075"}, "replaceIn": {"formula": ["自分の最大HP×4%。", "自分の最大HP×4.5%。"]}, "set": {"numeric.coeff": [4, 4.5]}},
+    {"file": "data/lab-reviewed-narratives.json", "match": {"id": "T086"}, "replaceIn": {"formula": ["相手の最大HP×0.6%×", "相手の最大HP×0.4%×"]}},
+    {"file": "data/lab-reviewed-narratives.json", "match": {"id": "N035"}, "replaceIn": {"formula": ["自分の最大HP×5%。", "自分の最大HP×6%。"]}, "set": {"numeric.coeff": [5, 6]}},
+    {"file": "data/lab-narrative-additions.json", "match": {"id": "N035"}, "replaceIn": {"formula": ["自分の最大HP×5%。", "自分の最大HP×6%。"]}, "set": {"numeric.coeff": [5, 6]}},
+    {"file": "data/lab-detail-notes.json", "array": "rules", "match": {"id": "A0181"}, "quote": "【ヌメルゴン】だくりゅう 防御、特防の上昇持続時間：2s → 3s", "replaceIn": {"text": ["自分の防御と特防は2秒間上がり", "自分の防御と特防は3秒間上がり"]}},
+    {"file": "data/lab-detail-notes.json", "array": "rules", "match": {"id": "B254"}, "quote": "【ヌメルゴン】だくりゅう 防御、特防の上昇持続時間：2s → 3s", "replaceIn": {"text": ["自分の防御・特防を上げる2秒間とは別の効果です。", "自分の防御・特防を上げる3秒間とは別の効果です。"]}},
+    {"file": "data/lab-detail-notes.json", "array": "rules", "match": {"id": "A0183"}, "quote": "【ヌメルゴン】アシッドボム ふきとばし時間：0.75s → 1s", "replaceIn": {"text": ["0.75秒間吹き飛ばして", "1秒間吹き飛ばして"]}},
+    {"file": "data/lab-detail-notes.json", "array": "rules", "match": {"id": "B425"}, "quote": "【ファイヤー】ねっぷう 回復量：自身の最大HPの4％を4回 → 自身の最大HPの4.5％を4回", "replaceIn": {"text": ["1回の回復量は最大HPの4%です。", "1回の回復量は最大HPの4.5%です。"]}},
+    {"file": "data/lab-detail-notes.json", "array": "rules", "match": {"id": "B614"}, "quote": "【ウーラオス（れんげきのかた）】すいりゅうれんだ 2段目、3段目の攻撃ができる時間：4s → 3s", "replaceIn": {"text": ["前の使用から4秒以内なら", "前の使用から3秒以内なら"]}},
+    {"file": "data/attack-speed-conditions.json", "path": ["profiles", "ストリンダー", "effects"], "match": {"id": "punk"}, "quote": "【ストリンダー】通常攻撃 攻撃速度上昇量：1スタックごとに8％上昇 → 1スタックごとに6％上昇", "set": {"perStack": [8, 6], "source": ["pokemon:skills.0.rsb.true_desc; calculator:C127:D127", "official:https://www.pokemonunite.jp/ja/topics/update/20261112-1/ (2026-11-12 8→6); before: pokemon:skills.0.rsb.true_desc; calculator:C127:D127"]}}
+  ],
+  "notApplied": [
+    {"quote": "【ストリンダー】オーバードライブ 電気の連鎖による追加ダメージ：8％〜5％減少", "reason": "対象の数値成分（「でんきの音色（反響）」と推定）と幅の意味が告知から確定できないため、ユーザー判断で数値は据え置き。"},
+    {"quote": "【ヌメルゴン】とくせい：ぬめぬめ 発動確率／だくりゅう 持続時間／アシッドボム ふきとばし時間、【シャンデラ】妨害耐性、【ウーラオス】連続使用の時間、【ダークライ】あくのはどう+ シールド持続時間、【ウーラオス】すいりゅうれんだ+ 軽減率", "reason": "ラボでは計算対象外の仕様。説明文・詳細補足の記載だけを更新した（計算値は変わらない）。"}
+  ]
+}

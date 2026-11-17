@@ -3,7 +3,7 @@
     "checkedAt": "2026-10-25",
     "source": "https://unite-db.com/pokemon.json",
     "sha256": "31f2549372392d147f6802b9211c698075973f378bcf34d7a1bb0bb6d16ccbe0",
-    "ratioSha256": "6213e882b3a3821fbf6e59ac4b3844a2a7d0c95f85aeda3bb93528745eeeb8da",
+    "ratioSha256": "5f008ad0d7bcd0d635bed7cf2b98e6077d4afb31bc9d3a7c32f60f92c4722f1f",
     "gameVersion": null,
     "cooldownSemantics": {
       "rule": "positive-upgrade-reduction-otherwise-base",
@@ -11882,9 +11882,9 @@
           "upgradeOriginal": "Increased area of effect.",
           "level": 4,
           "plusLevel": 11,
-          "cd": 5,
+          "cd": 6,
           "plusReduction": null,
-          "plusCD": 5,
+          "plusCD": 6,
           "plusCDMode": "source-base",
           "stage": "upgrade"
         },
@@ -11927,9 +11927,9 @@
           "upgradeOriginal": "Increases Sp. Attack.",
           "level": 6,
           "plusLevel": 13,
-          "cd": 9.5,
+          "cd": 10,
           "plusReduction": null,
-          "plusCD": 9.5,
+          "plusCD": 10,
           "plusCDMode": "source-base",
           "stage": "upgrade"
         },
