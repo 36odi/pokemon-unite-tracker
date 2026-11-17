@@ -18,7 +18,8 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq((await page.locator('#labPage .analysis-tab').first().innerText()).trim(),'レシオ一覧','ratio first');
   for(const role of ['atk','bal','spd','def','sup']){
     await page.locator('#ratioTypes .'+role).click();
-    const expected=await page.evaluate(r=>Object.keys(LAB_SKILLS).filter(n=>POKEMON_DATA[r].pokemon.includes(n)).sort(),role);
+    // ストライクは対戦記録の候補にないラボ専用のポケモンで、バランス型として扱う（v5.79・labPokemonType）
+    const expected=await page.evaluate(r=>Object.keys(LAB_SKILLS).filter(n=>POKEMON_DATA[r].pokemon.includes(n)||(r==='bal'&&n==='ストライク')).sort(),role);
     eq((await page.locator('#ratioChoices button').allTextContents()).sort(),expected,role+' roster');
   }
   await page.locator('#ratioTypes .atk').click();
@@ -31,9 +32,11 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq(await page.locator('#ratioChoices button').count(),1,'hiragana search');
   await page.locator('#ratioChoices button').click();
   const text=await page.locator('#ratioResult').innerText();
-  eq(await page.locator('#ratioResult a').count(),0,'description source link removed');
+  // 説明元リンクは削除済み。v5.79で追加した公開ページへのリンク（閲覧用ページ）1件だけを許可する
+  eq(await page.locator('#ratioResult a').evaluateAll(as=>as.map(a=>a.getAttribute('href'))).then(h=>JSON.stringify(h)),JSON.stringify(['lab/pokemon/'+encodeURIComponent('ストリンダー')+'/index.html']),'description source link removed (public page link only)');
   eq(text.includes('特攻 × 40％ ＋ 120'),true,'raw Overdrive formula');
-  eq(text.includes('直接ダメージなし'),true,'effect-only Gear');
+  // 効果・条件の説明は開閉式（v5.82以降）。閉じた中身は textContent で確認する
+  eq((await page.locator('#ratioResult').textContent()).includes('直接ダメージなし'),true,'effect-only Gear');
   eq(text.includes('オーバードライブ+'),true,'plus variant');
   eq(text.includes('Lv13'),true,'plus level');
   await page.locator('#ratioSearch').fill('no-match');
@@ -93,9 +96,9 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   eq((await page.locator('#ratioResult').innerText()).includes('自身の減少HPに応じた回復はこの式に含まれません'),true,'partial heal formula explained');
   eq(await page.locator('#ratioSlot0 h4').count(),0,'normal attack heading is not duplicated');
   await page.evaluate(()=>{ratioPokemon='バシャーモ';ratioRender();});
-  eq((await page.locator('#ratioSlot3 h4').allTextContents()).map(x=>x.replace(/\s*Lv\d+$/,'')),['爆炎旋風拳','爆炎旋風脚'],'both unite move names');
+  eq((await page.locator('#ratioSlot3 h4').allTextContents()).map(x=>x.replace(/\s*(習得)?Lv\d+$/,'')),['爆炎旋風拳','爆炎旋風脚'],'both unite move names');
   await page.evaluate(()=>{ratioPokemon='ウーラオス';ratioRender();});
-  eq((await page.locator('#ratioSlot3 h4').allTextContents()).map(x=>x.replace(/\s*Lv\d+$/,'')),['漆黒の終拳','蒼流の舞踏'],'both Urshifu styles');
+  eq((await page.locator('#ratioSlot3 h4').allTextContents()).map(x=>x.replace(/\s*(習得)?Lv\d+$/,'')),['漆黒の終拳','蒼流の舞踏'],'both Urshifu styles');
   await page.evaluate(()=>{ratioPokemon='ストリンダー';ratioRender();});
   const overdrive=page.locator('#ratioSlot2 .card').filter({hasText:'オーバードライブ'});
   eq((await overdrive.innerText()).match(/待ち時間：9秒/g).length,2,'normal and plus share the source cooldown');

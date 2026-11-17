@@ -13,7 +13,7 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await context.addInitScript(()=>{localStorage.setItem('guestMode','1');localStorage.setItem('guestHideRegPrompt','1');localStorage.setItem('guest_series',JSON.stringify([{id:'ratio-fixture',name:'ラボ検証',created_at:'2026-10-11T00:00:00Z'}]));});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(origin);await page.evaluate(()=>showPage('lab'));
   const species=await page.evaluate(()=>Object.keys(LAB_SKILLS).filter(p=>LAB_SKILLS[p].some(r=>r.slot==='特性'&&r.coeff!=null)));
-  eq(species.length,34,'34 species with numeric passives including recovered HP formulas');
+  eq(species.length,37,'37 species with numeric passives including recovered HP formulas'); // v5.78でオーロット・カビゴン・ホウオウの回復式を追加（34→37）
   for(const p of species){
     await page.evaluate(p=>{ratioPokemon=p;ratioRender();},p);
     const labels=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性').map(r=>ratioLabel(p,r)),p);
@@ -26,7 +26,8 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
     const count=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性'&&r.coeff!=null).length,p);
     eq(await page.locator('#labDmgOutPassive .lab-damage-box').count(),count,'stat all passive components '+p);
     const descriptions=await page.evaluate(p=>LAB_SKILLS[p].filter(r=>r.slot==='特性'&&r.description).map(r=>r.description),p);
-    const passiveText=await page.locator('#labDmgOutPassive').innerText();
+    // 効果・条件の説明は開閉式（v5.82以降）。閉じた中身も含めて確認する
+    const passiveText=await page.locator('#labDmgOutPassive').textContent();
     eq(descriptions.every(d=>passiveText.includes(d)),true,'stat passive descriptions '+p);
   }
   await page.selectOption('#labPokeSelect','ヌメルゴン');await page.selectOption('#labSkill1Sel','りゅうのはどう');
@@ -39,8 +40,10 @@ let browser,checks=0;const eq=(a,b,msg)=>{assert.deepEqual(a,b,msg);checks++;};
   await page.evaluate(()=>switchLab('dmg'));await page.locator('#lcEdit').click();await page.selectOption('#dcDefPoke','カメックス');
   await page.selectOption('#dcAtkPoke','ギルガルド');await page.locator('#labDmgCalcPanel button',{hasText:'計算する'}).click();
   for(const p of species){
-    await page.selectOption('#dcAtkPoke',p);const count=await page.evaluate(p=>labPassiveRows(p).length,p);
+    // 数値のある行と式つきの文章行は .lab-dmg-row、説明だけの行は開閉式の説明（.lab-reading-passive）として出る（v5.82以降）
+    await page.selectOption('#dcAtkPoke',p);const [count,described]=await page.evaluate(p=>{const rows=labPassiveRows(p);return [rows.filter(r=>r.coeff!=null||(r.description&&r.formulaText)).length,rows.filter(r=>r.coeff==null&&r.description&&!r.formulaText).length];},p);
     eq(await page.locator('#dcDmgOutPassive .lab-dmg-row').count(),count,'DC all passive components '+p);
+    eq(await page.locator('#dcDmgOutPassive .lab-reading-passive').count(),described,'DC passive descriptions '+p);
   }
   await page.selectOption('#dcAtkPoke','ギルガルド');
   eq(await page.locator('#dcDmgOutPassive .dc-arrow').count(),0,'stance changes are not damage');

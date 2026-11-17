@@ -41,14 +41,17 @@ const eq=(a,b,m)=>{assert.deepEqual(a,b,m);checks++;};
  const bindings=detail.rules.reduce((n,r)=>n+r.targets.length,0);
  for(const view of ['ratio','calc','dmg'])eq(results[view],bindings,view+' all detail bindings');eq(results.combat,309,'all species in all three views have combat notes');
  await page.evaluate(()=>{switchLab('ratio');ratioPokemon='ギルガルド';ratioRender();});
- eq((await page.locator('#ratioSlot2').innerText()).includes('未確定の仕様：'),false,'unconfirmed Iron Defense specification is hidden');
- eq((await page.locator('#ratioSlot2').innerText()).includes('他資料での確認が完了していません'),false,'no unconfirmed Iron Defense prose');
+ eq((await page.locator('#ratioSlot2').textContent()).includes('未確定の仕様：'),false,'unconfirmed Iron Defense specification is hidden');
+ eq((await page.locator('#ratioSlot2').textContent()).includes('他資料での確認が完了していません'),false,'no unconfirmed Iron Defense prose');
+ // 効果・条件の説明は開閉式（v5.82以降）。閉じた中身は innerText に出ないため、非表示の確認は textContent、表示の確認は開いてから行う
+ await page.evaluate(()=>document.querySelectorAll('#ratioSlot2 details').forEach(d=>{d.open=true;}));
  eq((await page.locator('#ratioSlot2').innerText()).includes('妨害効果は防ぎません'),true,'Iron Head damage versus hindrance');
+ await page.evaluate(()=>document.querySelectorAll('#ratioSlot2 details').forEach(d=>{d.open=false;}));
  const disclosure=page.locator('#ratioResult details').first();await disclosure.locator('summary').focus();await page.keyboard.press('Enter');eq(await disclosure.getAttribute('open'),'','keyboard opens combat notes');await page.keyboard.press('Enter');eq(await disclosure.getAttribute('open'),null,'keyboard closes combat notes');
  eq(await disclosure.locator('summary').evaluate(el=>el.getBoundingClientRect().height>=44),true,'combat disclosure touch target');
  for(const p of ['ラティアス','ドラパルト']){await page.evaluate(p=>{ratioPokemon=p;ratioRender();},p);eq((await page.locator('#ratioResult').innerText()).includes('出典間で相違'),false,p+' conflict hidden');}
  eq(await page.evaluate(()=>{renderChangelog();return document.getElementById('changelogList').textContent.includes('海外データサイトも照合し、出典に食い違いがある仕様や、追加確認が必要な補足を区別して表示します。');}),false,'requested changelog sentence removed');
- await page.evaluate(()=>{ratioPokemon='レシラム';ratioRender();});eq((await page.locator('#ratioSlot3').innerText()).includes('使用3回目の、強化されたユナイトわざでのみ'),true,'conditional shared Unite buffs');
+ await page.evaluate(()=>{ratioPokemon='レシラム';ratioRender();});await page.evaluate(()=>document.querySelectorAll('#ratioSlot3 details').forEach(d=>{d.open=true;}));eq((await page.locator('#ratioSlot3').innerText()).includes('使用3回目の、強化されたユナイトわざでのみ'),true,'conditional shared Unite buffs');
  const metrics=[];
  for(const width of [1100,390])for(const theme of ['dark','light']){
   await page.setViewportSize({width,height:900});await page.evaluate(theme=>{document.documentElement.classList.toggle('light-mode',theme==='light');ratioPokemon='ギルガルド';ratioRender();},theme);
